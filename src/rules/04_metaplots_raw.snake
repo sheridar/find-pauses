@@ -1,0 +1,35 @@
+# ===== Rules for intersecting reads with genomic regions ======================
+
+
+# Intersect reads with regions for gene subsampling
+rule subsample_metaplot_beds:
+    input:
+        RESULTS + "/{sample}/{sample}_shift.bed.gz"
+    output:
+        S   = RESULTS + "/{sample}/metaplot_beds/{sample}_{sub_region}_S.bed.gz",
+        S_N = RESULTS + "/{sample}/metaplot_beds/{sample}_{sub_region}_S_N.bed.gz",
+    params:
+        job_name = "{sample}_{sub_region}_metaplot_beds",
+        memory   = 16,
+        bed      = lambda wildcards: GENE_SUB_BEDS[wildcards.sub_region]
+    log:
+        out = RESULTS + "/logs/{sample}_{sub_region}_metaplot_beds.out",
+        err = RESULTS + "/logs/{sample}_{sub_region}_metaplot_beds.err"
+    message:
+        "Intersecting reads for {wildcards.sample} {wildcards.sub_region}"
+    threads:
+        6
+    shell:
+        """
+        source {SRC}/funs.sh
+
+        intersect_reads \
+            {input} \
+            {params.bed} \
+            {threads} \
+            {output.S} \
+            {output.S_N} \
+            "-wa -c -s"
+        """
+
+

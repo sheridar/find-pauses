@@ -1,0 +1,40 @@
+#===== Config file for finding pauses from mNET-seq data =======================
+
+# Directory to store results. This must be the same directory used to run
+# the mNET-seq processing pipeline.
+RESULTS:
+    "results"
+
+
+# Path to chrom.sizes file
+CHROMS:
+    "/beevol/home/rbilab/ref/genome/human/GRCh38/dna/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa.fai"
+
+
+# Path to bed file containing regions to use for identifying pauses.
+GENES:
+    "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_4_TSS_+5kb.bed.gz"
+
+
+# Path to bed file containing regions to exclude from analysis. Pauses
+# overlapping these regions will be removed. 
+MASK_REGION:
+    - "/beevol/home/sheridanr/ref/gene_lists/GRCh38/base_lists/GRCh38_snoRNAs.bed.gz"
+    - "/beevol/home/sheridanr/ref/gene_lists/GRCh38/splicing_lists/GRCh38_5ss_2bp.bed.gz"
+    - "/beevol/home/sheridanr/ref/gene_lists/GRCh38/splicing_lists/GRCh38_3ss_2bp.bed.gz"
+
+
+# Bed files to use for counting pauses, the resulting output files
+# can be used to generate metaplots. For each bed file, provide a unique
+# name to use for naming output files.
+META_BEDS:
+    5-TSS-100bp:   "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_TSS_+100bp.bed.gz"
+    5-100bp-300bp: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_+100bp_+300bp.bed.gz"
+    5-300bp-500bp: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_+300bp_+500bp.bed.gz"
+    5-500bp-1kb:   "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_+500bp_+1kb.bed.gz"
+    4-200bp:       "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_windows/GRCh38_4_TSS_pAS_200bp.bed.gz"
+    5-10bp:        "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_windows/GRCh38_5_-2kb_+2kb_10bp.bed.gz"
+    5-50bp:        "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_windows/GRCh38_5_-5kb_+5kb_50bp.bed.gz"
+    3-50bp:        "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_windows/GRCh38_3_-5kb_+5kb_50bp.bed.gz"
+
+

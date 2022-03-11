@@ -1,0 +1,213 @@
+# ====== Rules for subsampling reads ===========================================
+
+
+# Create bed files for RNA 3' end
+rule create_beds:
+    input:
+        RESULTS + "/{sample}/{sample}_dedup.bam"
+    output:
+        bed   = RESULTS + "/{sample}/{sample}.bed.gz",
+        shift = RESULTS + "/{sample}/{sample}_shift.bed.gz",
+        stats = RESULTS + "/{sample}/{sample}_filt_stats.tsv"
+    params:
+        job_name = "{sample}_create_beds",
+        memory   = 100,
+        genes    = GENES,
+        mask     = MASK
+    log:
+        out = RESULTS + "/logs/{sample}_beds.out",
+        err = RESULTS + "/logs/{sample}_beds.err"
+    benchmark:
+        RESULTS + "/benchmarks/{sample}_beds.tsv"
+    message:
+        "Creating bed files for {wildcards.sample}"
+    threads:
+        12
+    shell:
+       """
+       # Create bed file for aligned reads
+       bamToBed -i {input} \
+           | awk -v OFS="\t" -v sam="{wildcards.sample}" '{{
+               if ($1 !~ "^chr") {{
+                   $1 = "chr"$1
+               }};
+               count += 1;
+               print $0, $3 - $2
+           }} END {{
+               print sam, "Aligned reads", count \
+                   > "{output.stats}"
+           }}' \
+           | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+           | pigz -p {threads} \
+           > {output.bed}
+
+       # Filter for reads that are within params.gene and not within
+       # params.mask. This filtering is not strand specific. Collapse
+       # read coordinates to the RNA 3' end.
+       zcat {output.bed} \
+           | bedtools intersect -sorted -v  -a - -b {params.mask} \
+           | bedtools intersect -sorted -wa -a - -b {params.genes} \
+           | sort -S1G --parallel={threads} -k1,1 -k2,2n -k4,4 -u \
+           | awk -v OFS="\t" -v sam="{wildcards.sample}" '{{
+               if ($6 == "+") {{
+                   $2 = $3 - 1;
+               }} else {{
+                   $3 = $2 + 1;
+               }};
+               count += 1;
+               print
+           }} END {{
+               print sam, "Filtered reads", count \
+                   >> "{output.stats}";
+           }}' \
+           | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+           | pigz -p {threads} \
+           > {output.shift}
+       """
+
+        
+# Create filtering summary
+rule filt_summary:
+    input:
+        expand(
+            RESULTS + "/{sample}/{sample}_filt_stats.tsv",
+            sample = SAMS_UNIQ
+        )
+    output:
+        RESULTS + "/stats/"+ PROJ + "_filt.tsv"
+    params:
+        job_name = PROJ + "_filt_summary",
+        memory   = 4
+    log:
+        out = RESULTS + "/logs/" + PROJ + "_filt_summary.out",
+        err = RESULTS + "/logs/" + PROJ + "_filt_summary.err"
+    message:
+        "Creating " + PROJ + " read filtering summary"
+    threads:
+        1
+    shell:
+        """
+        file_arr=({input})
+
+        for file in ${{file_arr[@]}}
+        do
+            cat $file \
+                >> {output}
+        done
+        """
+
+
+# Identify number of reads to use for subsampling each group
+READS_DICT = PersistentDict("READS_DICT")
+
+rule subsample_1:
+    input:
+        lambda wildcards: expand(
+            RESULTS + "/{sample}/{sample}_shift.bed.gz",
+            sample = SAMPLES[wildcards.group]
+        )
+    output:
+        RESULTS + "/stats/{group}_summary.tsv"
+    params:
+        job_name = "{group}_summary",
+        memory   = 32
+    log:
+        out = RESULTS + "/logs/{group}_summary.out",
+        err = RESULTS + "/logs/{group}_summary.err"
+    benchmark:
+        RESULTS + "/benchmarks/{group}_summary.tsv"
+    message:
+        "Subsampling reads for {wildcards.group}"
+    threads:
+        1
+    run:
+        # Identify file with smallest number of reads
+        d = dict()
+
+        for file in input:
+            f  = gzip.open(file)
+            c  = 0
+            nm = os.path.basename(file)
+            nm = re.sub("_shift.bed.gz", "", nm)
+
+            for l in f:
+                c += 1
+
+            if nm not in d:
+                d[nm] = c
+
+        min_reads = min(d.values())
+
+        READS_DICT.store(wildcards.group, min_reads)
+
+        with open(output[0], "w") as out:
+            for k in d.keys():
+                out.write("%s\t%s\tFiltered reads\t%s\n" % (wildcards.group, k, d[k]))
+                out.write("%s\t%s\tSampled reads\t%s\n" % (wildcards.group, k, min_reads))
+
+
+# Subsample libraries to equalize read counts for downstream analysis
+rule subsample_2:
+    input:
+        bed = RESULTS + "/{sample}/{sample}_shift.bed.gz",
+        sum = RESULTS + "/stats/{group}_summary.tsv"
+    output:
+        RESULTS + "/{sample}-{group}/{sample}-{group}.bed.gz"
+    params:
+        job_name = "{sample}_{group}",
+        memory   = 32
+    log:
+        out = RESULTS + "/logs/{sample}_{group}.out",
+        err = RESULTS + "/logs/{sample}_{group}.err"
+    benchmark:
+        RESULTS + "/benchmarks/{sample}_{group}.tsv"
+    message:
+        "Subsampling reads for {wildcards.sample} {wildcards.group}"
+    threads:
+        16
+    run:
+        MIN_READS = READS_DICT.fetch(wildcards.group)
+
+        shell(
+            """
+            zcat {input.bed} \
+                | shuf -n {MIN_READS} \
+                | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+                | pigz -p {threads} \
+                > {output}
+            """
+        )
+
+
+# Create subsampling summary
+rule sub_summary:
+    input:
+        expand(
+            RESULTS + "/stats/{group}_summary.tsv",
+            group = GRPS_UNIQ
+        )
+    output:
+        RESULTS + "/stats/" + PROJ + "_subsample.tsv"
+    params:
+        job_name = PROJ + "_subsample_summary",
+        memory   = 4
+    log:
+        out = RESULTS + "/logs/" + PROJ + "_subsample_summary.out",
+        err = RESULTS + "/logs/" + PROJ + "_subsample_summary.err"
+    message:
+        "Creating " + PROJ + " subsampling summary"
+    threads:
+        1
+    shell:
+        """
+        file_arr=({input})
+
+        for file in ${{file_arr[@]}}
+        do
+            cat $file \
+                >> {output}
+        done
+        """
+
+
+

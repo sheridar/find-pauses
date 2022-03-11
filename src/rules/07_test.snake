@@ -1,0 +1,142 @@
+# ===== Rules for testing output ===============================================
+
+
+# Check that bedgraphs for subsampling regions have the same number of counts
+# for each gene
+rule gene_subsample_test:
+    input:
+        pos = lambda wildcards: expand(
+            RESULTS + "/{sample}-{{group}}_{{sub_region}}/{sample}-{{group}}_{{sub_region}}_pos.bedgraph.gz",
+            sample = SAMPLES[wildcards.group]
+        ),
+        neg = lambda wildcards: expand(
+            RESULTS + "/{sample}-{{group}}_{{sub_region}}/{sample}-{{group}}_{{sub_region}}_neg.bedgraph.gz",
+            sample = SAMPLES[wildcards.group]
+        )
+    output:
+        RESULTS + "/stats/{group}_{sub_region}_test.tsv"
+    params:
+        job_name = "{group}_{sub_region}_test",
+        memory   = 4,
+        genes    = TEST_GENES
+    log:
+        out = RESULTS + "/logs/{group}_{sub_region}_test.out",
+        err = RESULTS + "/logs/{group}_{sub_region}_test.err"
+    benchmark:
+        RESULTS + "/benchmarks/{group}_{sub_region}_test.tsv"
+    message:
+        "Testing subsampling for {wildcards.group} {wildcards.sub_region}"
+    threads:
+        1
+    shell:
+        """
+        check_sampling() {{
+            local bgs=($1)
+            local genes="$2"
+            local out="$3"
+        
+            local test_res=${{bgs[@]/%/.TEST}}
+        
+            for bed in ${{bgs[@]}}
+            do
+                local res="$bed.TEST"
+        
+                zcat "$bed" \
+                    | awk -v OFS="\t" '{{
+                        $4 = $4 * ($3 - $2);
+                        print
+                    }}' \
+                    | bedtools map -a "$genes" -b - -c 4 -o sum \
+                    | awk -v OFS="\t" '$6 == "+" {{gsub("\\.", 0, $7); print}}' \
+                    > "$res"
+            done
+        
+            local chk=$(md5sum ${{test_res[@]}} | sort -k1,1 -u | wc -l)
+        
+            rm ${{test_res[@]}}
+        
+            if [[ "$chk" == 1 ]]
+            then
+                local res='PASS'
+            else
+                local res='FAIL'
+            fi
+        
+            for file in ${{bgs[@]}}
+            do
+                echo -e "$file\t{wildcards.group}\t{wildcards.sub_region}\t$res" \
+                    >> "$out"
+            done
+        }}
+
+        check_sampling "{input.pos}" {params.genes} {output}
+        check_sampling "{input.neg}" {params.genes} {output}
+        """
+
+
+# Check that bedgraphs for subsampling groups have the same number of counts for
+# each sample
+rule subsample_test:
+    input:
+        pos = lambda wildcards: expand(
+            RESULTS + "/{sample}-{{group}}/{sample}-{{group}}_pos.bedgraph.gz",
+            sample = SAMPLES[wildcards.group]
+        ),
+        neg = lambda wildcards: expand(
+            RESULTS + "/{sample}-{{group}}/{sample}-{{group}}_neg.bedgraph.gz",
+            sample = SAMPLES[wildcards.group]
+        )
+    output:
+        RESULTS + "/stats/{group}_test.tsv"
+    params:
+        job_name = "{group}_test",
+        memory   = 4
+    log:
+        out = RESULTS + "/logs/{group}_test.out",
+        err = RESULTS + "/logs/{group}_test.err"
+    benchmark:
+        RESULTS + "/benchmarks/{group}_test.tsv"
+    message:
+        "Testing subsampling for {wildcards.group}"
+    threads:
+        1
+    shell:
+        """
+        count_reads() {{
+            local bg_in="$1"
+
+            zcat $bg_in \
+                | awk '{{count += $4 * ($3 - $2)}} END {{print count}}'
+        }}
+
+        check_sampling() {{
+            local pos=($1)
+            local neg=($2)
+        
+            for i in ${{!pos[@]}}
+            do
+                local p=$(count_reads ${{pos[$i]}})
+                local n=$(count_reads ${{neg[$i]}})
+
+                local tot=$(expr "$p" + "$n")
+
+                echo "$tot"
+            done
+        }}
+
+        tots=$(check_sampling "{input.pos}" "{input.neg}")
+
+        n=$(echo "$tots" | sort -u | wc -l)
+
+        if [[ $n == 1 ]]
+        then
+            res='PASS'
+        else
+            res='FAIL'
+        fi
+
+        echo -e "{wildcards.group}\t$res" \
+            > {output}
+        """
+
+

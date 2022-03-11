@@ -1,0 +1,45 @@
+# ===== Rules for intersecting reads with genomic regions ======================
+
+
+# Intersect subsampled reads with gene regions
+rule metaplot_beds:
+    input:
+        RESULTS + "/{sam_grp}/{sam_grp}.bed.gz"
+    output:
+        S    = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S.bed.gz",
+        AS   = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_AS.bed.gz",
+        S_N  = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S_N.bed.gz",
+        AS_N = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_AS_N.bed.gz"
+    params:
+        job_name = "{sam_grp}_{region}_metaplot_beds",
+        memory   = 16,
+        bed      = lambda wildcards: META_BEDS[wildcards.region]
+    log:
+        out = RESULTS + "/logs/{sam_grp}_{region}_metaplot_beds.out",
+        err = RESULTS + "/logs/{sam_grp}_{region}_metaplot_beds.err"
+    message:
+        "Intersecting reads for {wildcards.sam_grp} {wildcards.region}"
+    threads:
+        6
+    shell:
+        """
+        source {SRC}/funs.sh
+
+        intersect_reads \
+            {input} \
+            {params.bed} \
+            {threads} \
+            {output.S} \
+            {output.S_N} \
+            "-wa -c -s"
+
+        intersect_reads \
+            {input} \
+            {params.bed} \
+            {threads} \
+            {output.AS} \
+            {output.AS_N} \
+            "-wa -c -S"
+        """
+
+

@@ -1,0 +1,227 @@
+# ===== Snake file for processing mNET-seq data ================================
+
+from pytools.persistent_dict import PersistentDict
+import os
+import glob
+import re
+import subprocess
+import gzip
+import random
+
+
+# Configure shell for all rules
+shell.executable("/bin/bash")
+shell.prefix("source ~/.bash_profile; set -o nounset -o pipefail -o errexit -x; ")
+
+
+# Parameters from config.yaml
+PROJ       = config["PROJ"]
+RAW_DATA   = config["RAW_DATA"]
+RESULTS    = config["RESULTS"]
+SAMPLES    = config["SAMPLES"]
+INDEX      = config["INDEX"]
+CHROMS     = config["CHROMS"]
+GTF        = config["GTF"]
+GENES      = config["GENES"]
+MASK       = config["MASK"]
+URL        = config["URL"]
+SSH        = config["SSH"]
+CMD_PARAMS = config["CMD_PARAMS"]
+TEST_GENES = config["TEST_GENES"]
+
+
+# Files for metaplots
+META_BEDS = config["META_BEDS"]
+
+GENE_SUB_BEDS = config["GENE_SUBSAMPLE_BEDS"]
+GENE_SUB_REGS = list(GENE_SUB_BEDS.keys())
+
+if GENE_SUB_REGS & META_BEDS.keys():
+    sys.exit("ERROR: META_BEDS and GENE_SUBSAMPLE_BEDS must have different labels. Files provided by GENE_SUBSAMPLE_BEDS will get added to META_BEDS.")
+
+META_BEDS.update(dict(GENE_SUB_BEDS))
+
+REGIONS = list(META_BEDS.keys())
+
+
+# Directories for data and scripts
+FASTQ_DIR = RESULTS + "/fastqs"
+SRC       = "src"
+
+
+# Sample and group lists
+SAMS = [[y, x] for y in SAMPLES for x in SAMPLES[y]]
+GRPS = [x[0] for x in SAMS]
+SAMS = [x[1] for x in SAMS]
+
+GRPS_UNIQ = list(set(GRPS))
+SAMS_UNIQ = list(set(SAMS))
+
+
+# Gene subsampling groups
+SAM_GRPS      = [x + "-" + y for y in SAMPLES for x in SAMPLES[y]]
+GENE_SUB_GRPS = [x + "_" + y for x in SAM_GRPS for y in GENE_SUB_REGS]
+GENE_SUB_GRPS = SAM_GRPS + GENE_SUB_GRPS
+
+
+# Print summary of samples and groups
+print("SAMS (%s): %s\n" % (len(SAMS), SAMS))
+print("GRPS (%s): %s\n" % (len(GRPS), GRPS))
+print("SAMS_UNIQ (%s): %s\n" % (len(SAMS_UNIQ), SAMS_UNIQ))
+print("GRPS_UNIQ (%s): %s\n" % (len(GRPS_UNIQ), GRPS_UNIQ))
+print("SAM_GRPS (%s): %s\n" % (len(SAM_GRPS), SAM_GRPS))
+
+print("GENE_SUB_BEDS (%s): %s\n" % (len(GENE_SUB_BEDS), GENE_SUB_BEDS))
+
+print("GENE_SUB_GRPS (%s): %s\n" % (len(GENE_SUB_GRPS), GENE_SUB_GRPS))
+
+
+# Wildcard constraints
+GRP_REGEX = "[a-zA-Z0-9\-]+"
+
+wildcard_constraints:
+    region  = "[a-zA-Z0-9\-]+",
+    reads   = "[a-zA-Z]+",
+    length  = "[a-zA-Z]+",
+    sample  = "[a-zA-Z0-9_]+",
+    group   = GRP_REGEX,
+    sam_grp = "[a-zA-Z0-9_\-]+-[a-zA-Z0-9_\-]+"
+
+
+# Create symlinks for fastqs
+if not os.path.exists(FASTQ_DIR):
+    os.makedirs(FASTQ_DIR)
+
+SFX    = ".fastq.gz"
+FQ_SFX = ["_" + x + "_001" + SFX for x in ["R1", "R2"]]
+
+def _get_fqs(sample, suffix):
+    fq_pat   = sample + "*" + suffix
+    fq_paths = []
+
+    # Retrieve paths for fastq files that start with sample name
+    for dir in RAW_DATA:
+        paths = os.path.join(dir, fq_pat)
+        paths = glob.glob(os.path.abspath(paths))
+
+        for path in paths:
+            fq_paths.append(path)
+
+    # Check for duplicate paths
+    if not fq_paths:
+        sys.exit("ERROR: no fastqs found for " + fq_pat + ".")
+
+    if len(fq_paths) > 1:
+        sys.exit("ERROR: Multiple fastqs found for " + fq_pat + ".") 
+
+    fq_paths = fq_paths[0]
+    fastq    = os.path.basename(fq_paths)
+
+    # Create symlinks
+    # Using subprocess since os.symlink requires a target file instead of target directory
+    if not os.path.exists(FASTQ_DIR + "/" + fastq):
+        cmd = "ln -s " + fq_paths + " " + FASTQ_DIR
+
+        if cmd != "":
+            subprocess.run(cmd, shell = True)
+    
+    # Return fastq file name
+    return(re.sub(SFX + "$", "", fastq))
+
+FASTQS = [_get_fqs(x, y) for x in SAMS_UNIQ for y in FQ_SFX]
+
+
+# Final output files
+rule all:
+    input:
+        # FastQC
+        RESULTS + "/stats/" + PROJ + "_fastqc.tsv",
+
+        # Cutadapt
+        RESULTS + "/stats/" + PROJ + "_cutadapt.tsv",
+
+        # Bowtie2
+        RESULTS + "/stats/" + PROJ + "_bowtie.tsv",
+        
+        # De-duplication
+        RESULTS + "/stats/" + PROJ + "_dedup.tsv",
+        
+        # FeatureCounts
+        RESULTS + "/" + PROJ + "_featureCounts.tsv",
+
+        # Filtering summary
+        RESULTS + "/stats/" + PROJ + "_filt.tsv",
+
+        # Sample subsampling
+        expand(
+            RESULTS + "/{sample}-{group}/{sample}-{group}.bed.gz",
+            zip, sample = SAMS, group = GRPS
+        ),
+
+        RESULTS + "/stats/" + PROJ + "_subsample.tsv",
+        
+        # Gene subsampling
+        expand(
+            RESULTS + "/stats/{group}_{sub_region}_summary.tsv",
+            group = GRPS_UNIQ, sub_region = GENE_SUB_REGS
+        ),
+
+        # Bigwigs
+        expand(
+            RESULTS + "/{sam_grp}/{sam_grp}_neg.bw",
+            sam_grp = GENE_SUB_GRPS
+        ),
+
+        RESULTS + "/urls/" + PROJ + "_igv.xml",
+
+        # Metaplots
+        expand(
+            RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S_N.bed.gz",
+            sam_grp = GENE_SUB_GRPS, region = REGIONS
+        ),
+
+        # Gene subsampling test
+        expand(
+            RESULTS + "/stats/{group}_{sub_region}_test.tsv",
+            group = GRPS_UNIQ, sub_region = GENE_SUB_REGS
+        ),
+
+        # Library subsampling test
+        expand(
+            RESULTS + "/stats/{group}_test.tsv",
+            group = GRPS_UNIQ
+        )
+
+
+# Run FastQC
+include: "../rules/01_fastqc.snake"
+
+# Run cutadapt
+include: "../rules/01_cutadapt.snake"
+
+# Align reads with bowtie2
+include: "../rules/02_bowtie.snake"
+
+# Remove PCR duplicates with UMI-tools
+include: "../rules/03_dedup.snake"
+
+# Run featureCounts
+include: "../rules/04_featureCounts.snake"
+
+# Sample subsampling
+include: "../rules/04_subsample.snake"
+
+# Gene subsampling
+include: "../rules/04_metaplots_raw.snake"
+include: "../rules/05_gene_subsample.snake"
+
+# Create bigwigs
+include: "../rules/06_bigwigs.snake"
+
+# Create bed files for metaplots
+include: "../rules/06_metaplots_stranded.snake"
+
+# Test output files
+include: "../rules/07_test.snake"
+
+

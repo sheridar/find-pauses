@@ -1,0 +1,63 @@
+# ===== Rules for running FastQC ===============================================
+
+
+# Run fastqc
+rule fastqc:
+    input:
+        FASTQ_DIR + "/{fastq}.fastq.gz"
+    output:
+        RESULTS + "/fastqc/{fastq}_fastqc.zip",
+        RESULTS + "/fastqc/{fastq}_fastqc.html"
+    params:
+        job_name = "{fastq}_fastqc",
+        memory   = 20,
+        out      = RESULTS + "/fastqc"
+    log:
+        out = RESULTS + "/logs/{fastq}_fastqc.out",
+        err = RESULTS + "/logs/{fastq}_fastqc.err"
+    message:
+        "Running FastQC on {wildcards.fastq}"
+    threads:
+        6
+    shell:
+        """
+        mkdir -p {params.out}
+
+        fastqc \
+            -t {threads} \
+            -f fastq \
+            -o {params.out} \
+            {input}
+        """
+
+
+# Combine FastQC summaries
+rule fastqc_summary:
+    input:
+        expand(
+            RESULTS + "/fastqc/{fastq}_fastqc.zip",
+            fastq = FASTQS
+        )
+    output:
+        RESULTS + "/stats/" + PROJ + "_fastqc.tsv"
+    params:
+        job_name = PROJ + "_fastqc_summary",
+        memory   = 4
+    log:
+        out = RESULTS + "/logs/" + PROJ + "_fastqc_summary.out",
+        err = RESULTS + "/logs/" + PROJ + "_fastqc_summary.err"
+    message:
+        "Creating " + PROJ + " FastQC summary"
+    threads:
+        1
+    shell:
+        """
+        for dir in {input};
+        do
+            name=$(basename -s .zip $dir)
+
+            unzip -p $dir $name/summary.txt \
+                >> {output}
+        done
+        """
+

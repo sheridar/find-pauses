@@ -1,0 +1,81 @@
+# ====== Rules for removing PCR duplicates with UMI-tools ======================
+
+
+# Remove duplicate reads
+rule dedup:
+    input:
+        bam = RESULTS + "/{sample}/{sample}.bam",
+        bai = RESULTS + "/{sample}/{sample}.bam.bai"
+    output:
+        bam   = RESULTS + "/{sample}/{sample}_dedup.bam",
+        bai   = RESULTS + "/{sample}/{sample}_dedup.bam.bai",
+        stats = RESULTS + "/{sample}/{sample}_dedup_stats.txt"
+    params:
+        job_name = "{sample}_dedup",
+        memory   = 32,
+        args     = CMD_PARAMS["umi_tools"],
+        log      = RESULTS + "/logs/{sample}_dedup.out"
+    log:
+        out = RESULTS + "/logs/{sample}_dedup.out",
+        err = RESULTS + "/logs/{sample}_dedup.err"
+    message:
+        "Removing duplicates for {wildcards.sample}"
+    threads:
+        1
+    shell:
+        """
+        umi_tools dedup \
+            {params.args} \
+            -I {input.bam} \
+            -S {output.bam} \
+            -L {output.stats}
+
+        samtools index {output.bam}
+        """
+
+
+# Create duplication summary
+rule dedup_summary:
+    input:
+        expand(
+            RESULTS + "/{sample}/{sample}_dedup_stats.txt",
+            sample = SAMS_UNIQ
+        )
+    output:
+        RESULTS + "/stats/" + PROJ + "_dedup.tsv"
+    params:
+        job_name = PROJ + "_dedup_summary",
+        memory   = 4
+    log:
+        out = RESULTS + "/logs/" + PROJ + "_dedup_summary.out",
+        err = RESULTS + "/logs/" + PROJ + "_dedup_summary.err"
+    message:
+        "Creating " + PROJ + " dedup summary"
+    threads:
+        1
+    run:
+        with open(output[0], "w") as out:
+            metrics = [
+                "Input Reads: [0-9]+",
+                "Number of reads out: [0-9]+",
+                "Total number of positions deduplicated: [0-9]+",
+                "Mean number of unique UMIs per position: [0-9\.]+",
+                "Max. number of unique UMIs per position: [0-9]+"
+            ]
+
+            for file in input:
+                name  = os.path.basename(file)
+                name  = re.sub("_dedup_stats.txt", "", name)
+
+                for line in open(file, "r"):
+                    for metric in metrics:
+                        met = re.search(metric, line)
+
+                        if met:
+                            met = met.group(0)
+                            num = re.search("[0-9\.]+$", met).group(0)
+                            met = re.sub(": [0-9\.]+$", "", met)
+
+                            out.write("%s\t%s\t%s\n" % (name, met, num))
+
+

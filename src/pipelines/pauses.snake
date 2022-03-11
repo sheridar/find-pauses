@@ -1,0 +1,120 @@
+#===== Snake pipeline for identifying pauses from mNET-seq data ================
+
+
+# Configure shell for all rules
+shell.executable("/bin/bash")
+shell.prefix("set -o nounset -o pipefail -o errexit -x; ")
+
+
+# Parameters from config.yaml
+PROJ        = config["PROJ"]
+SAMPLES     = config["SAMPLES"]
+RESULTS     = config["RESULTS"]
+CHROMS      = config["CHROMS"]
+FASTA       = config["FASTA"]
+GENES       = config["GENES"]
+MASK_REGION = config["MASK_REGION"]
+MASK_REGION = ",".join(MASK_REGION)
+
+
+# Files for metaplots
+# need gene subsampling parameters so these results are included in pipeline
+META_BEDS = config["META_BEDS"]
+
+GENE_SUB_BEDS = config["GENE_SUBSAMPLE_BEDS"]
+GENE_SUB_REGS = list(GENE_SUB_BEDS.keys())
+
+if GENE_SUB_REGS & META_BEDS.keys():
+    sys.exit("ERROR: META_BEDS and GENE_SUBSAMPLE_BEDS must have different labels. Files provided by GENE_SUBSAMPLE_BEDS will get added to META_BEDS.")
+
+META_BEDS.update(dict(GENE_SUB_BEDS))
+
+REGIONS = list(META_BEDS.keys())
+
+
+# Directory with required scripts
+SRC = "src"
+
+
+# Sample and group lists
+SAMPLES = [x + "-" + y for y in SAMPLES for x in SAMPLES[y]]
+
+GENE_SUB_GRPS = [x + "_" + y for x in SAMPLES for y in GENE_SUB_REGS]
+SAMPLES       = SAMPLES + GENE_SUB_GRPS
+
+
+# Pausing strength parameters
+WIN_SIZE        = [200]
+STRENGTH_GROUPS = ["_strong_"]
+PAUSE_ROUND     = [1]
+
+def _create_dict(keys, values):
+    if (len(keys) != len(values)) & (len(values) != 1):
+        sys.exit("ERROR: For pause strength parameters must provide a single value or a value for each group.")
+
+    if len(values) == 1:
+        values = [values] * len(keys)
+
+    d = dict(zip(keys, values))
+
+    return(d)
+
+PAUSE_ROUND = _create_dict(STRENGTH_GROUPS, PAUSE_ROUND)
+
+
+# Add label for unfiltered pauses ("_")
+ALL_GROUPS = STRENGTH_GROUPS.copy()
+ALL_GROUPS.append("_")
+
+
+# Wildcard constraints
+# for stren exclude "_sep_" but allow "_"
+wildcard_constraints:
+    region = "[a-zA-Z0-9\-]+",
+    reads  = "[a-zA-Z]+",
+    win    = "[0-9]+",
+    stren  = "(_(?!sep).*_)",
+    grp    = "(_(?!sep).*_|_)"
+
+
+# Final output files
+rule all:
+    input:
+        # Identify pauses
+        expand(
+            RESULTS + "/{sample}/pauses/{sample}_{win}_pauses.bed.gz",
+            sample = SAMPLES, win = WIN_SIZE
+        ),
+
+        expand(
+            RESULTS + "/{sample}/pauses/{sample}_{win}{stren}pauses.bed.gz",
+            sample = SAMPLES, win = WIN_SIZE, stren = STRENGTH_GROUPS
+        ),
+
+        expand(
+            RESULTS + "/stats/" + PROJ + "_{win}{grp}pausing.tsv",
+            sample = SAMPLES, win = WIN_SIZE, grp = ALL_GROUPS
+        ),
+
+        expand(
+            RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pause_reads.bed.gz",
+            sample = SAMPLES, win = WIN_SIZE, grp = ALL_GROUPS
+        ),
+
+        # Pause density metaplot bed files
+        expand(
+            RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pauses_{region}.bed.gz",
+            sample = SAMPLES, win = WIN_SIZE, grp = ALL_GROUPS, region = REGIONS
+        ),
+
+        # Signal around pauses
+        expand(
+            RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pauses_meta_N.bed.gz",
+            sample = SAMPLES, win = WIN_SIZE, grp = ALL_GROUPS
+        )
+
+
+# Identify pause sites
+include: "../rules/find_pauses.snake"
+
+
