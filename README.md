@@ -3,7 +3,8 @@
 The analysis workflow is composed of two separate snakemake pipelines, one
 to perform the initial processing steps and the other to identify pause
 sites. To run, specify sample names in the samples.yaml config file, and
-workflow parameters in the NETseq.yaml and pauses.yaml config files.
+workflow parameters in the NETseq.yaml and pauses.yaml config files. Run
+the pipelines using the run.sh script.
 
 ### Processing
 
