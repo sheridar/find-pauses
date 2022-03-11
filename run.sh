@@ -15,11 +15,6 @@ module load subread
 mkdir -p logs
 
 
-# Directories
-pipe_dir=src/pipelines
-cons=src/configs
-
-
 # Function to run snakemake
 run_snakemake() {
     local snake_file=$1
@@ -42,16 +37,18 @@ run_snakemake() {
 }
 
 
-# Run pipeline to align and filter mNET-seq reads
+# Run pipeline to process mNET-seq reads
+pipe_dir=src/pipelines
+samples=samples.yaml
+
 snake=$pipe_dir/NETseq.snake
-samples=$cons/samples.yaml
-config=$cons/NETseq.yaml
+config=NETseq.yaml
 
 run_snakemake $snake "$samples $config"
 
-
 # Run pipeline to identify pause sites
-config=$cons/pauses.yaml
+snake=$pipe_dir/pauses.snake
+config=pauses.yaml
 
 run_snakemake $snake "$samples $config"
 
