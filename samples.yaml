@@ -4,7 +4,7 @@
 
 # Project name to use for naming summary files
 PROJ:
-    "MY_PROJECT"
+    "Xrn2"
 
 
 # Regions to use for subsampling reads
@@ -20,6 +20,9 @@ GENE_SUBSAMPLE_BEDS:
 # Sample groups to use for subsampling, use the following format. The
 # samples included in each group will be subsampled to the same read
 # depth, so for each group select samples you want to directly compare.
+# The sample names must match the beginning of a fastq file in one of the
+# directories listed under RAW_DATA in NETseq.yaml. If the sample name
+# matches multiple fastqs, an error will be thrown.
 # 
 # group-name-1:
 #     - "sample_1_file_prefix"
@@ -30,12 +33,15 @@ GENE_SUBSAMPLE_BEDS:
 #     - "sample_4_file_prefix"
 #
 SAMPLES:
-    wt-r1:
-        - "NF_AvitagRpb1WT_1_mNETseq"
-        - "NF_CB33plusTMP_mNETseq_QIAseq"
+    xrn2-r2:
+        - "293flpin_Xrn2_WT_R2"
+        - "293flpin_Xrn2_MT_R2"
 
-    wt-r2:
-        - "NF_AvitagRpb1WT_2_mNETseq"
-        - "NF_CB33plusTMP_mNETseq_Sample2"
+    xrn2-r3:
+        - "293flpin_Xrn2_WT_R3"
+        - "293flpin_Xrn2_MT_R3"
 
+    xrn2-r4:
+        - "293flpin_Xrn2_WT_R4"
+        - "293flpin_Xrn2_MT_R4"
 

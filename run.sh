@@ -28,11 +28,10 @@ run_snakemake() {
         -n {threads}
         -q rna '
 
-    snakemake --nolock -n \
+    snakemake -n \
         --snakefile $snake_file \
         --drmaa "$args" \
         --jobs 100 \
-        --latency-wait 60 \
         --configfiles $config_file
 }
 

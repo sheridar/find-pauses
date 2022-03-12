@@ -11,7 +11,6 @@ PROJ        = config["PROJ"]
 SAMPLES     = config["SAMPLES"]
 RESULTS     = config["RESULTS"]
 CHROMS      = config["CHROMS"]
-FASTA       = config["FASTA"]
 GENES       = config["GENES"]
 MASK_REGION = config["MASK_REGION"]
 MASK_REGION = ",".join(MASK_REGION)

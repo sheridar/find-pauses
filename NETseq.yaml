@@ -4,8 +4,7 @@
 # Multiple directories can be provided. The sample names must correspond
 # to the begining of the fastq name.
 RAW_DATA:
-    - "data/191210_A00405_0181_BHMW75DSXX"
-    - "data/200221_A00405_0210_AH2FH3DSXY"
+    - "/beevol/home/bentleyd/fastq/220218_A00405_0531_BH352HDRX2"
 
 
 # Directory to store results
@@ -46,6 +45,7 @@ MASK:
 
 
 # Specify base URL and destination to transfer bigwigs
+# UPDATE THESE
 URL:
     "http://amc-sandbox.ucdenver.edu/User25/fong-spt5"
 
@@ -54,8 +54,8 @@ SSH:
 
 
 # Regions to use for testing output files from per-gene subsampling. This
-# will double check that each gene in the provided bed file have the same
-# number overlapping reads for each sample in the subsampling group. This
+# will double check that each gene in the provided bed file has the same
+# number of overlapping reads for each sample in the subsampling group. This
 # list cannot include overlapping genes, since read counts for
 # overlapping genes may differ between samples in the subsampling group.
 TEST_GENES: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/base_lists/GRCh38_0ksep.bed.gz"
