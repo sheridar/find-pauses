@@ -24,6 +24,22 @@ MASK_REGION:
     - "/beevol/home/sheridanr/ref/gene_lists/GRCh38/splicing_lists/GRCh38_3ss_2bp.bed.gz"
 
 
+# Window sizes to use for finding pauses
+# provide multiple sizes to generate results for multiple different window sizes
+WIN_SIZE:
+    - 200
+
+
+# File label to use for strong pauses
+STRENGTH_GROUPS:
+    - "_strong_"
+
+
+# Maximum searching round for strong pauses
+PAUSE_ROUND:
+    - 1
+
+
 # Bed files to use for counting pauses, the resulting output files
 # can be used to generate metaplots. For each bed file, provide a unique
 # name to use for naming output files.

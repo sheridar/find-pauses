@@ -52,4 +52,3 @@ config=pauses.yaml
 run_snakemake $snake "$samples $config"
 
 
-

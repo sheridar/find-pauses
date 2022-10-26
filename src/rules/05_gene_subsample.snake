@@ -71,8 +71,6 @@ rule gene_subsample_1:
 
 # Subsample reads so each gene for each sample has the same total counts for
 # the subsampling region
-# IMPORTANT: the gene subsample bed files must also be included in the
-# config as a metaplot file and must have the same label
 rule gene_subsample_2:
     input:
         reads = RESULTS + "/{sample}/{sample}_shift.bed.gz",

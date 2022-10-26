@@ -15,6 +15,10 @@ GENES       = config["GENES"]
 MASK_REGION = config["MASK_REGION"]
 MASK_REGION = ",".join(MASK_REGION)
 
+WIN_SIZE        = config["WIN_SIZE"]
+STRENGTH_GROUPS = config["STRENGTH_GROUPS"]
+PAUSE_ROUND     = config["PAUSE_ROUND"]
+
 
 # Files for metaplots
 # need gene subsampling parameters so these results are included in pipeline
@@ -43,10 +47,6 @@ SAMPLES       = SAMPLES + GENE_SUB_GRPS
 
 
 # Pausing strength parameters
-WIN_SIZE        = [200]
-STRENGTH_GROUPS = ["_strong_"]
-PAUSE_ROUND     = [1]
-
 def _create_dict(keys, values):
     if (len(keys) != len(values)) & (len(values) != 1):
         sys.exit("ERROR: For pause strength parameters must provide a single value or a value for each group.")
@@ -110,10 +110,14 @@ rule all:
         expand(
             RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pauses_meta_N.bed.gz",
             sample = SAMPLES, win = WIN_SIZE, grp = ALL_GROUPS
-        )
+        ),
+
+        # Plots
+        RESULTS + "/" + PROJ + "_analysis.html"
 
 
 # Identify pause sites
-include: "../rules/find_pauses.snake"
+include: "../rules/08_find_pauses.snake"
+include: "../rules/09_plots.snake"
 
 

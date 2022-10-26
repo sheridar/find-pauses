@@ -193,44 +193,6 @@ find_pauses() {
         > "$out_pauses"
 
     rm "$tmp_bg" "$tmp_genes" "$tmp_mask"
-
-
-    # # Function to run find_pauses.cpp
-    # run_pauses_cpp() {
-    #     local input_bg="$1"
-    #     local pauses="$2"
-
-    #     echo "$input_bg $tmp_genes $in_chrom $in_win $in_stdev $tmp_dir"
-
-    #     # Run find_pauses C++
-    #     # 1) input bedgraph
-    #     # 2) regions to search for pauses
-    #     # 3) chromosome sizes
-    #     # 4) window size for identifying pauses
-    #     # 5) minimum number of reads for pause
-    #     # 6) number of standard deviations for identifying pause
-    #     # 7) directory for temporary files
-    #     "$SRC_DIR/find_pauses" \
-    #         "$input_bg" \
-    #         "$tmp_genes" \
-    #         "$in_chrom" \
-    #         "$in_win" \
-    #         "$in_reads" \
-    #         "$in_stdev" \
-    #         "$tmp_dir" \
-    #         | bedtools subtract -s -a - -b "$tmp_mask" \
-    #         > "$pauses"
-    # }
-
-    # run_pauses_cpp "$in_bg" "$out_pauses"
-
-    # # Identify pause sites
-    # split_by_chrom \
-    #     "$in_bg" \
-    #     "$out_pauses" \
-    #     run_pauses_cpp
-
-    # rm "$tmp_genes" "$tmp_mask"
 }
 
 
