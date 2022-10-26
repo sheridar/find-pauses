@@ -1022,7 +1022,7 @@ create_cor_plots <- function(df_in, x, y, clr = "red", pt_size = 1, out_size = 1
   
   res <- df_in %>%
     mutate(
-      corr = cor(!!sym(x), !!sym(y)),
+      corr = cor(log10(!!sym(x)), log10(!!sym(y))),
       corr = str_c(n, "\nr = ", round(corr, 2))
     ) %>%
     
