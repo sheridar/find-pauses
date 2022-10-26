@@ -1,0 +1,79 @@
+
+```{r "Packages", include = FALSE, cache = FALSE}
+
+source(here::here(params$template_dir, "funs.R"))
+
+# Install CRAN packages
+pcks <- c(
+  "ensembldb",      "Gviz",
+  "knitr",          "cowplot",
+  "tidyverse",      "Matrix",
+  "devtools",       "ggseqlogo",
+  "patchwork",      "colorspace",
+  "here",           "vroom",
+  "valr",           "fastcluster",
+  "scales",         "broom",
+  "colorblindr",    "ggbeeswarm",
+  "gprofiler2",     "ggrepel",
+  "ggpointdensity", "yaml",
+  "ComplexHeatmap", "bedr"
+)
+
+purrr::walk(pcks, library, character.only = TRUE)
+
+# Set default chunk options
+opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE,
+  comment = "",
+  echo    = FALSE,
+  dpi     = 150,
+  cache   = TRUE,
+  cache.lazy = FALSE
+)
+
+```
+
+```{r "configs", cache = FALSE}
+
+yml <- here(params$template_dir, params$config)
+
+plot_grps <- read_yaml(yml)
+
+```
+
+```{r "Theme", cache = FALSE}
+
+txt_mplyr <- 1.5
+
+ttl_pt <- 10 * txt_mplyr
+txt_pt <- 8  * txt_mplyr
+ln_pt  <- 0.5
+
+theme_info <- theme_cowplot() +
+  theme(
+    plot.title       = element_text(face = "plain"),
+    strip.background = element_rect(fill = NA),
+    legend.title     = element_text(size = ttl_pt),
+    legend.text      = element_text(size = ttl_pt),
+    strip.text       = element_text(size = ttl_pt),
+    axis.title       = element_text(size = ttl_pt),
+    axis.text        = element_text(size = txt_pt),
+    axis.line        = element_blank(),
+    panel.border     = element_rect(fill = NA, color = "black", size = ln_pt),
+    axis.ticks       = element_line(size = ln_pt, color = "black")
+    # axis.line        = element_line(color = "grey90"),
+    # axis.ticks       = element_line(color = "grey90")
+  )
+
+theme_colors <- c(
+  "#225ea8",  # blue
+  "#e31a1c",  # red
+  "#238443",  # green
+  "#ec7014",  # orange
+  "#8c6bb1",  # purple
+  "#737373",  # grey
+  "#41b6c4"   # aqua
+)
+
+```

@@ -1,0 +1,32 @@
+### Sample information ###
+# The top level name should be the desired section name for the knitted document.
+# The file prefixes should then be grouped based on subsampling group, with
+# the names corresponding to the subsampling group name.
+# Each file prefix should be given a name that will be shown on the plot. The
+# name should include the replicate label at the end separated by an
+# underscore.
+#
+# section_name:
+#   group-name-1:
+#     sample-1_r1: sample_1_file_prefix_r1
+#     sample-2_r1: sample_2_file_prefix_r1
+# 
+#   group-name-2:
+#     sample-1_r2: sample_1_file_prefix_r2
+#     sample-2_r2: sample_2_file_prefix_r2
+#
+
+samples:
+  Xrn2:
+    xrn2-r2:
+      Xrn2-WT_r2: "293flpin_Xrn2_WT_R2"
+      Xrn2-MT_r2: "293flpin_Xrn2_MT_R2"
+
+    xrn2-r3:
+      Xrn2-WT_r3: "293flpin_Xrn2_WT_R3"
+      Xrn2-MT_r3: "293flpin_Xrn2_MT_R3"
+
+    xrn2-r4:
+      Xrn2-WT_r4: "293flpin_Xrn2_WT_R4"
+      Xrn2-MT_r4: "293flpin_Xrn2_MT_R4"
+
