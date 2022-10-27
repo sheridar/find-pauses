@@ -8,13 +8,13 @@ fq_sum     <- str_c(stats_dir, proj, "_fastqc.tsv")
 trim_sum   <- str_c(stats_dir, proj, "_cutadapt.tsv")
 bwt_sum    <- str_c(stats_dir, proj, "_bowtie.tsv")
 dedup_sum  <- str_c(stats_dir, proj, "_dedup.tsv")
-counts_sum <- str_c(res_dir, "/", proj, "_featureCounts.tsv")
+counts_sum <- here(str_c(res_dir, "/", proj, "_featureCounts.tsv"))
 filt_sum   <- str_c(stats_dir, proj, "_filt.tsv")
 sub_sum    <- str_c(stats_dir, proj, "_subsample.tsv")
 sub_sum    <- str_c(stats_dir, proj, "_subsample.tsv")
 
-pause_sum  <- str_c(stats_dir, proj, "_", params$pause_win)
-pause_sum  <- str_c(pause_sum, params$pause_strength, "pausing.tsv")
+pause_sum  <- str_c(stats_dir, proj, "_", plot_params$pause_win)
+pause_sum  <- str_c(pause_sum, plot_params$pause_strength, "pausing.tsv")
 
 # Sample names
 qc_sams <- plot_grps$samples %>%
@@ -72,7 +72,7 @@ qc_theme <- theme(
 
 # Some sample names are missing part of the fastq file name
 # need to match samples with fastq files
-fq_sfx <- "_S[0-9]+_L[0-9]+_R[12]_[0-9]+.fastq.gz$"
+fq_sfx <- "(_S[0-9]+_L[0-9]+|)_R[12]_[0-9]+.fastq.gz$"
 
 fq_sum <- fq_sum %>%
   vroom(col_names = c("value", "metric", "path")) %>%

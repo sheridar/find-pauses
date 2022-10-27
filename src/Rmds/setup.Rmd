@@ -1,14 +1,12 @@
 
 ```{r "Packages", include = FALSE, cache = FALSE}
 
-source(here::here(params$template_dir, "funs.R"))
-
-# Install CRAN packages
+# Load packages
 pcks <- c(
   "ensembldb",      "Gviz",
   "knitr",          "cowplot",
   "tidyverse",      "Matrix",
-  "devtools",       "ggseqlogo",
+  "ggseqlogo",
   "patchwork",      "colorspace",
   "here",           "vroom",
   "valr",           "fastcluster",
@@ -16,7 +14,7 @@ pcks <- c(
   "colorblindr",    "ggbeeswarm",
   "gprofiler2",     "ggrepel",
   "ggpointdensity", "yaml",
-  "ComplexHeatmap", "bedr"
+  "bedr"
 )
 
 purrr::walk(pcks, library, character.only = TRUE)
@@ -32,13 +30,8 @@ opts_chunk$set(
   cache.lazy = FALSE
 )
 
-```
-
-```{r "configs", cache = FALSE}
-
-yml <- here(params$template_dir, params$config)
-
-plot_grps <- read_yaml(yml)
+# Read functions
+source(here::here(plot_params$template_dir, "funs.R"))
 
 ```
 
@@ -77,3 +70,112 @@ theme_colors <- c(
 )
 
 ```
+
+```{r "sample names", echo = FALSE}
+
+# Directories
+if (!dir.exists(here(plot_params$obj_dir))) {
+  dir.create(here(plot_params$obj_dir), recursive = TRUE, mode = "0750")
+}
+
+if (!dir.exists(here(plot_params$tab_dir))) {
+  dir.create(here(plot_params$tab_dir), recursive = TRUE, mode = "0750")
+}
+
+# Check sample parameters
+sections <- names(plot_grps$samples)
+colors   <- names(plot_grps$colors)
+
+if (!all(sections %in% colors)) {
+  need <- sections[!sections %in% colors]
+  
+  stop("Colors were not provided for all samples: ", str_c(need, collapse = ", "))
+}
+
+# Create data.frame with sample info
+sample_df <- plot_grps$samples %>%
+  imap_dfr(~ {
+    plt_grp <- .y
+    clrs    <- plot_grps$colors[[plt_grp]]
+    
+    imap_dfr(.x, ~ {
+      grp <- .y
+      
+      sam_clrs <- set_names(clrs, names(.x))
+      
+      imap_dfr(.x, ~ {
+        sam <- .y
+        
+        map_dfr(.x, ~ {
+          file <- .x
+          
+          tibble(
+            sampling_grp = grp,
+            plot_grp     = plt_grp,
+            sample       = sam,
+            file         = file,
+            clr          = sam_clrs[[sam]]
+          )
+        })
+      })
+    })
+  })
+
+sample_df <- sample_df %>%
+  separate(sample, into = c("sam", "rep"), sep = "_", remove = FALSE)
+
+# Columns for bed files
+bed_cols <- c(
+  "chrom", "start", 
+  "end",   "name", 
+  "score", "strand"
+)
+
+win_cols <- c(bed_cols, "counts")
+win_cols[5] <- "win_id"
+
+# Genome files
+genome <- read_tsv(
+  file.path(plot_params$ref_dir, plot_params$genome),
+  col_names = c("chrom", "size")
+)
+
+fa <- here(plot_params$ref_dir, plot_params$fasta)
+
+# Gene lists and filter based on length
+load_genes <- function(drctry, file, len = 1, rm_cols = TRUE) {
+  res <- here(drctry, file) %>%
+    read_tsv(col_names = bed_cols) %>%
+    mutate(gene_len = (end - start) / 1000) %>%
+    filter(gene_len > len)
+  
+  if (rm_cols) {
+    res <- res %>%
+      select(name, gene_len)
+  }
+  
+  res
+}
+
+list_dir <- file.path(plot_params$ref_dir, plot_params$list_dir)
+
+genes_5     <- load_genes(list_dir, plot_params$genes_5, 2)
+genes_3     <- load_genes(list_dir, plot_params$genes_3, 2)
+genes_pause <- load_genes(list_dir, plot_params$genes_pause, 2)
+
+genes_exons <- load_genes(
+  drctry  = list_dir,
+  file    = plot_params$genes_zone,
+  len     = 4,
+  rm_cols = FALSE
+)
+
+genes_zone  <- genes_exons %>%
+  select(name, gene_len)
+
+genes_exons <- genes_exons %>%
+  select(1:6)
+
+```
+
+

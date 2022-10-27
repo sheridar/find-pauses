@@ -9,10 +9,10 @@ sep_prfx   <- str_c("_", win, "_sep", stren)
 pause_prfx <- str_c("_", win, stren)
 
 # Pause zone output files
-out_file <- here(params$obj_dir, str_c(grp, pause_prfx, "pause_zones.tsv.gz"))
-tab_prfx <- here(params$tab_dir, str_c(grp, pause_prfx))
+out_file <- here(plot_params$obj_dir, str_c(grp, pause_prfx, "pause_zones.tsv.gz"))
+tab_prfx <- here(plot_params$tab_dir, str_c(grp, pause_prfx))
 
-find_zones <- !file.exists(out_file) || params$overwrite
+find_zones <- !file.exists(out_file) || plot_params$overwrite
 
 ```
 
@@ -526,7 +526,7 @@ types <- names(flatten(sfxs))
 sm_zone_wins <- sfxs %>%
   imap_dfr(~ {
     typ <- names(.x)
-    out <- here(params$obj_dir, str_c(grp, "_pause_zones_", typ, "_5_10bp.tsv.gz"))
+    out <- here(plot_params$obj_dir, str_c(grp, "_pause_zones_", typ, "_5_10bp.tsv.gz"))
     
     prfxs <- names(eval(sym(.y)))
     paths <- eval(sym(.y))
@@ -539,7 +539,7 @@ sm_zone_wins <- sfxs %>%
       genes     = g_z,               # Genes to filter
       
       file_out  = out,               # Path to output file
-      overwrite = params$overwrite,  # Overwrite output file if it exists
+      overwrite = plot_params$overwrite,  # Overwrite output file if it exists
       col_names = win_cols,          # Column names for bed files
       win_len   = 10,                # Expected length of each window
       ref_win   = 201,               # Reference window for adjusting window ids

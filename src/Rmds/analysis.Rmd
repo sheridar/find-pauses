@@ -14,145 +14,23 @@ output:
     highlight:      "tango"
 
 params:
-  overwrite:         false                                                                # Overwrite saved R objects
-  template_dir:      "src/Rmds"                                                           # Directory containing Rmd templates
-  res_dir:           "results"                                                            # Results directory
-  obj_dir:           "results/objects"                                                    # Directory to save R objects
-  tab_dir:           "results/tables"                                                     # Directory to save tables
-  ref_dir:           "/beevol/home/sheridanr/ref"                                         # Reference directory
-  list_dir:          "gene_lists/GRCh38"                                                  # Gene list directory from ref_dir path
-  genome:            "genome/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa.fai" # Chromosome sizes
-  fasta:             "genome/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa"     # Fasta for pulling sequences
-  genes_all:         "base_lists/GRCh38_HCT116_genes.bed.gz"
-  genes_5:           "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for 5' metaplots
-  genes_3:           "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for 3' metaplots
-  genes_zone:        "base_lists/GRCh38_2ksep.bed.gz"                                     # Gene list for pausing zone plots
-  genes_pause:       "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for pause metaplots and sequence logos
-  
-  exons:             "/splicing_lists/GRCh38_exons.bed.gz"                                # Bed file containing exon coordinates
-  trxn_info:         "/base_lists/base_gene_files/GRCh38_transcripts.bed.gz"              # Bed file containing transcript info to use for filtering exons
-  
-  gene_min_pct:      0.1                                                                  # Fraction of lowest expressing genes to exclude
-  pause_strength:    "_strong_"                                                           # Pause strength label to use for loading input files
-  pause_win:         200                                                                  # Pause window label to use for loading input files
-  subsample_regions: ["gene", "tss", "body"]
-  
-  pause_lims:        [0, 1]                                                               # Min pauses for filtering TSS boxplots (1st value) and scatter plots (2nd value)
-  tss_lim:           1                                                                    # Min number of raw reads for TSS boxplots
-  body_lim:          1                                                                    # Min number of reads/kb for gene body region
-  only_shared:       true                                                                 # Only include genes in TSS boxplots that have data for all regions
+  config: "plots.yaml"
 ---
 
 ---
 
-`r knitr::knit_child(here::here(params$template_dir, "setup.Rmd"))`
+```{r "plotting parameters"}
 
-```{r "setup", echo = FALSE}
+# Set plotting parameters
+yml <- here::here(params$config)
 
-# Directories
-res_dir <- here(params$res_dir)
+plot_grps   <- yaml::read_yaml(yml)
+plot_params <- plot_grps$params
 
-if (!dir.exists(here(params$obj_dir))) {
-  dir.create(here(params$obj_dir), recursive = TRUE, mode = "0750")
-}
+plot_params$obj_dir <- file.path(res_dir, plot_params$obj_dir)
+plot_params$tab_dir <- file.path(res_dir, plot_params$tab_dir)
 
-if (!dir.exists(here(params$tab_dir))) {
-  dir.create(here(params$tab_dir), recursive = TRUE, mode = "0750")
-}
-
-# Check sample parameters
-sections <- names(plot_grps$samples)
-colors   <- names(plot_grps$colors)
-
-if (!all(sections %in% colors)) {
-  need <- sections[!sections %in% colors]
-  
-  stop("Colors were not provided for all samples: ", str_c(need, collapse = ", "))
-}
-
-# Create data.frame with sample info
-sample_df <- plot_grps$samples %>%
-  imap_dfr(~ {
-    plt_grp <- .y
-    clrs    <- plot_grps$colors[[plt_grp]]
-    
-    imap_dfr(.x, ~ {
-      grp <- .y
-      
-      sam_clrs <- set_names(clrs, names(.x))
-      
-      imap_dfr(.x, ~ {
-        sam <- .y
-        
-        map_dfr(.x, ~ {
-          file <- .x
-          
-          tibble(
-            sampling_grp = grp,
-            plot_grp     = plt_grp,
-            sample       = sam,
-            file         = file,
-            clr          = sam_clrs[[sam]]
-          )
-        })
-      })
-    })
-  })
-
-sample_df <- sample_df %>%
-  separate(sample, into = c("sam", "rep"), sep = "_", remove = FALSE)
-
-# Columns for bed files
-bed_cols <- c(
-  "chrom", "start", 
-  "end",   "name", 
-  "score", "strand"
-)
-
-win_cols <- c(bed_cols, "counts")
-win_cols[5] <- "win_id"
-
-# Genome files
-genome <- read_tsv(
-  file.path(params$ref_dir, params$genome),
-  col_names = c("chrom", "size")
-)
-
-fa <- here(params$ref_dir, params$fasta)
-
-# Gene lists and filter based on length
-load_genes <- function(drctry, file, len = 1, rm_cols = TRUE) {
-  res <- here(drctry, file) %>%
-    read_tsv(col_names = bed_cols) %>%
-    mutate(gene_len = (end - start) / 1000) %>%
-    filter(gene_len > len)
-  
-  if (rm_cols) {
-    res <- res %>%
-      select(name, gene_len)
-  }
-  
-  res
-}
-
-list_dir <- file.path(params$ref_dir, params$list_dir)
-
-genes_5     <- load_genes(list_dir, params$genes_5, 2)
-genes_3     <- load_genes(list_dir, params$genes_3, 2)
-genes_pause <- load_genes(list_dir, params$genes_pause, 2)
-
-genes_exons <- load_genes(
-  drctry  = list_dir,
-  file    = params$genes_zone,
-  len     = 4,
-  rm_cols = FALSE
-)
-
-genes_zone  <- genes_exons %>%
-  select(name, gene_len)
-
-genes_exons <- genes_exons %>%
-  select(1:6)
+knitr::knit(here::here(plot_params$template_dir, "setup.Rmd"), "")
 
 ```
 
@@ -168,7 +46,7 @@ ex_cols <- c(
 )
 
 exons <- read_tsv(
-  str_c(list_dir, params$exons),
+  str_c(list_dir, plot_params$exons),
   col_names = ex_cols
 )
 
@@ -182,7 +60,7 @@ tx_cols <- c(
   "txn_id", "support"
 )
   
-tx_info <- here(list_dir, params$trxn_info) %>%
+tx_info <- here(list_dir, plot_params$trxn_info) %>%
   read_tsv(col_names = tx_cols) %>%
   select(txn_id, support)
 
@@ -245,12 +123,12 @@ exon_lens <- exon_lens %>%
 
 # Quality Control
 
-`r knitr::knit_child(here(params$template_dir, "qc-template.Rmd"))`
+`r knitr::knit_child(here(plot_params$template_dir, "qc-template.Rmd"))`
 
 ```{r "build chunks"}
 
 # Create list of chunks
-template <- here(params$template_dir, "analysis-template.Rmd")
+template <- here(plot_params$template_dir, "analysis-template.Rmd")
 
 chunks <- names(plot_grps$samples) %>%
   map(~ knit_expand(template))
@@ -267,7 +145,7 @@ chunks <- names(plot_grps$samples) %>%
 
 # Gene coordinates
 genes_all <- read_tsv(
-  file.path(params$ref_dir, params$list_dir, params$genes_all),
+  file.path(plot_params$ref_dir, plot_params$list_dir, plot_params$genes_all),
   col_names = bed_cols
 )
 

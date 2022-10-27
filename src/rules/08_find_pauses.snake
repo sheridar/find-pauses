@@ -15,7 +15,7 @@ rule find_pauses:
         job_name = "{sample}_{win}_find_pauses",
         memory   = 32,
         genes    = GENES,
-        mask     = MASK_REGION,
+        mask     = MASK,
         chroms   = CHROMS
     log:
         out = RESULTS + "/logs/{sample}_{win}_pauses.out",

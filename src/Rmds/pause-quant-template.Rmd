@@ -11,12 +11,12 @@ pause_prfx <- str_c("_", win, stren)
 
 # Minimum number of pauses to use for filtering TSS boxplots and scatter plots
 # First number is for boxplots, second number is for scatter plots
-PAUSE_LIM <- params$pause_lims
+PAUSE_LIM <- plot_params$pause_lims
 
 # Cutoffs for filtering TSS regions and body region for boxplots
-TSS_LIM     <- params$tss_lim      # raw number of reads
-BODY_LIM    <- params$body_lim     # reads / kb
-ONLY_SHARED <- params$only_shared  # include only shared genes
+TSS_LIM     <- plot_params$tss_lim      # raw number of reads
+BODY_LIM    <- plot_params$body_lim     # reads / kb
+ONLY_SHARED <- plot_params$only_shared  # include only shared genes
 
 ```
 

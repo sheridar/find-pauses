@@ -623,7 +623,7 @@ load_merge_wins <- function(prfxs, sfxs, paths, group, genes = NULL, file_out = 
 }
 
 # Helper to load gene region bed files
-load_region_beds <- function(sam, reg, genes = NULL, dat_dir = params$res_dir, prfx = "_",
+load_region_beds <- function(sam, reg, genes = NULL, dat_dir = res_dir, prfx = "_",
                              col_names = c("chrom", "start", "end", "name", "score", "strand", "counts")) {
   
   create_path <- function(bed_dir, type, sfx) {
@@ -2255,8 +2255,8 @@ create_browser <- function(bgs, gene, genes_df, genes_db, track_clrs,
   res
 }
 
-.get_zones <- function(plt_grps, genes_df, results_dir = params$obj_dir,
-                       prefix = str_c("_", params$pause_win, params$pause_strength)) {
+.get_zones <- function(plt_grps, genes_df, results_dir = plot_params$obj_dir,
+                       prefix = str_c("_", plot_params$pause_win, plot_params$pause_strength)) {
   
   # Load pausing zones
   res <- unique(plt_grps) %>%

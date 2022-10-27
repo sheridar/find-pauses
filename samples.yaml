@@ -7,14 +7,25 @@ PROJ:
     "Xrn2"
 
 
-# Regions to use for subsampling reads
-# The samples in each group will be subsampled to the same read depth for
-# the provided regions. These files should be bed files with the regions
-# containing the regions to use for each gene.
-GENE_SUBSAMPLE_BEDS:
-    tss:  "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_TSS_+500bp.bed.gz"
-    body: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_4_+500bp_pAS.bed.gz"
-    gene: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/base_lists/GRCh38_4_TSS_pAS.bed.gz"
+# Directories containing fastq files, this can be a relative path.
+# Multiple directories can be provided. The sample names must correspond
+# to the begining of the fastq name.
+RAW_DATA:
+    - "/beevol/home/bentleyd/fastq/220218_A00405_0531_BH352HDRX2"
+
+
+# Directory to store results
+RESULTS:
+    "results"
+
+
+# Specify base URL and destination to transfer bigwigs
+# UPDATE THESE
+URL:
+    "http://amc-sandbox.ucdenver.edu/User25/fong-spt5"
+
+SSH:
+    "sheridanr@amc-sandbox:~/public_html/fong-spt5"
 
 
 # Sample groups to use for subsampling, use the following format. The

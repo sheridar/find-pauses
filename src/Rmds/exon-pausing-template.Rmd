@@ -25,7 +25,7 @@ n_sams <- length(sam_nms)
 clrs <- set_names(clrs, sam_nms)
 
 # Output files to save
-out_file <- here(params$obj_dir, str_c(sam_grp, "_exon_pausing.tsv.gz"))
+out_file <- here(plot_params$obj_dir, str_c(sam_grp, "_exon_pausing.tsv.gz"))
 
 merge_windows <- !file.exists(out_file)
 
@@ -266,7 +266,7 @@ sfxs <- c(
   "3' ss" = "_3ss-wins_S_N.bed.gz"
 )
 
-out <- here(params$obj_dir, str_c(sam_grp, "_ss.rds"))
+out <- here(plot_params$obj_dir, str_c(sam_grp, "_ss.rds"))
 
 # Load windows do not filter low signal sites
 # This will include sites that only have signal in one sample

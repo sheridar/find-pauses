@@ -6,8 +6,8 @@ grp     <- "{{.x}}"
 samples <- plot_grps$samples[[grp]]
 clrs    <- plot_grps$colors[[grp]]
 
-win   <- params$pause_win
-stren <- params$pause_strength
+win   <- plot_params$pause_win
+stren <- plot_params$pause_strength
 
 pause_prfx <- str_c("_", win, stren)
 
@@ -36,7 +36,7 @@ con_sams <- samples %>%
 con_sams <- sam_lnms[con_sams]
 
 # Subsample sample names
-sub_regs <- set_names(params$subsample_regions)
+sub_regs <- set_names(plot_params$subsample_regions)
 
 sub_sams <- sub_regs %>%
   map(~ str_c(sams, "_", .x))
@@ -129,7 +129,7 @@ templates <- c(
   quant = "pause-quant-template.Rmd",
   zone  = "pause-zone-template.Rmd"
 ) %>%
-  map_chr(~ here(params$template_dir, .x))
+  map_chr(~ here(plot_params$template_dir, .x))
 
 chunks <- templates %>%
   map(~ {
@@ -181,7 +181,7 @@ gene_coords <- paths %>%
 # genes based on signal
 genes <- gene_coords %>%
   mutate(pct = percent_rank(counts)) %>%
-  filter(counts > 0 & pct > params$gene_min_pct) %>%
+  filter(counts > 0 & pct > plot_params$gene_min_pct) %>%
   dplyr::select(name, counts)
 
 g_5 <- genes_5 %>%
@@ -210,7 +210,7 @@ sam_df %>%
 Mean mNET-seq signal (top) or mean relative signal (bottom) is shown below for 5' (10 bp bins) and 3' regions (50 bp bins).
 
 * genes >2 kb long and separated by >5 kb
-* bottom `r params$gene_min_pct * 100`% of genes were removed
+* bottom `r plot_params$gene_min_pct * 100`% of genes were removed
 
 ```{r "{{.x}} 5' mean"}
 
@@ -220,7 +220,7 @@ sfxs <- c(
   "anti-sense" = "_5-10bp_AS_N.bed.gz"
 )
 
-out <- here(params$obj_dir, str_c(grp, "_NET_5_10bp.tsv.gz"))
+out <- here(plot_params$obj_dir, str_c(grp, "_NET_5_10bp.tsv.gz"))
 
 merge_5 <- load_merge_wins(
   prfxs     = names(meta_dir),   # Sample names
@@ -230,7 +230,7 @@ merge_5 <- load_merge_wins(
   genes     = g_5,               # Genes to filter
   
   file_out  = out,               # Path to output file
-  overwrite = params$overwrite,  # Overwrite output file if it exists
+  overwrite = plot_params$overwrite,  # Overwrite output file if it exists
   col_names = win_cols,          # Column names for bed files
   win_num   = 800,               # Total number of expected windows (including sense + anti)
   ref_win   = 201,               # Reference window for adjusting window ids
@@ -259,7 +259,7 @@ sfxs <- c(
   "anti-sense" = "_3-50bp_AS_N.bed.gz"
 )
 
-out <- here(params$obj_dir, str_c(grp, "_NET_3_50bp.tsv.gz"))
+out <- here(plot_params$obj_dir, str_c(grp, "_NET_3_50bp.tsv.gz"))
 
 merge_3 <- load_merge_wins(
   prfxs     = names(meta_dir),   # Sample list with group as name
@@ -269,7 +269,7 @@ merge_3 <- load_merge_wins(
   genes     = g_3,               # Genes to filter
   
   file_out  = out,               # Path to output file
-  overwrite = params$overwrite,  # Overwrite output file if it exists
+  overwrite = plot_params$overwrite,  # Overwrite output file if it exists
   col_names = win_cols,          # Column names for bed files
   win_num   = 400,               # Total number of expected windows (including sense + anti)
   ref_win   = 100,               # Reference window for adjusting window ids
@@ -346,41 +346,6 @@ create_meta_fig(
   se_clmn   = se,
   plot_ttl  = "relative eNET-seq signal"
 )
-
-```
-
-```{r "{{.x}} ANTISENSE TEST", eval = FALSE}
-
-strand_class <- merge_3 %>%
-  filter(
-    win_dist > 0,
-    win_dist < 3,
-    sample == sams[1]
-  ) %>%
-  group_by(sample, name, type) %>%
-  summarize(
-    counts  = sum(counts),
-    .groups = "drop"
-  ) %>%
-  pivot_wider(names_from = "type", values_from = "counts") %>%
-  mutate(
-    class = ifelse(sense > `anti-sense`, "sense", "anti"),
-    rat   = `anti-sense` / sense
-  ) %>%
-  select(name, class, rat)
-
-plt_dat <- merge_3 %>%
-  left_join(strand_class, by = "name")
-
-plt_dat %>%
-  group_by(sample, type, class, win_dist) %>%
-  summarize(counts = mean(counts), .groups = "drop") %>%
-  mutate(counts = ifelse(type == "sense", counts, counts * -1)) %>%
-  
-  ggplot(aes(win_dist, counts, color = sample, alpha = type)) +
-  geom_line() +
-  scale_alpha_manual(values = c(0.5, 1)) +
-  facet_wrap(~ class, scales = "free_y")
 
 ```
 
@@ -646,7 +611,7 @@ meta_exons <- exons %>%
 # Load and merge bed files
 sfxs <- c("sense" = "_5ss-wins_S_N.bed.gz")
 
-out <- here(params$obj_dir, str_c(grp, "_NET_5ss.tsv.gz"))
+out <- here(plot_params$obj_dir, str_c(grp, "_NET_5ss.tsv.gz"))
 
 merge_5ss <- load_merge_wins(
   prfxs     = names(meta_dir),   # Sample names
@@ -655,7 +620,7 @@ merge_5ss <- load_merge_wins(
   group     = grp,               # Group name
   
   file_out  = out,               # Path to output file
-  overwrite = params$overwrite,  # Overwrite output file if it exists
+  overwrite = plot_params$overwrite,  # Overwrite output file if it exists
   col_names = win_cols,          # Column names for bed files
   win_num   = 100,
   win_len   = 1,

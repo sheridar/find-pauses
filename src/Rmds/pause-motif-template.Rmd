@@ -548,7 +548,7 @@ Mean mNET-seq signal is shown below for pause sites identified for TSS (TSS - +5
 
 # Load and merge bed files
 sfxs <- c("sense" = str_c(pause_prfx, "pauses_meta_N.bed.gz"))
-out  <- here(params$obj_dir, str_c(grp, str_c(pause_prfx, "pauses_meta.tsv.gz")))
+out  <- here(plot_params$obj_dir, str_c(grp, str_c(pause_prfx, "pauses_meta.tsv.gz")))
 
 merge_p <- load_merge_wins(
   prfxs         = names(p_dir),      # Sample names
@@ -557,7 +557,7 @@ merge_p <- load_merge_wins(
   group         = grp,               # Group name
   
   file_out      = out,               # Path to output file
-  overwrite     = params$overwrite,  # Overwrite output file if it exists
+  overwrite     = plot_params$overwrite,  # Overwrite output file if it exists
   col_names     = win_cols,          # Column names for bed files
   filter_unique = FALSE,             # Remove genes that are not shared between all samples
   win_num       = 100,               # Total number of expected windows (including sense + anti)

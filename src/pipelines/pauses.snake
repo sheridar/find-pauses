@@ -7,13 +7,13 @@ shell.prefix("set -o nounset -o pipefail -o errexit -x; ")
 
 
 # Parameters from config.yaml
-PROJ        = config["PROJ"]
-SAMPLES     = config["SAMPLES"]
-RESULTS     = config["RESULTS"]
-CHROMS      = config["CHROMS"]
-GENES       = config["GENES"]
-MASK_REGION = config["MASK_REGION"]
-MASK_REGION = ",".join(MASK_REGION)
+PROJ    = config["PROJ"]
+SAMPLES = config["SAMPLES"]
+RESULTS = config["RESULTS"]
+CHROMS  = config["CHROMS"]
+GENES   = config["GENES"]
+MASK    = config["MASK"]
+MASK    = ",".join(MASK)
 
 WIN_SIZE        = config["WIN_SIZE"]
 STRENGTH_GROUPS = config["STRENGTH_GROUPS"]
