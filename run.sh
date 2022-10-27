@@ -39,7 +39,7 @@ run_snakemake() {
 
 # Run pipeline to process mNET-seq reads
 pipe_dir=src/pipelines
-samples=samples.yaml
+samples=SAMPLES.yaml
 
 snake=$pipe_dir/NETseq.snake
 config=NETseq.yaml

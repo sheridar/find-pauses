@@ -2,9 +2,15 @@
 
 The analysis workflow is composed of two separate snakemake pipelines, one
 to perform the initial processing steps and the other to identify pause
-sites. To run, specify sample names in the samples.yaml config file, and
-workflow parameters in the NETseq.yaml and pauses.yaml config files. Run
-the pipelines using the run.sh script.
+sites. Workflow settings can be modified with the NETseq.yaml and
+pauses.yaml config files.
+
+To run:
+
+1. Specify sample names and directory paths using the SAMPLE.yaml config file
+2. Specify sample groups and colors for plotting using the PLOTS.yaml
+  config file
+3. Run the pipeline by submitting the run.sh script through bsub
 
 ### Processing
 
@@ -27,4 +33,6 @@ the pipelines using the run.sh script.
 2. Filter for strong pauses
 3. Identify reads that align to pauses
 4. Generate bed files for metaplots
+5. Create summary plots
+
 
