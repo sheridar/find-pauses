@@ -21,7 +21,6 @@ RESULTS:
 
 
 # Specify base URL and destination to transfer bigwigs
-# UPDATE THESE
 URL:
     "http://amc-sandbox.ucdenver.edu/User25/fong-spt5"
 
