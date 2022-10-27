@@ -7,9 +7,9 @@
 # underscore.
 #
 # section_name:
-#   group-name-1:
-#     sample-1_r1: sample_1_file_prefix_r1
-#     sample-2_r1: sample_2_file_prefix_r1
+#   group-name-1:                           # the group name should match the subsampling group name
+#     sample-1_r1: sample_1_file_prefix_r1  # the root sample names should be the same between subsampling groups
+#     sample-2_r1: sample_2_file_prefix_r1  # the replicate (_r#) should be included at the end of each sample name
 # 
 #   group-name-2:
 #     sample-1_r2: sample_1_file_prefix_r2
@@ -30,7 +30,11 @@ samples:
       Xrn2-MT_r4: "293flpin_Xrn2_MT_R4"
 
 
-# Plotting colors
+# Plot colors
+# 
+# For each section, a color must be provided for each sample name, in this
+# example we have two samples (Xrn2-WT and Xrn2-MT), so we must list two
+# colors
 colors:
   Xrn2: ["black", "#4DB4C2"]
 
