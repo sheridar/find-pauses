@@ -14,7 +14,7 @@ output:
     highlight:      "tango"
 
 params:
-  config: "plots.yaml"
+  config: "PLOTS.yaml"
 ---
 
 ---
