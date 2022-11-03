@@ -12,7 +12,6 @@ PROJ:
 # to the begining of the fastq name.
 RAW_DATA:
     - "/beevol/home/bentleyd/fastq/220218_A00405_0531_BH352HDRX2"
-    - "path/to/another/directory"
 
 
 # Directory to store results
