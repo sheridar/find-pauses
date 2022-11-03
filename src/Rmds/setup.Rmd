@@ -19,17 +19,6 @@ pcks <- c(
 
 purrr::walk(pcks, library, character.only = TRUE)
 
-# Set default chunk options
-opts_chunk$set(
-  message = FALSE, 
-  warning = FALSE,
-  comment = "",
-  echo    = FALSE,
-  dpi     = 150,
-  cache   = TRUE,
-  cache.lazy = FALSE
-)
-
 # Read functions
 source(here::here(plot_params$template_dir, "funs.R"))
 

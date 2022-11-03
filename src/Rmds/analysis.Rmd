@@ -21,6 +21,17 @@ params:
 
 ```{r "plotting parameters"}
 
+# Set default chunk options
+opts_chunk$set(
+  message = FALSE, 
+  warning = FALSE,
+  comment = "",
+  echo    = FALSE,
+  dpi     = 150,
+  cache   = TRUE,
+  cache.lazy = FALSE
+)
+
 # Set plotting parameters
 yml <- here::here(params$config)
 
