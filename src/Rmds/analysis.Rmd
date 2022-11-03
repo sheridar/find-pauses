@@ -19,7 +19,7 @@ params:
 
 ---
 
-```{r "plotting parameters"}
+```{r "chunk opts"}
 
 # Set default chunk options
 knitr::opts_chunk$set(
@@ -31,6 +31,10 @@ knitr::opts_chunk$set(
   cache   = TRUE,
   cache.lazy = FALSE
 )
+
+```
+
+```{r "plotting parameters"}
 
 # Set plotting parameters
 yml <- here::here(params$config)
