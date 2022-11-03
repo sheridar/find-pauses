@@ -22,7 +22,7 @@ params:
 ```{r "plotting parameters"}
 
 # Set default chunk options
-opts_chunk$set(
+knitr::opts_chunk$set(
   message = FALSE, 
   warning = FALSE,
   comment = "",
