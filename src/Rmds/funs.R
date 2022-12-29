@@ -67,36 +67,6 @@ get_nlab_fun <- function(df_in, lab_col = NULL, nm = TRUE, sep = "\n") {
   res
 }
 
-# Load packages
-install_packages <- function(install_list, name_list = NULL, 
-                             install_cmd = "utils::install.packages", ...) {
-  
-  # If using devtools::install_github(), the package name will be different 
-  # from the repository name in install_list
-  if (is.null(name_list)) {
-    name_list <- install_list
-  }
-  
-  # Install packages
-  for (i in 1:length(install_list)) {
-    # require() returns TRUE invisibly if it was able to load package
-    if (!require(name_list[i], character.only = T)) {
-      
-      install_pkg <- strsplit(install_cmd, "::")[[1]][1]
-      
-      if (!require(install_pkg, character.only = T)) {
-        install.packages(install_pkg, dependencies = T, ...)
-        require(install_pkg)
-      }
-      
-      install_cmd <- paste0(install_cmd, "(install_list[i], ...)")
-      eval(parse(text = install_cmd))
-      
-      require(name_list[i], character.only = T)
-    }
-  }
-}
-
 # Remove paths and fastq info from sample names
 trim_path <- function(input_df, rm_str = NULL, file_col = "sample") {
   
