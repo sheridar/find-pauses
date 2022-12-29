@@ -1,29 +1,33 @@
-## mNET-seq analysis workflow
+# mNET-seq analysis workflow
 
 The analysis workflow is composed of two separate snakemake pipelines, one
-to perform the initial processing steps and the other to identify pause
+to perform the initial processing steps and another to identify pause
 sites. Workflow settings can be modified with the NETseq.yaml and
 pauses.yaml config files.
 
-### Running
+<br>
 
-#### Install R dependencies using renv
+## Running
+
+### Install R dependencies using renv
 
 1. Create a new repository using this template
 2. Clone to bodhi and navigate to the project directory
 3. Load R/4.0.3 and open R terminal
-4. Run `renv::restore()` to automatically download dependencies
+4. Follow the printed instructions to run `renv::restore()` and install dependencies
 
-#### Run pipelines
+### Run pipelines
 
 1. Specify sample names and directory paths using the SAMPLE.yaml config file
 2. Specify sample groups and colors for plotting using the PLOTS.yaml
   config file
 3. Run the pipeline by submitting the run.sh script through bsub
 
-### Workflow
+<br>
 
-#### Process reads
+## Workflow
+
+### Process reads
 
 1. Run FastQC
 1. Trim adapters
@@ -38,7 +42,7 @@ pauses.yaml config files.
 6. Generate bed files for metaplots
 7. Check subsampling output files
 
-#### Identify pauses
+### Identify pauses
 
 1. Find pauses using bedgraph files
 2. Filter for strong pauses
