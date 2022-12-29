@@ -2,22 +2,25 @@
 ```{r "Packages", include = FALSE, cache = FALSE}
 
 # Load packages
-pcks <- c(
-  "ensembldb",      "Gviz",
-  "knitr",          "cowplot",
-  "tidyverse",      "Matrix",
-  "ggseqlogo",
-  "patchwork",      "colorspace",
-  "here",           "vroom",
-  "valr",           "fastcluster",
-  "scales",         "broom",
-  "colorblindr",    "ggbeeswarm",
-  "gprofiler2",     "ggrepel",
-  "ggpointdensity", "yaml",
-  "bedr"
-)
-
-purrr::walk(pcks, library, character.only = TRUE)
+library(knitr)
+library(cowplot)
+library(tidyverse)
+library(Matrix)
+library(bedr)
+library(ggseqlogo)
+library(patchwork)
+library(colorspace)
+library(here)
+library(vroom)
+library(valr)
+library(fastcluster)
+library(scales)
+library(broom)
+library(gprofiler2)
+library(ggrepel)
+library(yaml)
+library(ggpointdensity)
+library(ggbeeswarm)
 
 # Read functions
 source(here::here(plot_params$template_dir, "funs.R"))
