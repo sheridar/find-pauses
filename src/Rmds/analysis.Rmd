@@ -23,12 +23,12 @@ params:
 
 # Set default chunk options
 knitr::opts_chunk$set(
-  message = FALSE, 
-  warning = FALSE,
-  comment = "",
-  echo    = FALSE,
-  dpi     = 150,
-  cache   = TRUE,
+  message    = FALSE, 
+  warning    = FALSE,
+  comment    = "",
+  echo       = FALSE,
+  dpi        = 150,
+  cache      = FALSE,
   cache.lazy = FALSE
 )
 
