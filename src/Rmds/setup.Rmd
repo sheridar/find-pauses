@@ -21,6 +21,9 @@ library(ggrepel)
 library(yaml)
 library(ggpointdensity)
 library(ggbeeswarm)
+library(ensembldb)   # Bioconductor
+library(Gviz)        # Bioconductor
+library(colorblindr) # github
 
 # Read functions
 source(here::here(plot_params$template_dir, "funs.R"))
@@ -47,8 +50,6 @@ theme_info <- theme_cowplot() +
     axis.line        = element_blank(),
     panel.border     = element_rect(fill = NA, color = "black", size = ln_pt),
     axis.ticks       = element_line(size = ln_pt, color = "black")
-    # axis.line        = element_line(color = "grey90"),
-    # axis.ticks       = element_line(color = "grey90")
   )
 
 theme_colors <- c(
