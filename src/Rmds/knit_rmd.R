@@ -1,4 +1,4 @@
-renv::use(lockfile = "../../../renv.lock")
+renv::use(lockfile = "renv.lock")
 
 library(rmarkdown)
 library(docopt)

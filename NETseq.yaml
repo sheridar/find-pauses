@@ -86,7 +86,7 @@ META_BEDS:
 # -t gene             - feature type for counting
 # -O                  - count if aligned to multiple features
 CMD_PARAMS:
-    cutadapt:      " --pair-filter=first --discard-untrimmed --minimum-length 20 -O 10 -a 'AACTGTAGGCACCATCAAT' -A 'GATCGTCGGACTGTAGAACTCTGAAC' "
+    cutadapt:      " --pair-filter=first --discard-untrimmed --minimum-length 15 -O 10 -a 'AACTGTAGGCACCATCAAT' -A 'GATCGTCGGACTGTAGAACTCTGAAC' "
     umi_pattern:   "NNNNNNNNNNNN"
     umi_tools:     " --method unique --read-length "
     featureCounts: " --extraAttributes 'gene_name,gene_biotype' -s 0 -t gene -O "
