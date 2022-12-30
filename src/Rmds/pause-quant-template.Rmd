@@ -41,7 +41,7 @@ get_box_data <- function(df_in, p_lim, tss_lim, body_lim, only_shared = FALSE) {
   
   res <- df_in %>%
     pivot_wider(names_from = "type", values_from = "counts") %>%
-    filter(
+    dplyr::filter(
       pauses >= p_lim,
       NET    >= ifelse(region == "body", 1, tss_lim),
       NET_kb >= ifelse(region == "body", body_lim, 0)
@@ -57,7 +57,7 @@ get_box_data <- function(df_in, p_lim, tss_lim, body_lim, only_shared = FALSE) {
     res <- res %>%
       pivot_wider(names_from = "region", values_from = "counts") %>%
       
-      filter(if_all(all_of(regs), ~ is.nan(.x) | !is.na(.x))) %>%
+      dplyr::filter(if_all(all_of(regs), ~ is.nan(.x) | !is.na(.x))) %>%
       
       pivot_longer(all_of(regs), names_to = "region", values_to = "counts")
   }
@@ -68,10 +68,10 @@ get_box_data <- function(df_in, p_lim, tss_lim, body_lim, only_shared = FALSE) {
   treats <- unique(res$treat)
   
   res <- res %>%
-    select(-sample) %>%
+    dplyr::select(-sample) %>%
     pivot_wider(names_from = "treat", values_from = "counts") %>%
     
-    filter(if_all(all_of(treats), ~ is.nan(.x) | !is.na(.x))) %>%
+    dplyr::filter(if_all(all_of(treats), ~ is.nan(.x) | !is.na(.x))) %>%
     
     pivot_longer(all_of(treats), names_to = "treat", values_to = "counts")
   
@@ -85,7 +85,7 @@ create_stat_boxes <- function(df_in, metric, by = c("rep", "type", "region"),
 
   # Check that same genes are present for all samples  
   dat <- df_in %>%
-    filter(type == metric) %>%
+    dplyr::filter(type == metric) %>%
     pivot_wider(names_from = "treat", values_from = "counts")
   
   if (any(!complete.cases(dat))) {
@@ -229,7 +229,7 @@ create_stat_vlns <- function(df_in, metric) {
   
   # Format plot data
   dat <- df_in %>%
-    filter(type == metric) %>%
+    dplyr::filter(type == metric) %>%
     
     group_by(rep, type, region, sub_reg) %>%
     mutate(
@@ -273,8 +273,8 @@ create_stat_vlns <- function(df_in, metric) {
 create_multistat_vlns <- function(df_in, metrics) {
   
   dat <- df_in %>%
-    filter(type %in% names(metrics)) %>%
-    select(-all_of(treats)) %>%
+    dplyr::filter(type %in% names(metrics)) %>%
+    dplyr::select(-all_of(treats)) %>%
     
     group_by(rep, type, region, sub_reg) %>%
     mutate(
@@ -441,13 +441,13 @@ gene_beds <- gene_beds %>%
 # * TSS region uses TSS subsampling data
 # * body region uses body subsampling data
 gene_df <- gene_beds$gene %>%
-  filter(!region %in% sub_regs)
+  dplyr::filter(!region %in% sub_regs)
 
 tss_df <- gene_beds$tss %>%
-  filter(region == "tss")
+  dplyr::filter(region == "tss")
 
 body_df <- gene_beds$body %>%
-  filter(region == "body")
+  dplyr::filter(region == "body")
 
 gene_beds <- bind_rows(gene_df, tss_df, body_df)
 
@@ -456,13 +456,13 @@ pause_stats <- gene_beds %>%
   pivot_wider(names_from = "type", values_from = "counts")
 
 chk1 <- pause_stats %>%
-  filter(pauses > 0 & (`p-reads` == 0 | NET == 0))  # regions with pauses but no pause reads
+  dplyr::filter(pauses > 0 & (`p-reads` == 0 | NET == 0))  # regions with pauses but no pause reads
 
 chk2 <- pause_stats %>%
-  filter(`p-reads` > NET)                           # region with more pause reads than total reads
+  dplyr::filter(`p-reads` > NET)                           # region with more pause reads than total reads
 
 chk3 <- pause_stats %>%                             # bad subsample region
-  filter(
+  dplyr::filter(
     (sub_reg == "tss" & sub_reg != region) |
     (sub_reg == "body" & sub_reg != region)
   )
@@ -476,9 +476,9 @@ stopifnot(
 # Calculate pausing stats
 # remove regions with 0 mNET-seq reads
 pause_stats <- pause_stats %>%
-  filter(NET > 0) %>%
+  dplyr::filter(NET > 0) %>%
   calc_pause_stats() %>%
-  select(-len, -sub_reg)
+  dplyr::select(-len, -sub_reg)
 
 metrics <- unique(pause_stats$type)
 
@@ -497,11 +497,11 @@ box_dat_0 <- pause_stats %>%
 if (ONLY_SHARED) {
   box_dat_1 <- box_dat_0 %>%
     pivot_wider(names_from  = "type", values_from = "counts") %>%
-    filter(pauses >= PAUSE_LIM[2]) %>%
+    dplyr::filter(pauses >= PAUSE_LIM[2]) %>%
     pivot_longer(all_of(metrics), names_to = "type", values_to = "counts") %>%
     
     pivot_wider(names_from = "treat", values_from = "counts") %>%
-    filter(if_all(all_of(treats), ~ !is.na(.x))) %>%
+    dplyr::filter(if_all(all_of(treats), ~ !is.na(.x))) %>%
     pivot_longer(all_of(treats), names_to = "treat", values_to = "counts")
   
 } else {
@@ -540,7 +540,7 @@ metric <- c("fraction pause reads" = "p-reads_NET")
 common_reps %>%
   map(~ {
     box_dat_0 %>%
-      filter(
+      dplyr::filter(
         !region %in% boxes_exclude_regs,
         rep == .x
       ) %>%
@@ -573,7 +573,7 @@ metric <- c("reads / pause" = "p-reads_pauses")
 common_reps %>%
   map(~ {
     box_dat_1 %>%
-      filter(
+      dplyr::filter(
         !region %in% boxes_exclude_regs,
         rep == .x
       ) %>%
@@ -603,7 +603,7 @@ The correlation between the fraction pause reads and total eNET-seq reads is sho
 treats %>%
   map(~ {
     box_dat_1 %>%
-      filter(
+      dplyr::filter(
         treat == .x,
         !region %in% c("tss", "body", "5-500bp-1kb")  # do not show all regions
       ) %>%
@@ -667,7 +667,7 @@ ex_int_beds <- ex_int_beds %>%
 # remove bottom 10%? Answer: the list was filtered to remove bottom 10% before
 # filtering to remove genes with 0 counts
 ex_int_beds <- ex_int_beds %>%
-  filter(txn_id %in% ex_int_txns) %>%
+  dplyr::filter(txn_id %in% ex_int_txns) %>%
   semi_join(g_z, by = c(gene_name = "name")) %>%
   mutate(region_class = ifelse(score == 1, "first", "body"))
 
@@ -678,7 +678,7 @@ get_ex_int_genes <- function(df_in, data_type, samples = unname(sam_nms), min_co
   reg_filt <- unique(df_in$region)
   
   res <- df_in %>%
-    filter(type == data_type) %>%
+    dplyr::filter(type == data_type) %>%
     group_by(sample, region, gene_name) %>%
     summarize(
       len     = sum((end - start) / 1000),
@@ -693,12 +693,12 @@ get_ex_int_genes <- function(df_in, data_type, samples = unname(sam_nms), min_co
     
   res <- res %>%
     group_by(sample, gene_name) %>%
-    filter(
+    dplyr::filter(
       all(counts > min_counts),
       all(reg_filt %in% region)
     ) %>%
     group_by(gene_name, region) %>%
-    filter(all(samples %in% sample)) %>%
+    dplyr::filter(all(samples %in% sample)) %>%
     ungroup()
   
   stopifnot(n_distinct(table(res$region)) == 1)
@@ -716,7 +716,7 @@ all_ex_int_genes <- ex_int_beds %>%
   )
 
 first_genes <- ex_int_beds %>%
-  filter(region_class == "first") %>%
+  dplyr::filter(region_class == "first") %>%
   get_ex_int_genes(
     data_type  = "pauses",
     min_counts = 0,
@@ -724,7 +724,7 @@ first_genes <- ex_int_beds %>%
   )
 
 body_genes <- ex_int_beds %>%
-  filter(region_class == "body") %>%
+  dplyr::filter(region_class == "body") %>%
   get_ex_int_genes(
     data_type  = "pauses",
     min_counts = 0,
@@ -767,7 +767,7 @@ sum_ex_int_counts <- function(df_in, sum_grps, n_grps, gene_list = NULL) {
   
   if (!is.null(gene_list)) {
     res <- res %>%
-      filter(gene_name %in% gene_list)
+      dplyr::filter(gene_name %in% gene_list)
   }
   
   res <- res %>%
@@ -801,7 +801,7 @@ all_dat <- ex_int_beds %>%
 
 # Plot data for first and body exons/introns
 first_dat <- ex_int_beds %>%
-  filter(score == 1) %>%
+  dplyr::filter(score == 1) %>%
   sum_ex_int_counts(
     sum_grps  = c(sum_grps, "region_class"),
     n_grps    = c(n_grps, "region_class"),
@@ -810,7 +810,7 @@ first_dat <- ex_int_beds %>%
   mutate(sample = fct_relevel(sample, sam_df$sample))
 
 body_dat <- ex_int_beds %>%
-  filter(score > 1) %>%
+  dplyr::filter(score > 1) %>%
   sum_ex_int_counts(
     sum_grps  = c(sum_grps, "region_class"),
     n_grps    = c(n_grps, "region_class"),
@@ -829,12 +829,12 @@ plot_ex_int_pauses <- function(df_in, y = "p-reads_NET", y_ttl = "fraction pause
                                p_grps = "sample", ...) {
   
   dat <- df_in %>%
-    filter(type == y)
+    dplyr::filter(type == y)
   
   # Add p-value labels
   if (p_lab) {
     lab_dat <- dat %>%
-      select(-len) %>%
+      dplyr::select(-len) %>%
       pivot_wider(names_from = "region", values_from = "counts") %>%
       group_by(!!!syms(c(p_grps, "n"))) %>%
       summarize(
@@ -916,13 +916,13 @@ create_ex_int_plots <- function(NET_kb_min = 0) {
   
   plt_dat <- res %>%
     pivot_wider(names_from = type, values_from = counts) %>%
-    filter(
+    dplyr::filter(
       gene_name %in% pause_ex_int_genes,
       NET / (len / 1000) > NET_kb_min
     ) %>%
     
     # group_by(sample, gene_name) %>%
-    # filter(all(names(regs) %in% region)) %>%
+    # dplyr::filter(all(names(regs) %in% region)) %>%
     # ungroup() %>%
     
     calc_pause_stats() %>%
@@ -936,7 +936,7 @@ create_ex_int_plots <- function(NET_kb_min = 0) {
   
   # Create violin plots
   vlns <- plt_dat %>%
-    filter(type == "p-reads_NET") %>%
+    dplyr::filter(type == "p-reads_NET") %>%
     ggplot(aes(region, counts, alpha = region, fill = treat)) +
     
     # geom_boxplot(fill = clrs, outlier.size = 0.5, outlier.alpha = 1) +
@@ -1004,13 +1004,13 @@ create_ex_int_plots <- function(NET_kb_min = 0) {
 calc_ex_int_p <- function(NET_kb_min) {
   plt_dat <- res %>%
     pivot_wider(names_from = type, values_from = counts) %>%
-    filter(
+    dplyr::filter(
       gene_name %in% pause_ex_int_genes,
       NET / (len / 1000) > NET_kb_min
     ) %>%
     
     # group_by(sample, gene_name) %>%
-    # filter(all(names(regs) %in% region)) %>%
+    # dplyr::filter(all(names(regs) %in% region)) %>%
     # ungroup() %>%
     
     calc_pause_stats() %>%
@@ -1023,8 +1023,8 @@ calc_ex_int_p <- function(NET_kb_min) {
     ungroup()
   
   plt_dat %>% 
-    select(-n, -len) %>%
-    filter(type %in% c("p-reads_NET")) %>%
+    dplyr::select(-n, -len) %>%
+    dplyr::filter(type %in% c("p-reads_NET")) %>%
     pivot_wider(names_from = region, values_from = counts) %>%
     group_by(sample) %>%
     summarize(p = tidy(wilcox.test(exons, introns))$p.value) %>%
@@ -1048,7 +1048,7 @@ df <- c(0, 10, 25, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 1000) %
 # 
 # plt_dat %>%
 #   pivot_wider(names_from = type, values_from = counts) %>%
-#   filter(pauses > 0) %>%
+#   dplyr::filter(pauses > 0) %>%
 #   ggplot(aes(NET_kb, `p-reads_NET`)) +
 #   geom_pointdensity() +
 #   scale_x_log10() +
@@ -1058,7 +1058,7 @@ df <- c(0, 10, 25, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 1000) %
 
 # # Plot other stats
 # plt_dat %>%
-#   filter(type %in% stats) %>%
+#   dplyr::filter(type %in% stats) %>%
 #   ggplot(aes(region, counts / (len / 1000), alpha = region, fill = type)) +
 #   geom_boxplot() +
 #   facet_wrap(sample ~ type, scales = "free") +
@@ -1085,14 +1085,14 @@ The fold change in pause strength vs pause density is shown below for the TSS (T
 plt_regs  <- c("tss", "body")
 
 fc_dat <- box_dat_sctr %>%
-  filter(region %in% plt_regs) %>%
+  dplyr::filter(region %in% plt_regs) %>%
   pivot_wider(names_from = "treat", values_from = "counts") %>%
   mutate(fc = !!sym(fc_treats[2]) / !!sym(fc_treats[1]))
 
 # Format input data
 # calculate percent of cells in each quadrant
 sct_dat <- fc_dat %>%
-  select(-all_of(treats)) %>%
+  dplyr::select(-all_of(treats)) %>%
   pivot_wider(names_from = "type", values_from = "fc") %>%
 
   group_by(rep, region) %>%
@@ -1126,7 +1126,7 @@ res <- plt_regs %>%
   map(~ {
     # Format plot data
     dat <- sct_dat %>%
-      filter(region == .x)
+      dplyr::filter(region == .x)
     
     # Set coordinates for percent labels
     x_lims <- range(dat[[names(typs[1])]])
@@ -1140,7 +1140,7 @@ res <- plt_regs %>%
     )
     
     n_coords <- dat %>%
-      select(rep, region, gene_q, q_pct) %>%
+      dplyr::select(rep, region, gene_q, q_pct) %>%
       distinct() %>%
       mutate(
         coords = q_coords[gene_q],
@@ -1215,10 +1215,10 @@ NEW_regs <- NEW_regs[!NEW_regs %in% sub_regs]
 NEW_regs <- c(NEW_regs, "body")
 
 x <- pause_stats %>%
-  # filter(
+  # dplyr::filter(
   #   sub_reg == "gene" | (sub_reg == "body" & region == "body")
   # ) %>%
-  select(-len) %>%
+  dplyr::select(-len) %>%
   get_box_data(
     p_lim       = PAUSE_LIM[1],
     tss_lim     = TSS_LIM,
@@ -1228,11 +1228,11 @@ x <- pause_stats %>%
 
 plt_dat <- pause_stats %>%
 
-  filter(region %in% NEW_regs) %>%
+  dplyr::filter(region %in% NEW_regs) %>%
 
   # filter based on p_lim
   pivot_wider(names_from = "type", values_from = "counts") %>%
-  filter(
+  dplyr::filter(
     pauses >= PAUSE_LIM[1],
 
     NET    >= ifelse(region == "body", 1, TSS_LIM),
@@ -1240,23 +1240,23 @@ plt_dat <- pause_stats %>%
 
     sub_reg == "gene" | (sub_reg == "body" & region == "body")
   ) %>%
-  select(-len, -sample, -sub_reg) %>%
+  dplyr::select(-len, -sample, -sub_reg) %>%
   pivot_longer(all_of(metrics), names_to = "type", values_to = "counts") %>%
 
   # remove genes that do not have data for all regions
   pivot_wider(names_from = "region", values_from = "counts") %>%
-  filter(if_all(all_of(NEW_regs), ~ !is.na(.x))) %>%
+  dplyr::filter(if_all(all_of(NEW_regs), ~ !is.na(.x))) %>%
   pivot_longer(all_of(NEW_regs), names_to = "region", values_to = "counts") %>%
 
   # remove genes that do not have data for all treats
   pivot_wider(names_from = "treat", values_from = "counts") %>%
-  filter(if_all(all_of(treats), ~ !is.na(.x))) %>%
+  dplyr::filter(if_all(all_of(treats), ~ !is.na(.x))) %>%
   pivot_longer(all_of(treats), names_to = "treat", values_to = "counts")
 
 reps %>%
   map(~ {
     plt_dat %>%
-      filter(rep == .x) %>%
+      dplyr::filter(rep == .x) %>%
       create_stat_boxes(metric, by = c("rep", "type", "region")) +
       scale_y_continuous(
         breaks = seq(0, 1, 0.5),
@@ -1275,12 +1275,12 @@ reps %>%
 plt_regs <- c("tss", "body")
 
 plt_dat <- pause_stats %>%
-  filter(sub_reg %in% plt_regs) %>%
-  select(-sample, -sub_reg, -len) %>%
+  dplyr::filter(sub_reg %in% plt_regs) %>%
+  dplyr::select(-sample, -sub_reg, -len) %>%
   
   # filter based on p_lim
   pivot_wider(names_from = "type", values_from = "counts") %>%
-  filter(
+  dplyr::filter(
     pauses >= 0,
     NET    >= NET_LIM
   ) %>%
@@ -1288,12 +1288,12 @@ plt_dat <- pause_stats %>%
   
   # remove genes that do not have data for all regions
   pivot_wider(names_from = "region", values_from = "counts") %>%
-  filter(if_all(all_of(plt_regs), ~ !is.na(.x))) %>%
+  dplyr::filter(if_all(all_of(plt_regs), ~ !is.na(.x))) %>%
   pivot_longer(all_of(plt_regs), names_to = "region", values_to = "counts") %>%
   
   # remove genes that do not have data for all treats
   pivot_wider(names_from = "treat", values_from = "counts") %>%
-  filter(if_all(all_of(treats), ~ !is.na(.x))) %>%
+  dplyr::filter(if_all(all_of(treats), ~ !is.na(.x))) %>%
   pivot_longer(all_of(treats), names_to = "treat", values_to = "counts") %>%
   
   mutate(sub_reg = region)
@@ -1306,7 +1306,7 @@ plt_theme   <- theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
 reps %>%
   map(~ {
     plt_dat %>%
-      filter(rep == .x) %>%
+      dplyr::filter(rep == .x) %>%
       create_stat_boxes(c("fraction pause reads" = "p-reads_NET")) +
       expand_limits(y = 1) +
       scale_y_continuous(breaks = seq(0, 1, 0.5)) +
@@ -1320,7 +1320,7 @@ reps %>%
 reps %>%
   map(~ {
     plt_dat %>%
-      filter(rep == .x) %>%
+      dplyr::filter(rep == .x) %>%
       create_stat_boxes(c("eNET-seq reads / pause" = "p-reads_pauses")) +
       scale_y_log10() +
       labs(subtitle = .x) +
@@ -1333,7 +1333,7 @@ reps %>%
 reps %>%
   map(~ {
     plt_dat %>%
-      filter(rep == .x) %>%
+      dplyr::filter(rep == .x) %>%
       create_stat_boxes(c("pauses / kb" = "pauses_kb")) +
       scale_y_log10(
         labels = label_number(0.01),
@@ -1357,7 +1357,7 @@ fc_dat <- box_dat_0 %>%
 reps %>%
   map(~ {
     fc_dat %>%
-      filter(rep == .x) %>%
+      dplyr::filter(rep == .x) %>%
       create_stat_vlns(c("fraction pause reads" = "p-reads_NET")) +
       labs(subtitle = .x)
   }) %>%
@@ -1373,7 +1373,7 @@ typs <- c("pauses_kb" = "pauses / kb", "p-reads_pauses" = "reads / pause")
 plt_regs %>%
   map(~ {
     fc_dat_2 %>%
-      filter(region == .x) %>%
+      dplyr::filter(region == .x) %>%
       create_multistat_vlns(typs) +
       labs(subtitle = ifelse(.x == "tss", str_to_upper(.x), .x))
   }) %>%
@@ -1385,7 +1385,7 @@ plt_regs %>%
 ```{r "{{grp}} CHECKING ZEROS", eval = FALSE}
 
 x <- box_dat_0 %>%
-  filter(
+  dplyr::filter(
     region == "body",
     type   == "p-reads_NET"
   ) %>%
@@ -1429,7 +1429,7 @@ x %>%
 
 # Plot all but 'none' group
 x %>%
-  filter(nonzero != "none") %>%
+  dplyr::filter(nonzero != "none") %>%
   
   pivot_wider(names_from = "treat", values_from = "counts") %>%
   group_by(rep, nonzero) %>%

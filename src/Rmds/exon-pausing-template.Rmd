@@ -100,7 +100,7 @@ calc_mean_signal <- function(df_in, grps, grp_info = NULL) {
   }
   
   res <- res %>%
-    filter(seq %in% use_seqs) %>%
+    dplyr::filter(seq %in% use_seqs) %>%
     
     group_by(sample, type, name) %>%
     mutate(
@@ -123,11 +123,11 @@ calc_mean_signal <- function(df_in, grps, grp_info = NULL) {
 # Divide splice sites into groups based on -1 and +1 signal
 get_ss_grps <- function(df_in, sam, genes = NULL) {
   res <- df_in %>%
-    filter(
+    dplyr::filter(
       win_id %in% c(50, 51),
       sample == sam
     ) %>%
-    select(name, type, win_id, counts) %>%
+    dplyr::select(name, type, win_id, counts) %>%
     pivot_wider(names_from = "win_id", values_from = "counts") %>%
     rename("m1" = `50`, "p1" = `51`) %>%
     mutate(
@@ -140,7 +140,7 @@ get_ss_grps <- function(df_in, sam, genes = NULL) {
       seq       = map_chr(str_split(seq, ";|,"), ~ str_c(unique(.x), collapse = ";")),  # remove duplicates from seq
       gene_name = str_extract(name, "(?<=;)chr[0-9]{1,2}:[0-9]+-[0-9]+[-+];ENSG[0-9]+\\|[^;]+(?=;)")
     ) %>%
-    select(name, type, gene_name, grp, seq)
+    dplyr::select(name, type, gene_name, grp, seq)
     
   if (!is.null(genes)) {
     res <- res %>%
@@ -337,7 +337,7 @@ plts <- plt_args %>%
       theme(axis.text.x = element_text(hjust = c(rep(0.5, 5), 1, 0, rep(0.5, 5))))
     
     p2 <- dat %>%
-      filter(
+      dplyr::filter(
         win_id >= 41 & win_id <= 60,
         type == "5' ss"
       ) %>%
@@ -402,7 +402,7 @@ samples %>%
     plt <- plt_args %>%
       imap(~ {
         dat_g %>%
-          filter(
+          dplyr::filter(
             win_id >= 41 & win_id <= 60,
             type == names(sfxs[1]),
             grp != "all"
@@ -433,7 +433,7 @@ samples %>%
 clmn <- "rel_counts"
 
 p1 <- dat_q %>%
-  filter(qrt == 2) %>%
+  dplyr::filter(qrt == 2) %>%
   create_ss_meta(
     y    = clmn,
     yttl = plt_args[clmn],
@@ -443,7 +443,7 @@ p1 <- dat_q %>%
   theme(axis.text.x = element_text(hjust = c(rep(0.5, 5), 1, 0, rep(0.5, 5))))
 
 p2 <- dat_q %>%
-  filter(
+  dplyr::filter(
     win_id >= 41 & win_id <= 60,
     qrt == 2,
     type == "5' ss"

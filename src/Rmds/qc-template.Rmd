@@ -94,7 +94,7 @@ fq_key <- set_names(
 
 fq_sum <- fq_sum %>%
   mutate(sample = fq_key[fq_name]) %>%
-  filter(!is.na(sample))
+  dplyr::filter(!is.na(sample))
 
 # Check data.frame
 stopifnot(all(names(sams_shrt_2) %in% fq_sum$sample))
@@ -146,12 +146,12 @@ mets <- c(
 
 trim_sum <- trim_sum %>%
   vroom(col_names = c("sample", "metric", "value")) %>%
-  filter(metric %in% mets) %>%
+  dplyr::filter(metric %in% mets) %>%
   
   pivot_wider(names_from = "metric", values_from = "value") %>%
   mutate(Untrimmed = `Total read pairs processed` - (`Pairs that were too short` + `Pairs written (passing filters)`)) %>%
   
-  select(-`Total read pairs processed`) %>%
+  dplyr::select(-`Total read pairs processed`) %>%
   pivot_longer(cols = -sample, names_to = "metric")
 
 # Create bar graphs
@@ -186,7 +186,7 @@ mets <- c(
 
 bwt_sum <- bwt_sum %>%
   vroom(col_names = c("sample", "metric", "value")) %>%
-  filter(metric %in% mets) %>%
+  dplyr::filter(metric %in% mets) %>%
   mutate(value = as.numeric(value))
 
 # Create bar graphs
@@ -217,14 +217,14 @@ mets <- c("Input Reads", "Number of reads out")
 
 dup_sum <- dedup_sum %>%
   vroom(col_names = c("sample", "metric", "value")) %>%
-  filter(metric %in% mets) %>%
+  dplyr::filter(metric %in% mets) %>%
   pivot_wider(names_from = "metric", values_from = "value") %>%
   
   mutate(
     `Duplicated reads` = `Input Reads` - `Number of reads out`
     # sample             = str_remove(sample, "_dedup_stats.txt$")
   ) %>%
-  select(-`Input Reads`) %>%
+  dplyr::select(-`Input Reads`) %>%
   pivot_longer(cols = -sample, names_to = "metric")
 
 # Create bar graphs
@@ -263,7 +263,7 @@ un_counts <- str_c(counts_sum, ".summary") %>%
   pivot_longer(cols = ends_with(".bam"), names_to = "sample") %>%
   trim_path("_dedup\\.bam$") %>%
   
-  filter(grepl("^Unassigned_", Status)) %>%
+  dplyr::filter(grepl("^Unassigned_", Status)) %>%
   mutate(metric = "unassigned") %>%
   
   group_by(sample, metric) %>%
@@ -326,7 +326,7 @@ sub_sum <- sub_sum %>%
   pivot_wider(names_from = "metric", values_from = "value") %>%
   mutate(`Reads removed` = `Filtered reads` - `Sampled reads`) %>%
   pivot_longer(cols = -c(grp, sample), names_to = "metric") %>%
-  filter(metric %in% mets)
+  dplyr::filter(metric %in% mets)
 
 # Create bar graphs
 sub_sum %>%

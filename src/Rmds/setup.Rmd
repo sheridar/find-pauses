@@ -140,11 +140,11 @@ load_genes <- function(drctry, file, len = 1, rm_cols = TRUE) {
   res <- here(drctry, file) %>%
     read_tsv(col_names = bed_cols) %>%
     mutate(gene_len = (end - start) / 1000) %>%
-    filter(gene_len > len)
+    dplyr::filter(gene_len > len)
   
   if (rm_cols) {
     res <- res %>%
-      select(name, gene_len)
+      dplyr::select(name, gene_len)
   }
   
   res
@@ -164,10 +164,10 @@ genes_exons <- load_genes(
 )
 
 genes_zone  <- genes_exons %>%
-  select(name, gene_len)
+  dplyr::select(name, gene_len)
 
 genes_exons <- genes_exons %>%
-  select(1:6)
+  dplyr::select(1:6)
 
 ```
 

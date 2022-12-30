@@ -63,7 +63,7 @@ zone_wins <- sfxs %>%
 # Genes that are removed here only have data from the NET-seq count bed.
 zone_wins <- zone_wins %>%
   group_by(name) %>%
-  filter(all(types %in% type)) %>%
+  dplyr::filter(all(types %in% type)) %>%
   ungroup()
 
 # Double check that all samples have the same genes
@@ -220,14 +220,14 @@ if (length(win_kb) != 1) {
 
 # Get zone coordinates
 all_zones <- zone_wins %>%
-  filter(win_dist == if_else(zone_class == "none", win_kb, zone)) %>%
-  select(-win_id, -win_len, -win_dist)
+  dplyr::filter(win_dist == if_else(zone_class == "none", win_kb, zone)) %>%
+  dplyr::select(-win_id, -win_len, -win_dist)
   
 # Filter for genes with an annotated zone for each sample
 zones <- all_zones %>%
-  filter(zone_class == "zone") %>%
+  dplyr::filter(zone_class == "zone") %>%
   group_by(name) %>%
-  filter(all(unname(sam_nms) %in% sample)) %>%
+  dplyr::filter(all(unname(sam_nms) %in% sample)) %>%
   ungroup()
 
 # Pausing zone genes
@@ -293,11 +293,11 @@ meta_dat <- zone_wins %>%
   mutate(`p-reads_ratio` = `p-reads` / (NET - `p-reads` + 1)) %>%
   
   semi_join(zone_genes, by = "name") %>%
-  filter(win_dist <= 4 + win_kb) %>%
-  select(-all_of(rm_cols))
+  dplyr::filter(win_dist <= 4 + win_kb) %>%
+  dplyr::select(-all_of(rm_cols))
 
 pct_0 <- meta_dat %>%
-  filter(`p-reads_NET` == 0) %>%
+  dplyr::filter(`p-reads_NET` == 0) %>%
   nrow()
 
 pct_0 <- round((pct_0 / nrow(meta_dat)) * 100, 0)
@@ -345,7 +345,7 @@ x_labs <- function(x) {
 
 # Create metaplot with all replicates
 meta <- meta_dat %>%
-  filter(type == "p-reads_NET") %>%
+  dplyr::filter(type == "p-reads_NET") %>%
   pivot_wider(names_from = "type_lab") %>%
   
   ggplot(aes(win_dist, !!sym(stat_cols["p-reads_NET"]), alpha = sample, color = treat)) +
@@ -390,7 +390,7 @@ meta <- meta_dat %>%
 
 # Format data for plotting
 h_dat <- zones %>%
-  select(group, treat, rep, name, gene_len, zone) %>%
+  dplyr::select(group, treat, rep, name, gene_len, zone) %>%
   
   group_by(group, treat, rep) %>%
   mutate(
@@ -550,7 +550,7 @@ sm_zone_wins <- sfxs %>%
 
 sm_zone_wins <- sm_zone_wins %>%
   group_by(name) %>%
-  filter(all(types %in% type)) %>%
+  dplyr::filter(all(types %in% type)) %>%
   ungroup()
 
 ```
@@ -605,22 +605,22 @@ meta_genes <- sm_zone_wins %>%
     across(all_of(c("NET", "pauses")), sum),
     .groups = "drop"
   ) %>%
-  filter(
+  dplyr::filter(
     pauses >= p_lim,
     NET    >= n_lim
   ) %>%
-  select(-pauses) %>%
+  dplyr::select(-pauses) %>%
   pivot_wider(names_from = "treat", values_from = "NET") %>%
-  filter(if_all(all_of(treats), ~ !is.na(.x))) %>%
-  select(name, rep)
+  dplyr::filter(if_all(all_of(treats), ~ !is.na(.x))) %>%
+  dplyr::select(name, rep)
 
 # Calculate fraction of zeros in data
 meta_dat <- sm_zone_wins %>%
   semi_join(meta_genes, by = c("name", "rep")) %>%
-  filter(win_dist >= 0)
+  dplyr::filter(win_dist >= 0)
 
 pct_0 <- meta_dat %>%
-  filter(`p-reads_NET` == 0) %>%
+  dplyr::filter(`p-reads_NET` == 0) %>%
   nrow()
 
 pct_0 <- round((pct_0 / nrow(meta_dat)) * 100, 0)
@@ -710,7 +710,7 @@ zone_qrts <- z_dat %>%
 clmn_order <- colnames(zone_qrts)
 
 zone_qrts <- set_names(treats) %>%
-  map(~ filter(zone_qrts, treatment == .x))
+  map(~ dplyr::filter(zone_qrts, treatment == .x))
 
 # Fold change zone quartiles
 fc_qrts <- z_dat %>%
@@ -721,7 +721,7 @@ fc_qrts <- z_dat %>%
     zone_qrt      = qrt_nms[as.character(zone_qrt)],
     treatment     = fc_lab
   ) %>%
-  select(name, treatment, all_of(treats), `fold change`, zone_qrt) %>%
+  dplyr::select(name, treatment, all_of(treats), `fold change`, zone_qrt) %>%
   arrange(desc(`fold change`))
 
 zone_qrts[[fc_lab]] <- fc_qrts
@@ -745,7 +745,7 @@ create_qrt_meta <- function(meta_df, zone_df, zone_path = NULL, plot_clrs,
   
   # Format quartile data.frame for merging
   zone_df <- zone_df %>%
-    select(name, zone_qrt)
+    dplyr::select(name, zone_qrt)
   
   # Stats for metaplots
   # * set window distance so 0 represents first window for the gene
@@ -756,7 +756,7 @@ create_qrt_meta <- function(meta_df, zone_df, zone_path = NULL, plot_clrs,
   qrt_dat <- meta_df %>%
     mutate(win_dist = win_dist - win_len) %>%
     left_join(zone_df, by = "name") %>%
-    filter(
+    dplyr::filter(
       !is.na(zone_qrt),
       win_dist <= max_dist      # calculate stats for the first 4 kb
     ) %>%
@@ -799,7 +799,7 @@ create_qrt_go <- function(zone_df, go_path = NULL, plot_clr, background = NULL) 
   go_terms <- qrts %>%
     map_dfr(~ {
       res <- zone_df %>%
-        filter(zone_qrt == .x) %>%
+        dplyr::filter(zone_qrt == .x) %>%
         mutate(symbol = str_extract(name, "(?<=\\|).+$")) %>%
         pull(symbol) %>%
         gost(
@@ -821,14 +821,14 @@ create_qrt_go <- function(zone_df, go_path = NULL, plot_clr, background = NULL) 
   # if (only_uniq) {
   #   go_terms <- go_terms %>%
   #     group_by(term_name) %>%
-  #     filter(n() == 1) %>%
+  #     dplyr::filter(n() == 1) %>%
   #     ungroup()
   # }
 
   # Write GO terms for quartiles
   if (!is.null(go_path)) {
     go_terms %>%
-      select(
+      dplyr::select(
         zone_qrt,  source,    term_id,    term_name,
         p_value,   term_size, query_size, intersection_size,
         precision, recall,    effective_domain_size
@@ -837,7 +837,7 @@ create_qrt_go <- function(zone_df, go_path = NULL, plot_clr, background = NULL) 
   }
   
   res <- go_terms %>%
-    filter(zone_qrt == last(qrts)) %>%
+    dplyr::filter(zone_qrt == last(qrts)) %>%
     create_bubbles(color = plot_clr, txt_size = 5 / .pt) +
     theme(
       legend.title = element_text(size = txt_pt),
@@ -916,7 +916,7 @@ zone_qrts %>%
     go_out  <- str_c(tab_prfx, zone_grp, "_zones_GO.tsv.gz")
     
     # Create metaplots, plot all samples
-    # filter(treat %in% unlist(filt)) %>%
+    # dplyr::filter(treat %in% unlist(filt)) %>%
     zone_meta <- zone_wins %>%
       create_qrt_meta(
         zone_df   = .x,
@@ -967,7 +967,7 @@ bg <- g_z$name %>%
 res <- str_c("group ", 1:4) %>%
   map_dfr(~ {
     res <- gsea_df %>%
-      filter(zone_qrt == .x) %>%
+      dplyr::filter(zone_qrt == .x) %>%
       pull(symbol) %>%
       gost(
         organism  = "hsapiens",
@@ -1062,7 +1062,7 @@ create_cor_plots <- function(df_in, x, y, clr = "red", pt_size = 1, out_size = 1
 
 # Format data for plotting
 cor_dat <- h_dat %>%
-  select(sample, name, gene_len, n, zone) %>%
+  dplyr::select(sample, name, gene_len, n, zone) %>%
   pivot_wider(names_from = "sample", values_from = "zone")
 
 if (n_reps > 1) {
@@ -1179,7 +1179,7 @@ create_len_plots <- function(df_in, sam, zone_col = "zone", len_col = "gene_len"
   # Filter plot data
   dat <- df_in %>%
     mutate(frac = !!sym(zone_col) / !!sym(len_col)) %>%
-    filter(sample == sam)
+    dplyr::filter(sample == sam)
   
   # Calculate correlation
   dat <- dat %>%
@@ -1277,7 +1277,7 @@ Scatter plots show the correlation between pausing zone length and 1st exon leng
 # we do not have a 1st exon length for every gene
 ex_dat <- h_dat %>%
   left_join(exon_lens, by = c(name = "gene_name")) %>%
-  filter(!is.na(ex_len))
+  dplyr::filter(!is.na(ex_len))
 
 # Create scatter plots
 ex_plts <- sam_nms %>%

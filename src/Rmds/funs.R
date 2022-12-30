@@ -258,7 +258,7 @@ create_qc_bars <- function(df_in, grp_df, grp_lvls = NULL, sam_lvls = NULL, met_
     }
     
     lab_df <- res %>%
-      filter(metric %in% lab_metric) %>%
+      dplyr::filter(metric %in% lab_metric) %>%
       group_by(!!!syms(clmns)) %>%
       summarize(
         lab     = sum(value) / lab_div,
@@ -267,7 +267,7 @@ create_qc_bars <- function(df_in, grp_df, grp_lvls = NULL, sam_lvls = NULL, met_
         .groups = "drop"
       ) %>%
       ungroup() %>%
-      select(all_of(clmns), lab)
+      dplyr::select(all_of(clmns), lab)
     
     res <- res %>%
       left_join(lab_df, by = clmns)
@@ -281,7 +281,7 @@ create_qc_bars <- function(df_in, grp_df, grp_lvls = NULL, sam_lvls = NULL, met_
     
     res <- res %>%
       left_join(grp_df, by = "sample") %>%
-      filter(!is.na(grp))
+      dplyr::filter(!is.na(grp))
   }
   
   # Set factor levels
@@ -291,7 +291,7 @@ create_qc_bars <- function(df_in, grp_df, grp_lvls = NULL, sam_lvls = NULL, met_
     }
     
     res <- res %>%
-      filter(grp %in% grp_lvls) %>%
+      dplyr::filter(grp %in% grp_lvls) %>%
       mutate(grp = fct_relevel(grp, grp_lvls))
   }
   
@@ -301,7 +301,7 @@ create_qc_bars <- function(df_in, grp_df, grp_lvls = NULL, sam_lvls = NULL, met_
     }
     
     res <- res %>%
-      filter(sample %in% names(sam_lvls)) %>%
+      dplyr::filter(sample %in% names(sam_lvls)) %>%
       mutate(
         sample = recode(sample, !!!sam_lvls),
         sample = fct_relevel(sample, sam_lvls)
@@ -314,7 +314,7 @@ create_qc_bars <- function(df_in, grp_df, grp_lvls = NULL, sam_lvls = NULL, met_
     }
     
     res <- res %>%
-      filter(metric %in% met_lvls) %>%
+      dplyr::filter(metric %in% met_lvls) %>%
       mutate(metric = fct_relevel(metric, met_lvls))
   }
   
@@ -382,7 +382,7 @@ get_overlapping_genes <- function(df_in, clmns, gene_clmn = "name") {
       
       df <<- df %>%
         group_by(!!!syms(c(gene_clmn, grp_clmns))) %>%
-        filter(all(uniq_grps %in% !!sym(.x))) %>%
+        dplyr::filter(all(uniq_grps %in% !!sym(.x))) %>%
         ungroup()
     })
   
@@ -825,10 +825,10 @@ create_meta_fig <- function(df_5, df_3, color, ylim_3, sams = NULL, grp = NULL, 
   # Filter samples
   if (!is.null(sams)) {
     df_5 <- df_5 %>%
-      filter(!!sym(color) %in% sams)
+      dplyr::filter(!!sym(color) %in% sams)
     
     df_3 <- df_3 %>%
-      filter(!!sym(color) %in% sams)
+      dplyr::filter(!!sym(color) %in% sams)
   }
   
   # 5' meta plots
@@ -929,7 +929,7 @@ create_pausing_meta <- function(met_df, p_df, regions, sams, split_col = NULL, s
   
   # 5' metaplots
   p_met <- met_df %>%
-    filter(
+    dplyr::filter(
       win_dist >= -1,
       treat %in% sams
     ) %>%
@@ -956,7 +956,7 @@ create_pausing_meta <- function(met_df, p_df, regions, sams, split_col = NULL, s
   
   # Create boxplots showing pause stats
   bxs <- p_df %>%
-    filter(
+    dplyr::filter(
       type   %in% stats,
       region %in% regions,
       treat  %in% sams
@@ -1023,7 +1023,7 @@ create_tss_pause_meta <- function(meta_df, pause_df, sams, meta_clrs, regions, b
   
   # Filter genes
   dat <- pause_df %>%
-    filter(
+    dplyr::filter(
       sample %in% unname(sams),
       type == unname(metric)
     ) %>%
@@ -1045,13 +1045,13 @@ create_tss_pause_meta <- function(meta_df, pause_df, sams, meta_clrs, regions, b
   
   # Pause stats genes
   dat_genes <- dat %>%
-    select(name) %>%
+    dplyr::select(name) %>%
     distinct()
   
   # Calculate mean mNET-seq signal
   p_mean_5 <- meta_df %>%
     semi_join(dat_genes, by = "name") %>%
-    filter(sample %in% names(sams))
+    dplyr::filter(sample %in% names(sams))
   
   if (nrow(p_mean_5) == 0) {
     stop("No genes left after filtering, check input files")
@@ -1085,7 +1085,7 @@ create_zone_meta <- function(met_df, vln_df, sams, p_stat = "pauses_NET",  plot_
   
   # Create meta plots
   met <- met_df %>%
-    filter(
+    dplyr::filter(
       type == p_stat,
       sample %in% sams
     ) %>%
@@ -1115,8 +1115,8 @@ create_zone_meta <- function(met_df, vln_df, sams, p_stat = "pauses_NET",  plot_
   
   # Create violin plots
   vlns <- vln_df %>%
-    filter(sample %in% sams) %>%
-    select(group, sample, name, zone) %>%
+    dplyr::filter(sample %in% sams) %>%
+    dplyr::select(group, sample, name, zone) %>%
     distinct() %>%
     group_by(group, sample) %>%
     mutate(n = n_distinct(name)) %>%
@@ -1221,14 +1221,14 @@ create_zone_meta <- function(met_df, vln_df, sams, p_stat = "pauses_NET",  plot_
   
   if (filter_win_num && any(res$.incorrect_num_wins)) {
     n_removed <- res %>%
-      filter(.incorrect_num_wins) %>%
+      dplyr::filter(.incorrect_num_wins) %>%
       pull(name) %>%
       n_distinct()
     
     warning(n_removed, " genes had the incorrect number of windows and were removed.")
     
     res <- res %>%
-      filter(!.incorrect_num_wins)
+      dplyr::filter(!.incorrect_num_wins)
   }
   
   # Check genes for correct sized windows
@@ -1244,7 +1244,7 @@ create_zone_meta <- function(met_df, vln_df, sams, p_stat = "pauses_NET",  plot_
   # Check for expected window format
   res %>%
     ungroup() %>%
-    select(starts_with(".")) %>%
+    dplyr::select(starts_with(".")) %>%
     as.list() %>%
     iwalk(~ {
       if (any(.x)) {
@@ -1254,13 +1254,13 @@ create_zone_meta <- function(met_df, vln_df, sams, p_stat = "pauses_NET",  plot_
   
   # Filter windows
   res <- res %>%
-    filter(
+    dplyr::filter(
       !!win_col >= win_min,
       !!win_col <= win_max
     ) %>%
-    filter(sum(counts) > count_lim) %>%
+    dplyr::filter(sum(counts) > count_lim) %>%
     ungroup() %>%
-    select(!starts_with("."))
+    dplyr::select(!starts_with("."))
   
   res
 }
@@ -1528,12 +1528,12 @@ run_gprofiler <- function(gene_list, genome = NULL, gmt_id = NULL, p_max = 0.05,
     
     if (!is.null(GO_size)) {
       res <- res %>%
-        filter(term_size > GO_size)
+        dplyr::filter(term_size > GO_size)
     }
     
     if (!is.null(intrsct_size)) {
       res <- res %>%
-        filter(intersection_size > intrsct_size)
+        dplyr::filter(intersection_size > intrsct_size)
     }
     
     res <- res %>%
@@ -1543,7 +1543,7 @@ run_gprofiler <- function(gene_list, genome = NULL, gmt_id = NULL, p_max = 0.05,
   # Write table
   if (!is.null(file_path) && nrow(res) > 0) {
     res %>%
-      select(-parents) %>%
+      dplyr::select(-parents) %>%
       write_tsv(file_path)    
   }
   
@@ -1667,7 +1667,7 @@ create_logo <- function(input_freq, plot_colors, x_lim = NULL, y_lim = NULL,
     x_max <- x_lim[2]
     
     freq_df <- freq_df %>% 
-      filter(position >= x_min & position <= x_max)
+      dplyr::filter(position >= x_min & position <= x_max)
   }
   
   freq_df <- freq_df %>% 
@@ -1855,7 +1855,7 @@ cluster_genes <- function(df_in, gene_col = "name", k = 8, n_top = NULL,
         clust = recode(clust, !!!top_clusts),
         clust = ifelse(top, clust, 3)
       ) %>%
-      select(-top)
+      dplyr::select(-top)
   }
   
   clusts
