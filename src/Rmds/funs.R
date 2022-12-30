@@ -124,7 +124,7 @@ remove_com_str <- function(input_str, input_names = NULL, sep = "_") {
   internal_sep <- str_c(sep, sep)
   
   common_strs <- common_strs %>%
-    reduce(str_c, sep = "|")
+    purrr::reduce(str_c, sep = "|")
   
   res <- input_str %>%
     str_remove(common_strs) %>%

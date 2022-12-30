@@ -648,7 +648,7 @@ sep_pause_df <- p_dat %>%
     .x %>%
       nest(!!sym(.y) := -c(sample, region))
   }) %>%
-  reduce(full_join, by = c("sample", "region")) %>%
+  purrr::reduce(full_join, by = c("sample", "region")) %>%
   separate(sample, sep = "_", into = c("treat", "rep"), remove = FALSE)
 
 # Check for rows not shared between all data.frames
