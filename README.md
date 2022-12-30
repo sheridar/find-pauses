@@ -1,27 +1,20 @@
 # mNET-seq analysis workflow
 
-The analysis workflow is composed of two separate snakemake pipelines, one
+This workflow is composed of two separate snakemake pipelines, one
 to perform the initial processing steps and another to identify pause
 sites. Workflow settings can be modified with the NETseq.yaml and
 pauses.yaml config files.
 
 <br>
 
-## Running
-
-### Install R dependencies using renv
+## Getting started
 
 1. Create a new repository using this template
 2. Clone to bodhi and navigate to the project directory
-3. Load R/4.0.3 and open R terminal
-4. Follow the printed instructions to run `renv::restore()` and install dependencies
-
-### Run pipelines
-
-1. Specify sample names and directory paths using the SAMPLE.yaml config file
-2. Specify sample groups and colors for plotting using the PLOTS.yaml
-  config file
-3. Run the pipeline by submitting the run.sh script through bsub
+3. Specify sample names and directory paths using the SAMPLE.yaml config file
+4. Specify sample groups and colors for plotting using the PLOTS.yaml
+   config file
+5. Run the pipeline by submitting the run.sh script through bsub
 
 <br>
 
