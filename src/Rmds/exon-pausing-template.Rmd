@@ -129,7 +129,7 @@ get_ss_grps <- function(df_in, sam, genes = NULL) {
     ) %>%
     dplyr::select(name, type, win_id, counts) %>%
     pivot_wider(names_from = "win_id", values_from = "counts") %>%
-    rename("m1" = `50`, "p1" = `51`) %>%
+    dplyr::rename("m1" = `50`, "p1" = `51`) %>%
     mutate(
       grp = case_when(
         p1 > m1 ~ "+1 sites",

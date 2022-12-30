@@ -245,7 +245,7 @@ create_pause_logo <- function(df_in, left = 9, right = 10, vline = 10.5) {
   
   res <- df_in %>%
     bed_slop(left = left, right = right, genome, strand = TRUE) %>%
-    rename(chr = chrom) %>%
+    dplyr::rename(chr = chrom) %>%
     dplyr::select(chr, start, end, name, score, strand)
   
   res <- res %>% 

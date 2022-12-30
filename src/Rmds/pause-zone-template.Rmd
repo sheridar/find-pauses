@@ -696,7 +696,7 @@ qrt_nms <- seq_len(n_qrts) %>%
 z_dat <- zones %>%
   group_by(name, treat) %>%
   summarize(zone_kb = mean(zone), .groups = "drop") %>%
-  rename(treatment = treat)
+  dplyr::rename(treatment = treat)
 
 zone_qrts <- z_dat %>%
   group_by(treatment) %>%
