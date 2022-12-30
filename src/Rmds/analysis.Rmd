@@ -130,7 +130,7 @@ exon_lens <- exon_lens %>%
   dplyr::filter(n_distinct(ex_coords) == 1) %>%
   group_by(ex_len, .add = TRUE) %>%
   summarize(
-    txn_id = first(txn_id),
+    txn_id = dplyr::first(txn_id),
     .groups = "drop"
   )
 
@@ -152,6 +152,13 @@ chunks <- names(plot_grps$samples) %>%
 
 `r knitr::knit_child(text = chunks)`
 
+# Session info
+
+```{echo = FALSE}
+
+sessionInfo()
+
+```
 
 
 
