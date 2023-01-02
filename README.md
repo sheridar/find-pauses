@@ -15,6 +15,7 @@ pauses.yaml config files.
 4. Specify sample groups and colors for plotting using the PLOTS.yaml
    config file
 5. Run the pipeline by submitting the run.sh script through bsub
+6. Check the subsampling test results by running `cat results/stats/*_test.tsv`. This double checks that the per-gene subsampling was performed correctly, each file should be marked with 'PASS' 
 
 <br>
 
