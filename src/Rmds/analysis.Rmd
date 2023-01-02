@@ -154,7 +154,7 @@ chunks <- names(plot_grps$samples) %>%
 
 # Session info
 
-```{echo = FALSE}
+```{r, echo = FALSE}
 
 sessionInfo()
 
