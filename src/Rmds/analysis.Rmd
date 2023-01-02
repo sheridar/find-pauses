@@ -165,6 +165,9 @@ sessionInfo()
 
 ```{r "ENSEMBL DATABASE", eval = FALSE}
 
+library(ensembldb)
+library(Gviz)
+
 # Gene coordinates
 genes_all <- read_tsv(
   file.path(plot_params$ref_dir, plot_params$list_dir, plot_params$genes_all),

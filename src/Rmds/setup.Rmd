@@ -2,28 +2,23 @@
 ```{r "Packages", include = FALSE, cache = FALSE}
 
 # Load packages
-library(knitr)
-library(cowplot)
 library(tidyverse)
-library(Matrix)
-library(bedr)
-library(ggseqlogo)
-library(patchwork)
-library(colorspace)
+library(knitr)
+library(scales)
 library(here)
 library(vroom)
-library(valr)
-library(fastcluster)
-library(scales)
-library(broom)
-library(gprofiler2)
-library(ggrepel)
-library(yaml)
-library(ggpointdensity)
-library(ggbeeswarm)
-library(ensembldb)   # Bioconductor
-library(Gviz)        # Bioconductor
-library(colorblindr) # github
+library(Matrix)
+library(ggpointdensity)  # To create scatter plots
+library(ggseqlogo)       # To create sequence logos
+library(valr)            # To create sequence logos
+library(bedr)            # To create sequence logos
+library(cowplot)         # To arrange plot panels
+library(patchwork)       # To arrange plot panels
+library(yaml)            # To parse config yamls
+library(gprofiler2)      # To perform GO analysis
+library(ggrepel)         # To create GO plots
+library(colorspace)      # To modify color palette
+library(colorblindr)     # github, to modify color palette
 
 # Read functions
 source(here::here(plot_params$template_dir, "funs.R"))

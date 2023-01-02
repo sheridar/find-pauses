@@ -788,6 +788,10 @@ create_qrt_meta <- function(meta_df, zone_df, zone_path = NULL, plot_clrs,
 }
 
 create_qrt_go <- function(zone_df, go_path = NULL, plot_clr, background = NULL) {
+
+  go_url <- "biit.cs.ut.ee"
+
+  if (httr::http_error(go_url)) return(NULL)
   
   # Identify GO terms for each quartile
   # remove terms that are identified for multiple quartiles

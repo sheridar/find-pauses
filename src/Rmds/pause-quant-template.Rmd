@@ -110,7 +110,7 @@ create_stat_boxes <- function(df_in, metric, by = c("rep", "type", "region"),
     
     dat <- dat %>%
       mutate(
-        p = list(tidy(
+        p = list(broom::tidy(
           wilcox.test(!!!syms(fc_treats))
         )),
         p = map_dbl(p, ~ .x$p.value)
@@ -345,7 +345,7 @@ create_stat_corr <- function(df_in, x, y, ttl = NULL, plt_clrs = c("black", last
     mutate(
       n     = n_distinct(name),
       n     = str_c("n = ", comma(n)),
-      corr  = list(tidy(cor.test(log10(!!sym(x)), !!sym(y)))),
+      corr  = list(broom::tidy(cor.test(log10(!!sym(x)), !!sym(y)))),
       r     = map_dbl(corr, ~ .x$estimate),
       r     = round(r, 2),
       r     = str_c("r = ", r),
@@ -1027,7 +1027,7 @@ calc_ex_int_p <- function(NET_kb_min) {
     dplyr::filter(type %in% c("p-reads_NET")) %>%
     pivot_wider(names_from = region, values_from = counts) %>%
     group_by(sample) %>%
-    summarize(p = tidy(wilcox.test(exons, introns))$p.value) %>%
+    summarize(p = broom::tidy(wilcox.test(exons, introns))$p.value) %>%
     mutate(cutoff = NET_kb_min)
 }
 
@@ -1434,7 +1434,7 @@ x %>%
   pivot_wider(names_from = "treat", values_from = "counts") %>%
   group_by(rep, nonzero) %>%
   mutate(
-    p = tidy(wilcox.test(WT, TE7))$p.value,
+    p = broom::tidy(wilcox.test(WT, TE7))$p.value,
     p = scientific(p),
     n = str_c(n, "\np = ", p)
   ) %>%
