@@ -11,6 +11,7 @@ module load fastqc
 module load bowtie2
 module load samtools
 module load subread
+module load gcc/7.4.0
 module load R/4.0.3
 
 mkdir -p logs
