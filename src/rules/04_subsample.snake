@@ -11,7 +11,7 @@ rule create_beds:
         stats = RESULTS + "/{sample}/{sample}_filt_stats.tsv"
     params:
         job_name = "{sample}_create_beds",
-        memory   = 100,
+        memory   = MEMORY * 3,
         genes    = GENES,
         mask     = MASK
     log:
@@ -110,7 +110,7 @@ rule subsample_1:
         RESULTS + "/stats/{group}_summary.tsv"
     params:
         job_name = "{group}_summary",
-        memory   = 32
+        memory   = MEMORY * 3
     log:
         out = RESULTS + "/logs/{group}_summary.out",
         err = RESULTS + "/logs/{group}_summary.err"
@@ -155,7 +155,7 @@ rule subsample_2:
         RESULTS + "/{sample}-{group}/{sample}-{group}.bed.gz"
     params:
         job_name = "{sample}_{group}",
-        memory   = 32
+        memory   = MEMORY * 3
     log:
         out = RESULTS + "/logs/{sample}_{group}.out",
         err = RESULTS + "/logs/{sample}_{group}.err"

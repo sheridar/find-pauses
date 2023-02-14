@@ -12,7 +12,7 @@ rule featureCounts:
         RESULTS + "/" + PROJ + "_featureCounts.tsv"
     params:
         job_name = PROJ + "_featureCounts",
-        memory   = 8,
+        memory   = MEMORY,
         args     = CMD_PARAMS["featureCounts"]
     log:
         out = RESULTS + "/logs/" + PROJ + "_featureCounts.out",

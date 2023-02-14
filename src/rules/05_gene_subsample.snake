@@ -14,7 +14,7 @@ rule gene_subsample_1:
         RESULTS + "/stats/{group}_{sub_region}_summary.tsv"
     params:
         job_name = "{group}_{sub_region}_summary",
-        memory   = 16
+        memory   = MEMORY * 2
     log:
         out = RESULTS + "/logs/{group}_{sub_region}_summary.out",
         err = RESULTS + "/logs/{group}_{sub_region}_summary.err"
@@ -82,7 +82,7 @@ rule gene_subsample_2:
         sub   = RESULTS      + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}.bed.gz"
     params:
         job_name = "{sample}_{group}_{sub_region}",
-        memory   = 16
+        memory   = MEMORY * 2
     log:
         out = RESULTS + "/logs/{sample}_{group}_{sub_region}.out",
         err = RESULTS + "/logs/{sample}_{group}_{sub_region}.err"

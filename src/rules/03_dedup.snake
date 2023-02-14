@@ -12,7 +12,7 @@ rule dedup:
         stats = RESULTS + "/{sample}/{sample}_dedup_stats.txt"
     params:
         job_name = "{sample}_dedup",
-        memory   = 32,
+        memory   = MEMORY * 3,
         args     = CMD_PARAMS["umi_tools"],
         log      = RESULTS + "/logs/{sample}_dedup.out"
     log:

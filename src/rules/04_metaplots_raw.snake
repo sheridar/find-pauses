@@ -10,7 +10,7 @@ rule subsample_metaplot_beds:
         S_N = RESULTS + "/{sample}/metaplot_beds/{sample}_{sub_region}_S_N.bed.gz",
     params:
         job_name = "{sample}_{sub_region}_metaplot_beds",
-        memory   = 16,
+        memory   = MEMORY * 2,
         bed      = lambda wildcards: GENE_SUB_BEDS[wildcards.sub_region]
     log:
         out = RESULTS + "/logs/{sample}_{sub_region}_metaplot_beds.out",

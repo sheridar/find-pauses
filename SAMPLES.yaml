@@ -27,6 +27,15 @@ SSH:
     "sheridanr@amc-sandbox:~/public_html/fong-spt5"
 
 
+# Base memory to request for each rule
+# The acutal amount requested will be higher for rules that generally
+# require more memory
+# A value of 8 will result in rules requesting between 8Gb - 32Gb of
+# memory
+MEMORY:
+    16
+
+
 # Sample groups to use for subsampling, use the following format. The
 # samples included in each group will be subsampled to the same read
 # depth, so for each group select samples you want to directly compare.

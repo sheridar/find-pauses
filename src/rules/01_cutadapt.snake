@@ -22,7 +22,7 @@ rule extract_umi:
         log = RESULTS + "/logs/{sample}_extract_umi.out"
     params:
         job_name = "{sample}_umi_extract",
-        memory   = 8,
+        memory   = MEMORY,
         umi_pat  = CMD_PARAMS["umi_pattern"]
     log:
         out = RESULTS + "/logs/{sample}_extract_umi.out",
@@ -56,7 +56,7 @@ rule cutadapt:
         stats = RESULTS + "/{sample}/{sample}_cutadapt_stats.txt"
     params:
         job_name = "{sample}_cutadapt",
-        memory   = 20,
+        memory   = MEMORY * 2,
         args     = CMD_PARAMS["cutadapt"]
     log:
         out = RESULTS + "/logs/{sample}_cutadapt.out",

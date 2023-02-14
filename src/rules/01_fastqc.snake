@@ -10,7 +10,7 @@ rule fastqc:
         RESULTS + "/fastqc/{fastq}_fastqc.html"
     params:
         job_name = "{fastq}_fastqc",
-        memory   = 20,
+        memory   = MEMORY * 2,
         out      = RESULTS + "/fastqc"
     log:
         out = RESULTS + "/logs/{fastq}_fastqc.out",

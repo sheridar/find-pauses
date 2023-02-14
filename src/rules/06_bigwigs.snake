@@ -16,7 +16,7 @@ rule create_bigwig:
         n_bw   = RESULTS + "/{sam_grp}/{sam_grp}_neg.bw"
     params:
         job_name = "{sam_grp}_bigwig",
-        memory   = 8,
+        memory   = MEMORY,
         chroms   = CHROMS
     log:
         out = RESULTS + "/logs/{sam_grp}_bigwig.out",

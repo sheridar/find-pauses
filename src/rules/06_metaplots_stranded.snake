@@ -12,7 +12,7 @@ rule metaplot_beds:
         AS_N = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_AS_N.bed.gz"
     params:
         job_name = "{sam_grp}_{region}_metaplot_beds",
-        memory   = 16,
+        memory   = MEMORY * 2,
         bed      = lambda wildcards: META_BEDS[wildcards.region]
     log:
         out = RESULTS + "/logs/{sam_grp}_{region}_metaplot_beds.out",

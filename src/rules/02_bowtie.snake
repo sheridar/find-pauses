@@ -12,7 +12,7 @@ rule bowtie:
         stats = RESULTS      + "/{sample}/{sample}_bowtie_stats.txt"
     params:
         job_name = "{sample}_bowtie",
-        memory   = 64,
+        memory   = MEMORY * 3,
         idx      = INDEX,
         mapq     = 10
     log:

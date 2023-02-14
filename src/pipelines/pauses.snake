@@ -10,6 +10,7 @@ shell.prefix("set -o nounset -o pipefail -o errexit -x; ")
 PROJ    = config["PROJ"]
 SAMPLES = config["SAMPLES"]
 RESULTS = config["RESULTS"]
+MEMORY  = config["MEMORY"]
 CHROMS  = config["CHROMS"]
 GENES   = config["GENES"]
 MASK    = config["MASK"]

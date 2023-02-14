@@ -13,7 +13,7 @@ rule find_pauses:
         sep    = RESULTS + "/{sample}/pauses/{sample}_{win}_sep_pauses.bed.gz"
     params:
         job_name = "{sample}_{win}_find_pauses",
-        memory   = 32,
+        memory   = MEMORY * 4,
         genes    = GENES,
         mask     = MASK,
         chroms   = CHROMS
@@ -89,7 +89,7 @@ rule strong_pauses:
         sep    = RESULTS + "/{sample}/pauses/{sample}_{win}_sep{stren}pauses.bed.gz"
     params:
         job_name = "{sample}_{win}{stren}pauses",
-        memory   = 8,
+        memory   = MEMORY,
         r        = lambda wildcards: PAUSE_ROUND[wildcards.stren]
     log:
         out = RESULTS + "/logs/{sample}_{win}{stren}pauses.out",
@@ -143,7 +143,7 @@ rule pause_reads:
         RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pause_reads.bed.gz"
     params:
         job_name = "{sample}_{win}{grp}pause_reads",
-        memory   = 8
+        memory   = MEMORY
     log:
         out = RESULTS + "/logs/{sample}_{win}{grp}pause_reads.out",
         err = RESULTS + "/logs/{sample}_{win}{grp}pause_reads.err"
@@ -173,7 +173,7 @@ rule pausing_summary:
         RESULTS + "/stats/" + PROJ + "_{win}{grp}pausing.tsv"
     params:
         job_name = PROJ + "_{win}{grp}pausing_summary",
-        memory   = 8
+        memory   = MEMORY
     log:
         out = RESULTS + "/logs/" + PROJ + "_{win}{grp}pausing_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_{win}{grp}pausing_summary.err"
@@ -216,7 +216,7 @@ rule pause_density:
         reads  = RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pause_reads_{region}.bed.gz"
     params:
         job_name = "{sample}_{region}_{win}{grp}pause_density",
-        memory   = 8,
+        memory   = MEMORY,
         bed      = lambda wildcards: META_BEDS[wildcards.region]
     log:
         out = RESULTS + "/logs/{sample}_{win}{grp}{region}_density.out",
@@ -256,7 +256,7 @@ rule pause_metaplots:
         counts_N = RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pauses_meta_N.bed.gz"
     params:
         job_name = "{sample}_{win}{grp}pause_metaplots",
-        memory   = 4,
+        memory   = MEMORY,
         chroms   = CHROMS
     log:
         out = RESULTS + "/logs/{sample}_{win}{grp}pause_metaplots.out",
