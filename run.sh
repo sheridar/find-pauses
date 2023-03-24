@@ -3,7 +3,6 @@
 #BSUB -J snake
 #BSUB -o logs/snake_%J.out
 #BSUB -e logs/snake_%J.err
-#BSUB -q rna
 
 set -o nounset -o pipefail -o errexit -x
 
@@ -27,8 +26,7 @@ run_snakemake() {
         -eo {log.err} 
         -J {params.job_name}
         -R "rusage[mem={params.memory}] span[hosts=1]"
-        -n {threads}
-        -q rna '
+        -n {threads} '
 
     snakemake -n \
         --snakefile $snake_file \
