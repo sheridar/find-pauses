@@ -4,14 +4,14 @@
 
 # Project name to use for naming summary files
 PROJ:
-    "Xrn2"
+    "CCl4"
 
 
 # Directories containing fastq files, this can be a relative path.
 # Multiple directories can be provided. The sample names must correspond
 # to the begining of the fastq name.
 RAW_DATA:
-    - "/beevol/home/bentleyd/fastq/220218_A00405_0531_BH352HDRX2"
+    - "/beevol/home/erickson/fastqs/230912_Novogene"
 
 
 # Directory to store results
@@ -20,11 +20,12 @@ RESULTS:
 
 
 # Specify base URL and destination to transfer bigwigs
+# ### UPDATE THESE PATHS ###
 URL:
-    "http://amc-sandbox.ucdenver.edu/User25/fong-spt5"
+    "http://amc-sandbox.ucdenver.edu/"
 
 SSH:
-    "sheridanr@amc-sandbox:~/public_html/fong-spt5"
+    "sheridanr@amc-sandbox:~/public_html/"
 
 
 # Base memory to request for each rule
@@ -52,15 +53,11 @@ MEMORY:
 #     - "sample_4_file_prefix"
 #
 SAMPLES:
-    xrn2-r2:
-        - "293flpin_Xrn2_WT_R2"
-        - "293flpin_Xrn2_MT_R2"
+    ccl4-r1:
+        - "ML_control1"
+        - "ML_CCL1"
 
-    xrn2-r3:
-        - "293flpin_Xrn2_WT_R3"
-        - "293flpin_Xrn2_MT_R3"
-
-    xrn2-r4:
-        - "293flpin_Xrn2_WT_R4"
-        - "293flpin_Xrn2_MT_R4"
+    ccl4-r2:
+        - "ML_control2"
+        - "ML_CCL2"
 

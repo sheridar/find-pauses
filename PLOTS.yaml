@@ -16,18 +16,14 @@
 #     sample-2_r2: sample_2_file_prefix_r2
 #
 samples:
-  Xrn2:
-    xrn2-r2:
-      WT_r2: "293flpin_Xrn2_WT_R2"
-      MT_r2: "293flpin_Xrn2_MT_R2"
+  CCl4:
+    CCl4-r1:
+      control_r1: "ML_control1"
+      CCl4_r1:    "ML_CCL1"
 
-    xrn2-r3:
-      WT_r3: "293flpin_Xrn2_WT_R3"
-      MT_r3: "293flpin_Xrn2_MT_R3"
-
-    xrn2-r4:
-      WT_r4: "293flpin_Xrn2_WT_R4"
-      MT_r4: "293flpin_Xrn2_MT_R4"
+    CCl4-r2:
+      control_r2: "ML_control2"
+      CCl4_r2:    "ML_CCL2"
 
 
 # Plot colors
@@ -36,7 +32,7 @@ samples:
 # example we have two samples (Xrn2-WT and Xrn2-MT), so we must list two
 # colors
 colors:
-  Xrn2: ["black", "#4DB4C2"]
+  CCl4: ["black", "#4DB4C2"]
 
 
 # Plotting parameters
