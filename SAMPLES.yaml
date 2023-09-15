@@ -11,7 +11,7 @@ PROJ:
 # Multiple directories can be provided. The sample names must correspond
 # to the begining of the fastq name.
 RAW_DATA:
-    - "/beevol/home/erickson/fastqs/230912_Novogene"
+    - "/beevol/home/sheridanr/Public/Nova/230912_Novogene"
 
 
 # Directory to store results
