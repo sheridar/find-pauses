@@ -3,17 +3,17 @@
 
 # Path to bowtie2 index
 INDEX:
-    "/beevol/home/rbilab/ref/indices/bowtie2/human/GRCm38/GRCm38"
+    "/beevol/home/rbilab/ref/indices/bowtie2/mouse/GRCm38/GRCm38"
 
 
 # Path to chrom.sizes file
 CHROMS:
-    "/beevol/home/rbilab/ref/genome/human/GRCm38/dna/Mus_musculus.GRCm38.dna.primary_assembly.UCSC.fa.fai"
+    "/beevol/home/rbilab/ref/genome/mouse/GRCm38/dna/Mus_musculus.GRCm38.dna.primary_assembly.UCSC.fa.fai"
 
 
 # Path to GTF file
 GTF:
-    "/beevol/home/rbilab/ref/annotation/human/GRCm38/gtf/Mus_musculus.GRCm38.96.gtf"
+    "/beevol/home/rbilab/ref/annotation/mouse/GRCm38/gtf/Mus_musculus.GRCm38.96.gtf"
 
 
 # Path to bed file containing regions to use for downstream analysis.

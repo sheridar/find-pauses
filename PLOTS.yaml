@@ -18,16 +18,16 @@
 samples:
   Xrn2:
     xrn2-r2:
-      Xrn2-WT_r2: "293flpin_Xrn2_WT_R2"
-      Xrn2-MT_r2: "293flpin_Xrn2_MT_R2"
+      WT_r2: "293flpin_Xrn2_WT_R2"
+      MT_r2: "293flpin_Xrn2_MT_R2"
 
     xrn2-r3:
-      Xrn2-WT_r3: "293flpin_Xrn2_WT_R3"
-      Xrn2-MT_r3: "293flpin_Xrn2_MT_R3"
+      WT_r3: "293flpin_Xrn2_WT_R3"
+      MT_r3: "293flpin_Xrn2_MT_R3"
 
     xrn2-r4:
-      Xrn2-WT_r4: "293flpin_Xrn2_WT_R4"
-      Xrn2-MT_r4: "293flpin_Xrn2_MT_R4"
+      WT_r4: "293flpin_Xrn2_WT_R4"
+      MT_r4: "293flpin_Xrn2_MT_R4"
 
 
 # Plot colors
@@ -50,14 +50,18 @@ params:
   list_dir:          "gene_lists/GRCm38"                                                  # Gene list directory from ref_dir path
   genome:            "genome/GRCm38/Mus_musculus.GRCm38.dna.primary_assembly.UCSC.fa.fai" # Chromosome sizes
   fasta:             "genome/GRCm38/Mus_musculus.GRCm38.dna.primary_assembly.UCSC.fa"     # Fasta for pulling sequences
-  genes_all:         "base_lists/GRCm38_HCT116_genes.bed.gz"
+  genes_all:         "base_lists/GRCm38_genes_fixed.bed.gz"
   genes_5:           "base_lists/GRCm38_5ksep.bed.gz"                                     # Gene list for 5' metaplots
   genes_3:           "base_lists/GRCm38_5ksep.bed.gz"                                     # Gene list for 3' metaplots
   genes_zone:        "base_lists/GRCm38_2ksep.bed.gz"                                     # Gene list for pausing zone plots
   genes_pause:       "base_lists/GRCm38_5ksep.bed.gz"                                     # Gene list for pause metaplots and sequence logos
   
+  TSS_bed:           "GRCm38_5_TSS_+500bp.bed.gz"                                         # Gene regions to use for grouping pause sites
+  body_bed:          "GRCm38_4_+500bp_pAS.bed.gz"
+  pAS_bed:           "GRCm38_3_pAS_+5kb.bed.gz"
+  
   exons:             "/splicing_lists/GRCm38_exons.bed.gz"                                # Bed file containing exon coordinates
-  #trxn_info:         "/base_lists/base_gene_files/GRCm38_transcripts.bed.gz"              # Bed file containing transcript info to use for filtering exons
+  trxn_info:         "/base_lists/base_gene_files/GRCm38_transcripts.bed.gz"              # Bed file containing transcript info to use for filtering exons
   
   gene_min_pct:      0.1                                                                  # Fraction of lowest expressing genes to exclude
   pause_strength:    "_strong_"                                                           # Pause strength label to use for loading input files
