@@ -1,5 +1,5 @@
 ---
-title: <p style="font-size:45px;">Spt5 mNET-seq</p>
+title: <p style="font-size:45px;">CCl4 eNET-seq</p>
 author: "Ryan Sheridan"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output: 
@@ -51,19 +51,9 @@ knitr::knit(here::here(plot_params$template_dir, "setup.Rmd"), "")
 
 ```{r "load exons"}
 
-ex_cols <- c(
-  bed_cols,    "symbol",
-  "gene_id",   "gene_name",
-  "txn_id",    "ex_coords",
-  "in_coords", "ex_len",
-  "in_len",    "biotype",
-  "seq"
-)
+exons <- read_tsv(str_c(list_dir, plot_params$exons))
 
-exons <- read_tsv(
-  str_c(list_dir, plot_params$exons),
-  col_names = ex_cols
-)
+ex_cols <- colnames(exons)
 
 # Transcript info
 # This must be passed separately since the exon bed file is generated from the
@@ -72,12 +62,12 @@ exons <- read_tsv(
 tx_cols <- c(
   bed_cols, "gene_id",
   "symbol", "biotype",
-  "txn_id", "support"
+  "transcript", "support"
 )
   
 tx_info <- here(list_dir, plot_params$trxn_info) %>%
   read_tsv(col_names = tx_cols) %>%
-  dplyr::select(txn_id, support)
+  dplyr::select(transcript, support)
 
 ```
 
@@ -95,11 +85,11 @@ exon_lens <- exons %>%
   ) %>%
   
   # Add transcript support level
-  left_join(tx_info, by = "txn_id") %>%
+  left_join(tx_info, by = "transcript") %>%
   
   dplyr::select(
     chrom, start, end, score,
-    strand, gene_name, txn_id, ex_coords,
+    strand, gene_name, transcript, ex_coords,
     in_coords, ex_len, support
   ) %>%
   
@@ -114,14 +104,14 @@ exon_lens <- exons %>%
 
 # Transcripts to use for 5'ss metaplots
 # some genes will have multiple transcripts
-high_conf_txns <- unique(exon_lens$txn_id)
+high_conf_txns <- unique(exon_lens$transcript)
 
 # Transcripts to use for quantifying exon/intron pausing
 # exclude genes with multiple transcript IDs (~500)
 ex_int_txns <- exon_lens %>%
   group_by(gene_name) %>%
-  dplyr::filter(n_distinct(txn_id) == 1) %>%
-  pull(txn_id)
+  dplyr::filter(n_distinct(transcript) == 1) %>%
+  pull(transcript)
 
 # Remove genes with multiple 1st exon coordinates
 # this is a small number (~100)
@@ -130,7 +120,7 @@ exon_lens <- exon_lens %>%
   dplyr::filter(n_distinct(ex_coords) == 1) %>%
   group_by(ex_len, .add = TRUE) %>%
   summarize(
-    txn_id = dplyr::first(txn_id),
+    txn_id = dplyr::first(transcript),
     .groups = "drop"
   )
 

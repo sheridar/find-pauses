@@ -17,11 +17,11 @@
 #
 samples:
   CCl4:
-    CCl4-r1:
+    ccl4-r1:
       control_r1: "ML_control1"
       CCl4_r1:    "ML_CCL1"
 
-    CCl4-r2:
+    ccl4-r2:
       control_r2: "ML_control2"
       CCl4_r2:    "ML_CCL2"
 

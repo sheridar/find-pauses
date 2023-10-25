@@ -577,7 +577,7 @@ convert_to_bars <- function(df_in, xclmn = "win_id", yclmn = "counts") {
 meta_exons <- exons %>%
   dplyr::filter(
     gene_name %in% g_5$name,
-    txn_id %in% high_conf_txns,
+    transcript %in% high_conf_txns,
     ex_len > 50,
     in_len > 50
   ) %>%

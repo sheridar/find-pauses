@@ -667,7 +667,7 @@ ex_int_beds <- ex_int_beds %>%
 # remove bottom 10%? Answer: the list was filtered to remove bottom 10% before
 # filtering to remove genes with 0 counts
 ex_int_beds <- ex_int_beds %>%
-  dplyr::filter(txn_id %in% ex_int_txns) %>%
+  dplyr::filter(transcript %in% ex_int_txns) %>%
   semi_join(g_z, by = c(gene_name = "name")) %>%
   mutate(region_class = ifelse(score == 1, "first", "body"))
 
@@ -784,7 +784,7 @@ sum_ex_int_counts <- function(df_in, sum_grps, n_grps, gene_list = NULL) {
 
 sum_grps <- c(
   "sample", "treat",     "rep",
-  "type",   "gene_name", "txn_id",
+  "type",   "gene_name", "transcript",
   "region"
 )
 

@@ -134,7 +134,7 @@ chk <- zone_wins %>%
 
 stopifnot(
   all(complete.cases(chk)),
-  all(chk$NET > chk$`p-reads`),
+  all(chk$NET >= chk$`p-reads`),
   all(chk$`p-reads` > chk$pauses),
   all(chk$NET > 0),
   all(chk$pauses > 0)

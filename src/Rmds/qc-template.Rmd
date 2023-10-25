@@ -58,6 +58,7 @@ grp_key <- qc_sams %>%
 
 # QC theme
 qc_theme <- theme(
+  strip.text   = element_text(size = 12),
   panel.border = element_blank(),
   axis.line    = element_line(color = "black", size = ln_pt)
 )
@@ -113,17 +114,22 @@ fq_sum <- fq_sum %>%
   )
   
 # Create tiles
+ratio <- n_distinct(fq_sum$metric) / n_distinct(fq_sum$fq_name)
+
 fq_sum %>%
   ggplot(aes(path, metric, fill = value)) +
   geom_tile(color = "white", size = 0.5) +
   facet_wrap(~ grp, scales = "free_x", nrow = 2) +
   scale_fill_manual(values = theme_colors[c(3, 4, 2)]) +
+  scale_x_discrete(labels = ~ str_trunc(.x, side = "right", width = 30)) +
   theme_info +
   theme(
+    aspect.ratio    = ratio,
+    strip.clip      = "off",
     legend.position = "top",
-    legend.title = element_blank(),
-    axis.title   = element_blank(),
-    axis.text.x  = element_text(size = 8, angle = 45, hjust = 1, vjust = 1)
+    legend.title    = element_blank(),
+    axis.title      = element_blank(),
+    axis.text.x     = element_text(size = 8, angle = 45, hjust = 1, vjust = 1)
   ) +
   qc_theme
 
@@ -165,7 +171,8 @@ trim_sum %>%
     lab_metric = "Pairs written (passing filters)",
     n_rows     = 2
   ) +
-  qc_theme
+  qc_theme +
+  theme(aspect.ratio = 5 / n_distinct(trim_sum$sample))
 
 ```
 
@@ -200,7 +207,8 @@ bwt_sum %>%
     lab_metric = c("aligned exactly 1 time", "aligned >1 times"),
     n_rows     = 2
   ) +
-  qc_theme
+  qc_theme +
+  theme(aspect.ratio = 5 / n_distinct(bwt_sum$sample))
 
 ```
 
@@ -238,7 +246,8 @@ dup_sum %>%
     lab_metric = "Number of reads out",
     n_rows     = 2
   ) +
-  qc_theme
+  qc_theme +
+  theme(aspect.ratio = 5 / n_distinct(dup_sum$sample))
 
 ```
 
@@ -306,7 +315,8 @@ counts_sum %>%
     lab_metric = "protein_coding",
     n_rows     = 2
   ) +
-  qc_theme
+  qc_theme +
+  theme(aspect.ratio = 5 / n_distinct(counts_sum$sample))
 
 ```
 
@@ -328,6 +338,11 @@ sub_sum <- sub_sum %>%
   pivot_longer(cols = -c(grp, sample), names_to = "metric") %>%
   dplyr::filter(metric %in% mets)
 
+# Check group specifications
+if (!identical(sort(names(qc_sams)), sort(unique(sub_sum$grp)))) {
+  stop("groups specified in SAMPLES.yaml do not match those in PLOTS.yaml, check your PLOTS.yaml config")
+}
+
 # Create bar graphs
 sub_sum %>%
   create_qc_bars(
@@ -338,7 +353,8 @@ sub_sum %>%
     lab_metric = "Sampled reads",
     n_rows     = 2
   ) +
-  qc_theme
+  qc_theme +
+  theme(aspect.ratio = 5 / n_distinct(sub_sum$sample))
 
 ```
 

@@ -323,9 +323,9 @@ create_pause_logo_fig <- function(met_df, pause_df, ttl, y_lab, y_lim = NULL) {
 # Gene regions
 # named list with data.frames to intersect pauses with
 regs <- c(
-  TSS  = "GRCh38_5_TSS_+500bp.bed.gz",
-  body = "GRCh38_4_+500bp_pAS.bed.gz",
-  pAS  = "GRCh38_3_pAS_+5kb.bed.gz"
+  TSS  = plot_params$TSS_bed,
+  body = plot_params$body_bed,
+  pAS  = plot_params$pAS_bed
 )
 
 regs <- regs %>%

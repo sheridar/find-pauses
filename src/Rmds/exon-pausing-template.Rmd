@@ -46,39 +46,9 @@ bed_cols <- c(
   "strand"
 )
 
-net_cols <- c(
-  name_cols, "score_1",
-  "strand",   "score_2", 
-  "biotype",  "counts"
-)
-
-pause_cols <- c(
-  name_cols, "score_1", 
-  "strand",   "symbol",
-  "biotype",  "counts"
-)
-
 win_cols <- c(
   name_cols, "win_id", 
   "strand",   "counts"
-)
-
-ex_win_cols <- c(
-  coord_cols, "ex_name",
-  "win_id",   "strand",
-  "counts"
-)
-
-ex_cols <- c(
-  name_cols,    "num",
-  "strand",     "symbol",
-  "transcript", "counts"
-)
-
-int_cols <- c(
-  name_cols, "num",
-  "strand",  "symbol",
-  "biotype", "counts"
 )
 
 ```
