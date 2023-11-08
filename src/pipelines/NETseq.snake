@@ -28,7 +28,11 @@ URL        = config["URL"]
 SSH        = config["SSH"]
 CMD_PARAMS = config["CMD_PARAMS"]
 TEST_GENES = config["TEST_GENES"]
+SFX             = config["SFX"]
+SINGULARITY     = config["SINGULARITY"]
 
+if SINGULARITY != "" or SINGULARITY is not None:
+  container: SINGULARITY
 
 # Files for metaplots
 META_BEDS = config["META_BEDS"]
@@ -92,8 +96,16 @@ wildcard_constraints:
 if not os.path.exists(FASTQ_DIR):
     os.makedirs(FASTQ_DIR)
 
-SFX    = ".fastq.gz"
-FQ_SFX = ["_" + x + "_001" + SFX for x in ["R1", "R2"]]
+def _get_sfx(sfx):
+    if sfx == ".fastq.gz":
+        outsfx = ["_" + x + "_001" + sfx for x in ["R1", "R2"]]
+    elif sfx == ".fq.gz":
+        outsfx = ["_" + x + sfx for x in ["1", "2"]]
+    else:
+        outsfx = sfx
+    return outsfx
+
+FQ_SFX = _get_sfx(SFX)
 
 def _get_fqs(sample, suffix):
     fq_pat   = sample + "*" + suffix

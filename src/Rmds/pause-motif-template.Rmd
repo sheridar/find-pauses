@@ -33,7 +33,7 @@ load_pause_beds <- function(prfxs, sfxs, paths, genes = NULL, regions = NULL) {
           sample = .y,
           name   = paste0(name, "*", score)
         ) %>%
-        select(-pause_coords)
+        dplyr::select(-pause_coords)
       
       if (!is.null(genes)) {
         .x <- .x %>%
@@ -59,7 +59,7 @@ load_pause_beds <- function(prfxs, sfxs, paths, genes = NULL, regions = NULL) {
     res <- regions %>%
       imap_dfr(~ {
         bed_intersect(res, .x, suffix = c("", ".y")) %>%
-          filter(
+          dplyr::filter(
             .overlap == 1,      # by default bookended intervals are included
             strand == strand.y  # some pAS regions from opposite strands will overlap between genes
           ) %>%
@@ -69,7 +69,7 @@ load_pause_beds <- function(prfxs, sfxs, paths, genes = NULL, regions = NULL) {
             n_lab  = str_c(comma(n_distinct(name)), " pauses\n"),
             n_lab  = str_c(n_lab, comma(n_distinct(gene_name)), " genes"),
           ) %>%
-          select(-ends_with(".y"), -.overlap)
+          dplyr::select(-ends_with(".y"), -.overlap)
       }) %>%
       ungroup()
 
@@ -100,7 +100,7 @@ calc_pause_overlap <- function(dfs) {
     y      = dfs[y_i],
     suffix = c("", ".y")
   ) %>%
-    filter(
+    dplyr::filter(
       strand == strand.y,
       .overlap > 0
     )
@@ -111,12 +111,12 @@ calc_pause_overlap <- function(dfs) {
     
     shared <- shared %>%
       group_by(name) %>%
-      filter(all(n_y %in% .source)) %>%
+      dplyr::filter(all(n_y %in% .source)) %>%
       ungroup()
   }
   
   shared <- shared %>%
-    select(-ends_with(".y"), -starts_with(".")) %>%
+    dplyr::select(-ends_with(".y"), -starts_with(".")) %>%
     distinct()
   
   n_shared <- nrow(shared)
@@ -245,8 +245,8 @@ create_pause_logo <- function(df_in, left = 9, right = 10, vline = 10.5) {
   
   res <- df_in %>%
     bed_slop(left = left, right = right, genome, strand = TRUE) %>%
-    rename(chr = chrom) %>%
-    select(chr, start, end, name, score, strand)
+    dplyr::rename(chr = chrom) %>%
+    dplyr::select(chr, start, end, name, score, strand)
   
   res <- res %>% 
     as.data.frame() %>%
@@ -386,7 +386,7 @@ pause_overlap <- nms %>%
     filt_args %>%
       iwalk(~ {
         dat <<- dat %>%
-          filter(!!sym(.y) == .x)
+          dplyr::filter(!!sym(.y) == .x)
       })
     
     if (nrow(dat) < 2) {
@@ -419,7 +419,7 @@ n_comps <- n_distinct(pause_overlap$comp)
 
 # Print pause stats
 pause_overlap %>%
-  filter(class == "unique") %>%
+  dplyr::filter(class == "unique") %>%
   distinct(sample, region, n_genes, n_pauses) %>%
   group_by(sample) %>%
   mutate(total_pauses = sum(n_pauses)) %>%
@@ -569,7 +569,7 @@ merge_p <- load_merge_wins(
 # Filter pauses for separated genes
 # add gene regions
 merge_p <- sep_pauses %>%
-  select(name, gene_name, sample, region, n_lab) %>%
+  dplyr::select(name, gene_name, sample, region, n_lab) %>%
   inner_join(merge_p, by = c("name", "sample"))
 
 # Filter for overlapping genes
@@ -601,7 +601,7 @@ filt_pauses <- merge_p %>%
 
 # filter pauses so they match merge_p
 filt_pauses <- sep_pauses %>%
-  select(-n_lab) %>%
+  dplyr::select(-n_lab) %>%
   inner_join(filt_pauses, by = merge_clmns) %>%
   group_by(sample, region) %>%
   mutate(
@@ -617,7 +617,7 @@ filt_pauses <- sep_pauses %>%
 stopifnot(all(filt_pauses$n_lab == filt_pauses$orig_lab))
 
 filt_pauses <- filt_pauses %>%
-  select(-orig_lab)
+  dplyr::select(-orig_lab)
 
 # Calculate mean signal
 mean_grps <- c("sample", "group", "type", "region")
@@ -648,7 +648,7 @@ sep_pause_df <- p_dat %>%
     .x %>%
       nest(!!sym(.y) := -c(sample, region))
   }) %>%
-  reduce(full_join, by = c("sample", "region")) %>%
+  purrr::reduce(full_join, by = c("sample", "region")) %>%
   separate(sample, sep = "_", into = c("treat", "rep"), remove = FALSE)
 
 # Check for rows not shared between all data.frames
@@ -666,7 +666,7 @@ n_chk <- sep_pause_df %>%
   ) %>%
   pivot_longer(all_of(names(p_dat))) %>%
   group_by(sample, region) %>%
-  filter(length(unique(value)) > 1)
+  dplyr::filter(length(unique(value)) > 1)
 
 stopifnot(nrow(n_chk) == 0)
 

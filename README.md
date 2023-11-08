@@ -1,18 +1,27 @@
-## mNET-seq analysis workflow
+# mNET-seq analysis workflow
 
-The analysis workflow is composed of two separate snakemake pipelines, one
-to perform the initial processing steps and the other to identify pause
+This workflow is composed of two separate snakemake pipelines, one
+to perform the initial processing steps and another to identify pause
 sites. Workflow settings can be modified with the NETseq.yaml and
 pauses.yaml config files.
 
-To run:
+<br>
 
-1. Specify sample names and directory paths using the SAMPLE.yaml config file
-2. Specify sample groups and colors for plotting using the PLOTS.yaml
-  config file
-3. Run the pipeline by submitting the run.sh script through bsub
+## Getting started
 
-### Processing
+1. Create a new repository using this template
+2. Clone to bodhi and navigate to the project directory
+3. Specify sample names and directory paths using the SAMPLE.yaml config file
+4. Specify sample groups and colors for plotting using the PLOTS.yaml
+   config file
+5. Run the pipeline by submitting the run.sh script through bsub
+6. Check the subsampling test results by running `cat results/stats/*_test.tsv`. This double checks that the per-gene subsampling was performed correctly, each file should be marked with 'PASS' 
+
+<br>
+
+## Workflow
+
+### Process reads
 
 1. Run FastQC
 1. Trim adapters
@@ -27,7 +36,7 @@ To run:
 6. Generate bed files for metaplots
 7. Check subsampling output files
 
-### Pauses
+### Identify pauses
 
 1. Find pauses using bedgraph files
 2. Filter for strong pauses

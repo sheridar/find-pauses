@@ -2,33 +2,23 @@
 ```{r "Packages", include = FALSE, cache = FALSE}
 
 # Load packages
-pcks <- c(
-  "ensembldb",      "Gviz",
-  "knitr",          "cowplot",
-  "tidyverse",      "Matrix",
-  "ggseqlogo",
-  "patchwork",      "colorspace",
-  "here",           "vroom",
-  "valr",           "fastcluster",
-  "scales",         "broom",
-  "colorblindr",    "ggbeeswarm",
-  "gprofiler2",     "ggrepel",
-  "ggpointdensity", "yaml",
-  "bedr"
-)
-
-purrr::walk(pcks, library, character.only = TRUE)
-
-# Set default chunk options
-opts_chunk$set(
-  message = FALSE, 
-  warning = FALSE,
-  comment = "",
-  echo    = FALSE,
-  dpi     = 150,
-  cache   = TRUE,
-  cache.lazy = FALSE
-)
+library(tidyverse)
+library(knitr)
+library(scales)
+library(here)
+library(vroom)
+library(Matrix)
+library(ggpointdensity)  # To create scatter plots
+library(ggseqlogo)       # To create sequence logos
+library(valr)            # To create sequence logos
+library(bedr)            # To create sequence logos
+library(cowplot)         # To arrange plot panels
+library(patchwork)       # To arrange plot panels
+library(yaml)            # To parse config yamls
+library(gprofiler2)      # To perform GO analysis
+library(ggrepel)         # To create GO plots
+library(colorspace)      # To modify color palette
+library(colorblindr)     # github, to modify color palette
 
 # Read functions
 source(here::here(plot_params$template_dir, "funs.R"))
@@ -55,8 +45,6 @@ theme_info <- theme_cowplot() +
     axis.line        = element_blank(),
     panel.border     = element_rect(fill = NA, color = "black", size = ln_pt),
     axis.ticks       = element_line(size = ln_pt, color = "black")
-    # axis.line        = element_line(color = "grey90"),
-    # axis.ticks       = element_line(color = "grey90")
   )
 
 theme_colors <- c(
@@ -147,11 +135,11 @@ load_genes <- function(drctry, file, len = 1, rm_cols = TRUE) {
   res <- here(drctry, file) %>%
     read_tsv(col_names = bed_cols) %>%
     mutate(gene_len = (end - start) / 1000) %>%
-    filter(gene_len > len)
+    dplyr::filter(gene_len > len)
   
   if (rm_cols) {
     res <- res %>%
-      select(name, gene_len)
+      dplyr::select(name, gene_len)
   }
   
   res
@@ -171,10 +159,10 @@ genes_exons <- load_genes(
 )
 
 genes_zone  <- genes_exons %>%
-  select(name, gene_len)
+  dplyr::select(name, gene_len)
 
 genes_exons <- genes_exons %>%
-  select(1:6)
+  dplyr::select(1:6)
 
 ```
 

@@ -4,15 +4,14 @@
 
 # Project name to use for naming summary files
 PROJ:
-    "Xrn2"
+    "T58Amyc"
 
 
 # Directories containing fastq files, this can be a relative path.
 # Multiple directories can be provided. The sample names must correspond
 # to the begining of the fastq name.
 RAW_DATA:
-    - "/beevol/home/bentleyd/fastq/220218_A00405_0531_BH352HDRX2"
-    - "path/to/another/directory"
+    - "/beevol/home/erickson/fastqs/220114_A00405_0515_AH7W23DSX3"
 
 
 # Directory to store results
@@ -22,11 +21,13 @@ RESULTS:
 
 # Specify base URL and destination to transfer bigwigs
 URL:
-    "http://amc-sandbox.ucdenver.edu/User25/fong-spt5"
+    "http://amc-sandbox.ucdenver.edu/User7/T58Amyc-find-pauses"
 
 SSH:
-    "sheridanr@amc-sandbox:~/public_html/fong-spt5"
+    "erickson@amc-sandbox:~/public_html/T58Amyc-find-pauses"
 
+MEMORY:
+    16
 
 # Sample groups to use for subsampling, use the following format. The
 # samples included in each group will be subsampled to the same read
@@ -44,15 +45,26 @@ SSH:
 #     - "sample_4_file_prefix"
 #
 SAMPLES:
-    xrn2-r2:
-        - "293flpin_Xrn2_WT_R2"
-        - "293flpin_Xrn2_MT_R2"
+    T58Amyc-r1:
+        - "NF_ERSrcT58AmycPlusDoxy_CTD1"
+        - "NF_ERSrcT58AmycMinusDoxy_CTD2"
 
-    xrn2-r3:
-        - "293flpin_Xrn2_WT_R3"
-        - "293flpin_Xrn2_MT_R3"
+    T58Amyc-r2:
+        - "NF_ERSrcT58AmycPlusDoxy_CTD2"
+        - "NF_ERSrcT58AmycMinusDoxy_CTD2"
+    
+    T58Amyc-r3:
+        - "NF_ERSrcT58AmycPlusDoxy_CTD3"
+        - "NF_ERSrcT58AmycMinusDoxy_CTD3"
 
-    xrn2-r4:
-        - "293flpin_Xrn2_WT_R4"
-        - "293flpin_Xrn2_MT_R4"
 
+SINGULARITY:
+  ""
+
+# file suffix
+#   ".fq.gz"
+#   ".fastq.gz"
+SFX:
+  ".fastq.gz"
+  
+  

@@ -14,12 +14,28 @@ output:
     highlight:      "tango"
 
 params:
-  config: "plots.yaml"
+  config: "PLOTS.yaml"
 ---
 
 ---
 
-```{r "plotting parameters"}
+```{r "chunk opts"}
+
+# Set default chunk options
+knitr::opts_chunk$set(
+  error      = TRUE,
+  message    = FALSE, 
+  warning    = FALSE,
+  comment    = "",
+  echo       = FALSE,
+  dpi        = 150,
+  cache      = FALSE,
+  cache.lazy = FALSE
+)
+
+```
+
+```{r "plotting parameters", include = FALSE}
 
 # Set plotting parameters
 yml <- here::here(params$config)
@@ -62,7 +78,7 @@ tx_cols <- c(
   
 tx_info <- here(list_dir, plot_params$trxn_info) %>%
   read_tsv(col_names = tx_cols) %>%
-  select(txn_id, support)
+  dplyr::select(txn_id, support)
 
 ```
 
@@ -73,7 +89,7 @@ tx_info <- here(list_dir, plot_params$trxn_info) %>%
 # only keep genes with 1st exon matching the gene TSS coordinate
 exon_lens <- exons %>%
   left_join(genes_exons, by = c(gene_name = "name"), suffix = c("", ".gene")) %>%
-  filter(
+  dplyr::filter(
     !is.na(chrom.gene),
     score == 1,          # exon number, only keep 1st exon
     ((strand == "+" & start == start.gene) | (strand == "-" & end == end.gene))
@@ -82,7 +98,7 @@ exon_lens <- exons %>%
   # Add transcript support level
   left_join(tx_info, by = "txn_id") %>%
   
-  select(
+  dplyr::select(
     chrom, start, end, score,
     strand, gene_name, txn_id, ex_coords,
     in_coords, ex_len, support
@@ -90,11 +106,11 @@ exon_lens <- exons %>%
   
   # Remove single exon genes
   # this is ~470 genes
-  filter(!is.na(in_coords) & !is.na(support)) %>%
+  dplyr::filter(!is.na(in_coords) & !is.na(support)) %>%
   
   # Use highest confidence transcript
   group_by(gene_name) %>%
-  filter(support == min(support)) %>%
+  dplyr::filter(support == min(support)) %>%
   ungroup()
 
 # Transcripts to use for 5'ss metaplots
@@ -105,17 +121,17 @@ high_conf_txns <- unique(exon_lens$txn_id)
 # exclude genes with multiple transcript IDs (~500)
 ex_int_txns <- exon_lens %>%
   group_by(gene_name) %>%
-  filter(n_distinct(txn_id) == 1) %>%
+  dplyr::filter(n_distinct(txn_id) == 1) %>%
   pull(txn_id)
 
 # Remove genes with multiple 1st exon coordinates
 # this is a small number (~100)
 exon_lens <- exon_lens %>%
   group_by(gene_name) %>%
-  filter(n_distinct(ex_coords) == 1) %>%
+  dplyr::filter(n_distinct(ex_coords) == 1) %>%
   group_by(ex_len, .add = TRUE) %>%
   summarize(
-    txn_id = first(txn_id),
+    txn_id = dplyr::first(txn_id),
     .groups = "drop"
   )
 
@@ -135,13 +151,23 @@ chunks <- names(plot_grps$samples) %>%
 
 ```
 
-`r knit_child(text = chunks)`
+`r knitr::knit_child(text = chunks)`
 
+# Session info
+
+```{r, echo = FALSE}
+
+sessionInfo()
+
+```
 
 
 
 
 ```{r "ENSEMBL DATABASE", eval = FALSE}
+
+library(ensembldb)
+library(Gviz)
 
 # Gene coordinates
 genes_all <- read_tsv(

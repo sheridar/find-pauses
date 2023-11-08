@@ -77,21 +77,48 @@ rule gene_subsample_2:
         bed   = RESULTS + "/{sample}/metaplot_beds/{sample}_{sub_region}_S.bed.gz",
         sum   = RESULTS + "/stats/{group}_{sub_region}_summary.tsv"
     output:
-        reads = RESULTS      + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_reads.bed.gz",
-        tmp   = temp(RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_tmp.bed"),
-        sub   = RESULTS      + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}.bed.gz"
+        reads = RESULTS      + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_reads.bed.gz"
     params:
-        job_name = "{sample}_{group}_{sub_region}",
+        job_name = "{sample}_{group}_{sub_region}_2",
         memory   = 16
     log:
-        out = RESULTS + "/logs/{sample}_{group}_{sub_region}.out",
-        err = RESULTS + "/logs/{sample}_{group}_{sub_region}.err"
+        out = RESULTS + "/logs/{sample}_{group}_{sub_region}_2.out",
+        err = RESULTS + "/logs/{sample}_{group}_{sub_region}_2.err"
     benchmark:
-        RESULTS + "/benchmarks/{sample}_{group}_{sub_region}.tsv"
+        RESULTS + "/benchmarks/{sample}_{group}_{sub_region}_2.tsv"
     message:
         "Subsampling reads for {wildcards.sample} {wildcards.group} {wildcards.sub_region}"
     threads:
         6
+    shell:
+        """
+        zcat {input.reads} \
+            | bedtools intersect -sorted -s -a {input.bed} -b - \
+            | sort -S1G --parallel={threads} -k1,1 -k4,4 -k2,2n \
+            | pigz -p {threads} \
+            > {output.reads}
+        """
+        
+
+# Subsample reads so each gene for each sample has the same total counts for
+# the subsampling region
+rule gene_subsample_3:
+    input:
+        reads = RESULTS      + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_reads.bed.gz"
+    output:
+        tmp   = temp(RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_tmp.bed")
+    params:
+        job_name = "{sample}_{group}_{sub_region}_3",
+        memory   = 16
+    log:
+        out = RESULTS + "/logs/{sample}_{group}_{sub_region}_3.out",
+        err = RESULTS + "/logs/{sample}_{group}_{sub_region}_3.err"
+    benchmark:
+        RESULTS + "/benchmarks/{sample}_{group}_{sub_region}_3.tsv"
+    message:
+        "Subsampling reads for {wildcards.sample} {wildcards.group} {wildcards.sub_region}"
+    threads:
+        1
     run:
         # Persistent dictionary
         # this contains the minimum number of reads aligning to each gene for
@@ -101,18 +128,8 @@ rule gene_subsample_2:
         # Intersect with subsampling region
         # this produces a bed file that only containing reads to use for
         # subsampling
-        shell(
-            """
-            zcat {input.reads} \
-                | bedtools intersect -sorted -s -a {input.bed} -b - \
-                | sort -S1G --parallel={threads} -k1,1 -k4,4 -k2,2n \
-                | pigz -p {threads} \
-                > {output.reads}
-            """
-        )
-
         # Create dictionary containing reads to use for subsampling
-        reads = gzip.open(output.reads, "rt")
+        reads = gzip.open(input.reads, "rt")
 
         READS_DICT = dict()
  
@@ -139,14 +156,31 @@ rule gene_subsample_2:
                 for l in READS_DICT[gene]:
                     out.write("%s\n" % l)
 
-        # Sort and zip bed file
-        shell(
-            """
-            cat {output.tmp} \
-                | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-                | pigz -p {threads} \
-                > {output.sub}
-            """
-        )
 
-
+# Subsample reads so each gene for each sample has the same total counts for
+# the subsampling region
+rule gene_subsample_4:
+    input:
+        tmp   = RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_tmp.bed"
+    output:
+        sub   = RESULTS      + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}.bed.gz"
+    params:
+        job_name = "{sample}_{group}_{sub_region}_4",
+        memory   = 16
+    log:
+        out = RESULTS + "/logs/{sample}_{group}_{sub_region}_4.out",
+        err = RESULTS + "/logs/{sample}_{group}_{sub_region}_4.err"
+    benchmark:
+        RESULTS + "/benchmarks/{sample}_{group}_{sub_region}_4.tsv"
+    message:
+        "Subsampling reads for {wildcards.sample} {wildcards.group} {wildcards.sub_region}"
+    threads:
+        6
+    shell:
+        """
+        cat {input.tmp} \
+            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+            | pigz -p {threads} \
+            > {output.sub}
+        """
+        

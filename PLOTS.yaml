@@ -16,40 +16,45 @@
 #     sample-2_r2: sample_2_file_prefix_r2
 #
 samples:
-  Xrn2:
-    xrn2-r2:
-      Xrn2-WT_r2: "293flpin_Xrn2_WT_R2"
-      Xrn2-MT_r2: "293flpin_Xrn2_MT_R2"
+  T58Amyc:
+    T58Amyc-r1:
+        T58Amyc-pdox_r1: "NF_ERSrcT58AmycPlusDoxy_CTD1"
+        T58Amyc-mdox_r1: "NF_ERSrcT58AmycMinusDoxy_CTD2"
 
-    xrn2-r3:
-      Xrn2-WT_r3: "293flpin_Xrn2_WT_R3"
-      Xrn2-MT_r3: "293flpin_Xrn2_MT_R3"
+    T58Amyc-r2:
+        T58Amyc-pdox_r2: "NF_ERSrcT58AmycPlusDoxy_CTD2"
+        T58Amyc-mdox_r2: "NF_ERSrcT58AmycMinusDoxy_CTD2"
+    
+    T58Amyc-r3:
+        T58Amyc-pdox_r3: "NF_ERSrcT58AmycPlusDoxy_CTD3"
+        T58Amyc-mdox_r3: "NF_ERSrcT58AmycMinusDoxy_CTD3"
 
-    xrn2-r4:
-      Xrn2-WT_r4: "293flpin_Xrn2_WT_R4"
-      Xrn2-MT_r4: "293flpin_Xrn2_MT_R4"
-
-
+SINGULARITY:
+  "src/RyanFindPauses.sif"
+  
 # Plot colors
 # 
 # For each section, a color must be provided for each sample name, in this
 # example we have two samples (Xrn2-WT and Xrn2-MT), so we must list two
 # colors
 colors:
-  Xrn2: ["black", "#4DB4C2"]
+  T58Amyc: ["black", "#4DB4C2"]
 
 
 # Plotting parameters
 params:
-  overwrite:         true                                                                 # Overwrite saved R objects
+  overwrite:         false                                                                 # Overwrite saved R objects
   
   template_dir:      "src/Rmds"                                                           # Directory containing Rmd templates
   obj_dir:           "objects"                                                            # Directory to save R objects
   tab_dir:           "tables"                                                             # Directory to save tables
-  ref_dir:           "/beevol/home/sheridanr/ref"                                         # Reference directory
+  # ref_dir:           "/beevol/home/sheridanr/ref"                                       # Reference directory
+  ref_dir:           "/beevol/home/erickson/ref/hg38/find_pauses/ref/GRCh38"               # Reference directory
   list_dir:          "gene_lists/GRCh38"                                                  # Gene list directory from ref_dir path
-  genome:            "genome/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa.fai" # Chromosome sizes
-  fasta:             "genome/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa"     # Fasta for pulling sequences
+  # genome:          "genome/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa.fai" # Chromosome sizes
+  # fasta:           "genome/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa"     # Fasta for pulling sequences
+  genome:            "genome/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa.fai"        # Chromosome sizes
+  fasta:             "genome/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa"            # Fasta for pulling sequences
   genes_all:         "base_lists/GRCh38_HCT116_genes.bed.gz"
   genes_5:           "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for 5' metaplots
   genes_3:           "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for 3' metaplots

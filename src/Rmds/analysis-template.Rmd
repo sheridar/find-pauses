@@ -14,7 +14,7 @@ pause_prfx <- str_c("_", win, stren)
 # Sample names
 # the names in the samples list should correspond to the sampling group
 sam_df <- sample_df %>%
-  filter(plot_grp == grp)
+  dplyr::filter(plot_grp == grp)
 
 sam_nms <- set_names(
   sam_df$sample,
@@ -82,7 +82,7 @@ n_reps <- length(reps)
 
 common_reps <- sam_df %>%
   group_by(rep) %>%
-  filter(all(treats %in% sam)) %>%
+  dplyr::filter(all(treats %in% sam)) %>%
   pull(rep) %>%
   unique()
 
@@ -181,7 +181,7 @@ gene_coords <- paths %>%
 # genes based on signal
 genes <- gene_coords %>%
   mutate(pct = percent_rank(counts)) %>%
-  filter(counts > 0 & pct > plot_params$gene_min_pct) %>%
+  dplyr::filter(counts > 0 & pct > plot_params$gene_min_pct) %>%
   dplyr::select(name, counts)
 
 g_5 <- genes_5 %>%
@@ -203,7 +203,7 @@ g_p <- genes_pause %>%
 ```{r "{{.x}} sample table"}
 
 sam_df %>%
-  select(-plot_grp)
+  dplyr::select(-plot_grp)
   
 ```
 
@@ -373,7 +373,7 @@ z_dfs <- list(
 z5_plts <- z_dfs %>%
   imap(~ {
     res <- .x %>%
-      filter(win_dist >= -0.5 & win_dist <= 0.5) %>%
+      dplyr::filter(win_dist >= -0.5 & win_dist <= 0.5) %>%
       create_meta(
         x         = "win_dist",
         y         = "counts",
@@ -436,7 +436,7 @@ z_plts[[2]]
 z3_plts_2 <- z_dfs %>%
   imap(~ {
     res <- .x %>%
-      filter(type == "sense") %>%
+      dplyr::filter(type == "sense") %>%
       create_meta(
         x          = "win_dist",
         y          = "counts",
@@ -575,7 +575,7 @@ convert_to_bars <- function(df_in, xclmn = "win_id", yclmn = "counts") {
 # only include separated genes
 # most genes not in high_conf_txns (545) are single exon genes
 meta_exons <- exons %>%
-  filter(
+  dplyr::filter(
     gene_name %in% g_5$name,
     txn_id %in% high_conf_txns,
     ex_len > 50,
@@ -634,8 +634,8 @@ merge_5ss <- load_merge_wins(
 # Calculate mean signal
 mean_5ss <- merge_5ss %>%
   left_join(meta_exons, by = "name") %>%
-  filter(!is.na(class)) %>%
-  select(sample, name, win_id, class, qrt, counts) %>%
+  dplyr::filter(!is.na(class)) %>%
+  dplyr::select(sample, name, win_id, class, qrt, counts) %>%
   calc_mean_signal(
     rel       = FALSE,
     win_col   = "win_id",
@@ -669,10 +669,10 @@ Zoomed-in versions of 5' splice site metaplots for 1st exons are shown below.
 
 # Create metaplots
 dat <- mean_5ss %>%
-  filter(class == "first")
+  dplyr::filter(class == "first")
 
 mx_sig <- dat %>%
-  filter(win_id < 50) %>%
+  dplyr::filter(win_id < 50) %>%
   pull(counts) %>%
   max()
 
