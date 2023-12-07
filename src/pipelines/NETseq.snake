@@ -15,20 +15,25 @@ shell.prefix("source ~/.bash_profile; set -o nounset -o pipefail -o errexit -x; 
 
 
 # Parameters from config.yaml
-PROJ       = config["PROJ"]
-RAW_DATA   = config["RAW_DATA"]
-RESULTS    = config["RESULTS"]
-SAMPLES    = config["SAMPLES"]
-INDEX      = config["INDEX"]
-CHROMS     = config["CHROMS"]
-GTF        = config["GTF"]
-GENES      = config["GENES"]
-MASK       = config["MASK"]
-MEMORY     = config["MEMORY"]
-URL        = config["URL"]
-SSH        = config["SSH"]
-CMD_PARAMS = config["CMD_PARAMS"]
-TEST_GENES = config["TEST_GENES"]
+PROJ        = config["PROJ"]
+RAW_DATA    = config["RAW_DATA"]
+RESULTS     = config["RESULTS"]
+SAMPLES     = config["SAMPLES"]
+INDEX       = config["INDEX"]
+CHROMS      = config["CHROMS"]
+GTF         = config["GTF"]
+GENES       = config["GENES"]
+MASK        = config["MASK"]
+MEMORY      = config["MEMORY"]
+URL         = config["URL"]
+SSH         = config["SSH"]
+CMD_PARAMS  = config["CMD_PARAMS"]
+TEST_GENES  = config["TEST_GENES"]
+SFX         = config["SFX"]
+SINGULARITY = config["SINGULARITY"]
+
+if SINGULARITY:
+    container: SINGULARITY
 
 
 # Files for metaplots
@@ -93,8 +98,17 @@ wildcard_constraints:
 if not os.path.exists(FASTQ_DIR):
     os.makedirs(FASTQ_DIR)
 
-SFX    = ".fastq.gz"
-FQ_SFX = ["_" + x + "_001" + SFX for x in ["R1", "R2"]]
+def _get_sfx(sfx):
+    if sfx == ".fastq.gz":
+        outsfx = ["_" + x + "_001" + sfx for x in ["R1", "R2"]]
+
+    elif sfx == ".fq.gz":
+        outsfx = ["_" + x + sfx for x in ["1", "2"]]
+
+    else:
+        outsfx = sfx
+
+    return outsfx
 
 def _get_fqs(sample, suffix):
     fq_pat   = sample + "*" + suffix
@@ -128,6 +142,8 @@ def _get_fqs(sample, suffix):
     
     # Return fastq file name
     return(re.sub(SFX + "$", "", fastq))
+
+FQ_SFX = _get_sfx(SFX)
 
 FASTQS = [_get_fqs(x, y) for x in SAMS_UNIQ for y in FQ_SFX]
 

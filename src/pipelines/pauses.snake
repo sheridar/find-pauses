@@ -20,6 +20,11 @@ WIN_SIZE        = config["WIN_SIZE"]
 STRENGTH_GROUPS = config["STRENGTH_GROUPS"]
 PAUSE_ROUND     = config["PAUSE_ROUND"]
 
+SINGULARITY = config["SINGULARITY"]
+
+if SINGULARITY:
+    container: SINGULARITY
+
 
 # Files for metaplots
 # need gene subsampling parameters so these results are included in pipeline

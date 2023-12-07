@@ -145,6 +145,11 @@ rule subsample_1:
                 out.write("%s\t%s\tFiltered reads\t%s\n" % (wildcards.group, k, d[k]))
                 out.write("%s\t%s\tSampled reads\t%s\n" % (wildcards.group, k, min_reads))
 
+# Function to retrieve min reads dict
+def _get_min_reads(wildcards):
+    minr = READS_DICT.fetch(wildcards.group)
+
+    return minr
 
 # Subsample libraries to equalize read counts for downstream analysis
 rule subsample_2:
@@ -154,8 +159,9 @@ rule subsample_2:
     output:
         RESULTS + "/{sample}-{group}/{sample}-{group}.bed.gz"
     params:
-        job_name = "{sample}_{group}",
-        memory   = MEMORY * 3
+        job_name  = "{sample}_{group}",
+        min_reads = _get_min_reads,
+        memory    = MEMORY * 3
     log:
         out = RESULTS + "/logs/{sample}_{group}.out",
         err = RESULTS + "/logs/{sample}_{group}.err"
@@ -165,18 +171,14 @@ rule subsample_2:
         "Subsampling reads for {wildcards.sample} {wildcards.group}"
     threads:
         16
-    run:
-        MIN_READS = READS_DICT.fetch(wildcards.group)
-
-        shell(
-            """
-            zcat {input.bed} \
-                | shuf -n {MIN_READS} \
-                | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-                | pigz -p {threads} \
-                > {output}
-            """
-        )
+    shell:
+        """
+        zcat {input.bed} \
+            | shuf -n {params.min_reads} \
+            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+            | pigz -p {threads} \
+            > {output}
+        """
 
 
 # Create subsampling summary

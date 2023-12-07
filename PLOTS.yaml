@@ -26,6 +26,10 @@ samples:
       CCl4_r2:    "ML_CCL2"
 
 
+SINGULARITY:
+  
+
+
 # Plot colors
 # 
 # For each section, a color must be provided for each sample name, in this

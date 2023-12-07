@@ -6,9 +6,11 @@
 
 set -o nounset -o pipefail -o errexit -x
 
-module load fastqc
-module load bowtie2
-module load samtools
+module load python/3.8.5
+module load singularity
+module load fastqc/0.11.9
+module load bowtie2/2.3.2
+module load samtools/1.9
 module load subread
 module load gcc/7.4.0
 module load R/4.0.3

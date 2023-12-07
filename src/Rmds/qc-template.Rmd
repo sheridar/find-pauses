@@ -73,7 +73,7 @@ qc_theme <- theme(
 
 # Some sample names are missing part of the fastq file name
 # need to match samples with fastq files
-fq_sfx <- "(_S[0-9]+_L[0-9]+|)_R[12]_[0-9]+.fastq.gz$"
+fq_sfx <- "(_S[0-9]+|)(_L[0-9]+|)(_R[12]_[0-9]+.fastq|_[12].fq).gz$"
 
 fq_sum <- fq_sum %>%
   vroom(col_names = c("value", "metric", "path")) %>%
@@ -104,7 +104,7 @@ stopifnot(all(names(sams_shrt_2) %in% fq_sum$sample))
 fq_sum <- fq_sum %>%
   left_join(grp_key, by = "sample") %>%
   trim_path(
-    rm_str   = c("_S[0-9]+_L[0-9]{3}", "_[0-9]{3}.fastq.gz$", "^NF_"),
+    rm_str   = c("_S[0-9]+_L[0-9]{3}", "_[0-9]{3}.fastq.gz$", ".fq.gz$", "^NF_"),
     file_col = "path"
   ) %>%
   remove_com_key(key_col = "path") %>%
