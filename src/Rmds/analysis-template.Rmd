@@ -691,6 +691,282 @@ dat %>%
 
 <br>
 
+## NO SUBSAMPLING
+
+Mean mNET-seq signal (top) or mean relative signal (bottom) is shown below for 5' (10 bp bins) and 3' regions (50 bp bins). These plots were generated using files generated without subsampling reads to equalize library sizes.
+
+* genes >2 kb long and separated by >5 kb
+* bottom `r plot_params$gene_min_pct * 100`% of genes were removed
+
+```{r "{{.x}} 5' mean NO SUBSAMPLING"}
+
+# Directories for files generated without subsampling
+meta_dir_nosub <- sam_df$file %>%
+  set_names() %>%
+  map_chr(~ here(res_dir, .x, "metaplot_beds"))
+
+new_sample_names <- set_names(sams, names(meta_dir_nosub))
+
+# Load and merge bed files
+sfxs <- c(
+  "sense"      = "_5-10bp_S_N.bed.gz",
+  "anti-sense" = "_5-10bp_AS_N.bed.gz"
+)
+
+out <- here(plot_params$obj_dir, str_c(grp, "_NOSUB_NET_5_10bp.tsv.gz"))
+
+merge_5_nosub <- load_merge_wins(
+  prfxs     = names(meta_dir_nosub),  # Sample names
+  sfxs      = sfxs,              # Suffix list with types as names
+  paths     = meta_dir_nosub,    # Directories containing files
+  group     = grp,               # Group name
+  genes     = g_5,               # Genes to filter
+  
+  file_out  = out,               # Path to output file
+  overwrite = plot_params$overwrite,  # Overwrite output file if it exists
+  col_names = win_cols,          # Column names for bed files
+  win_num   = 800,               # Total number of expected windows (including sense + anti)
+  ref_win   = 201,               # Reference window for adjusting window ids
+  win_min   = 101                # Min window for filtering
+) %>%
+  check_group_size(
+    clmns = c("name", "sample", "type", "win_id"),
+    quiet = TRUE
+  ) %>%
+  mutate(sample = new_sample_names[sample])
+
+# Calculate mean signal
+# need to add subsampling group (even though no subsampling was performed)
+# so name conforms to expected format 
+mean_5_nosub <- merge_5_nosub %>%
+  calc_mean_signal(
+    rel  = FALSE,
+    grps = c("sample", "group", "type")
+  ) %>%
+  format_sample_names(add_grp = TRUE)
+
+```
+
+```{r "{{.x}} 3' mean NO SUBSAMPLING"}
+
+# Load bed files
+sfxs <- c(
+  "sense"      = "_3-50bp_S_N.bed.gz",
+  "anti-sense" = "_3-50bp_AS_N.bed.gz"
+)
+
+out <- here(plot_params$obj_dir, str_c(grp, "_NOSUB_NET_3_50bp.tsv.gz"))
+
+merge_3_nosub <- load_merge_wins(
+  prfxs     = names(meta_dir_nosub),  # Sample list with group as name
+  sfxs      = sfxs,              # Suffix list with types as names
+  paths     = meta_dir_nosub,    # Directories containing files
+  group     = grp,               # Group name
+  genes     = g_3,               # Genes to filter
+  
+  file_out  = out,               # Path to output file
+  overwrite = plot_params$overwrite,  # Overwrite output file if it exists
+  col_names = win_cols,          # Column names for bed files
+  win_num   = 400,               # Total number of expected windows (including sense + anti)
+  ref_win   = 100,               # Reference window for adjusting window ids
+  win_min   = 61,                # Min window for filtering
+  win_max   = 170                # Max window for filtering
+) %>%
+  check_group_size(
+    clmns = c("name", "sample", "type", "win_id"),
+    quiet = TRUE
+  ) %>%
+  mutate(sample = new_sample_names[sample])
+
+# Calculate mean signal
+mean_3_nosub <- merge_3_nosub %>%
+  calc_mean_signal(
+    rel  = FALSE,
+    grps = c("sample", "group", "type")
+  ) %>%
+  format_sample_names(add_grp = TRUE)
+
+```
+
+```{r "{{.x}} 5' 3' metaplots NO SUBSAMPLING", fig.width = 9, fig.height = 4}
+
+# Create final figure
+ylim_3 <- set_strand_ratio(mean_3_nosub, mean_5_nosub, mtplyr = 4)
+
+se <- NULL
+
+if (n_reps > 1) {
+  se <- "rep"
+}
+
+create_meta_fig(
+  df_5      = mean_5_nosub,
+  df_3      = mean_3_nosub,
+  color     = "treat",
+  ylim_3    = ylim_3,
+  sams      = treats,
+  plot_clrs = clrs,
+  se_clmn   = se,
+  plot_ttl  = "mean eNET-seq (RPKM)"
+)
+
+```
+
+```{r "{{.x}} 5' 3' rel metaplots NO SUBSAMPLING", fig.width = 10, fig.height = 4}
+
+# Calculate mean signal
+rel_5_nosub <- merge_5_nosub %>%
+  calc_mean_signal(
+    rel  = TRUE,
+    grps = c("sample", "group", "type")
+  ) %>%
+  format_sample_names(add_grp = TRUE)
+
+# Calculate mean signal
+rel_3_nosub <- merge_3_nosub %>%
+  calc_mean_signal(
+    rel  = TRUE,
+    grps = c("sample", "group", "type")
+  ) %>%
+  format_sample_names(add_grp = TRUE)
+
+# Create final figure
+ylim_3 <- set_strand_ratio(rel_3_nosub, rel_5_nosub, mtplyr = 4)
+
+create_meta_fig(
+  df_5      = rel_5_nosub,
+  df_3      = rel_3_nosub,
+  color     = "treat",
+  ylim_3    = ylim_3,
+  sams      = treats,
+  plot_clrs = clrs,
+  se_clmn   = se,
+  plot_ttl  = "relative eNET-seq signal"
+)
+
+```
+
+<br>
+
+Zoomed-in versions of the 5' and 3' metaplots are shown below.
+
+```{r "{{.x}} 5' 3' zoom metaplots NO SUBSAMPLING", fig.width = 10, fig.height = 5}
+
+meta_theme <- theme(
+  aspect.ratio = 0.9,
+  legend.position = "top"
+)
+
+if (n_treats == 1) {
+  meta_theme$legend.position <- "none"
+}
+
+# Create zoomed 5' plots
+z_dfs <- list(
+  "mean eNET-seq (RPKM)"     = mean_5_nosub,
+  "relative eNET-seq signal" = rel_5_nosub
+)
+
+z5_plts <- z_dfs %>%
+  imap(~ {
+    res <- .x %>%
+      dplyr::filter(win_dist >= -0.5 & win_dist <= 0.5) %>%
+      create_meta(
+        x         = "win_dist",
+        y         = "counts",
+        color     = "treat",
+        alpha     = "type",
+        n_lab     = "n",
+        se_clmn   = se,
+        plot_clrs = clrs,
+        plot_lvls = treats
+      ) +
+      labs(y = .y) +
+      add_breaks(seq(-0.6, 0.6, 0.2), "TSS") +
+      meta_theme
+    
+    res
+  })
+
+# Create zoomed 3' plots
+z_dfs <- list(
+  "mean eNET-seq (RPKM)"     = mean_3_nosub,
+  "relative eNET-seq signal" = rel_3_nosub
+)
+
+z3_plts <- z_dfs %>%
+  imap(~ {
+    res <- .x %>%
+      create_meta(
+        x         = "win_dist",
+        y         = "counts",
+        color     = "treat",
+        alpha     = "type",
+        n_lab     = "n",
+        se_clmn   = se,
+        plot_clrs = clrs,
+        plot_lvls = treats
+      ) +
+      labs(y = .y) +
+      add_breaks(seq(-3, 3, 1.5), "pAS") +
+      meta_theme
+    
+    res
+  })
+
+# Creat final figures
+z_plts <- map2(z5_plts, z3_plts, ~ {
+  plot_grid(
+    .x, .y,
+    align = "vh",
+    axis  = "trbl"
+  )
+})
+
+z_plts[[1]]
+z_plts[[2]]
+
+```
+
+```{r "{{.x}} 3' zoom metaplots NO SUBSAMPLING", fig.width = 10, fig.height = 5}
+
+z3_plts_2 <- z_dfs %>%
+  imap(~ {
+    res <- .x %>%
+      dplyr::filter(type == "sense") %>%
+      create_meta(
+        x          = "win_dist",
+        y          = "counts",
+        color      = "treat",
+        alpha      = "type",
+        n_lab      = "n",
+        se_clmn    = se,
+        plot_clrs  = clrs,
+        plot_lvls  = treats,
+        h_line     = NULL,
+        plot_alphs = 1
+      ) +
+      labs(y = .y) +
+      add_breaks(seq(-3, 3, 1.5), "pAS") +
+      meta_theme +
+      expand_limits(y = 0) +
+      theme(
+        aspect.ratio = 0.7
+      )
+    
+    res
+  })
+
+z3_plts_2 %>%
+  plot_grid(
+    plotlist = .,
+    nrow = 1
+  )
+
+```
+
+<br>
+
 ## Pause motifs
 
 `r knit_child(text = chunks$motif)`

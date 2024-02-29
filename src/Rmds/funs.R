@@ -21,6 +21,66 @@ plot_color_palette <- function(cols_in, ...) {
   res
 }
 
+#' Format p-values for plotting
+#' @noRd
+.format_pvalue <- function(p, digits = 1, cutoffs = NULL) {
+  
+  # Set p label based on vector of cutoffs
+  if (!is.finite(p)) return(as.character(NA))
+  
+  if (!is.null(cutoffs)) {
+    if (any(duplicated(cutoffs))) {
+      cli::cli_abort("Cutoff values for p_label must be unique.")
+    }
+    
+    # Set default labels when not provided by user
+    if (is.null(names(cutoffs))) {
+      cutoffs <- sort(cutoffs, decreasing = TRUE)
+      
+      names(cutoffs) <- purrr::imap_chr(
+        cutoffs, ~ paste0(rep("*", .y), collapse = "")
+      )
+    }
+    
+    cutoffs <- sort(cutoffs)
+    p_label <- as.character(NA)
+    
+    for (val in names(cutoffs)) {
+      if (p < cutoffs[val]) {
+        p_label <- val
+        
+        break()
+      }
+    }
+    
+    # Treat "value" as a keyword that will allow user to display actual
+    # p-value for a certain cutoff
+    # All custom labels need to be wrapped in quotes for parsing
+    if (!identical(p_label, "value")) {
+      if (!is.na(p_label)) p_label <- paste0("\'", p_label, "\'")
+      
+      return(p_label)
+    }
+  }
+  
+  # Format p-value label
+  if (p >= 0.1) return(as.character(round(p, 1)))
+  
+  p <- scales::label_scientific(digits = digits)(p)
+  
+  ex <- str_extract_all(p, "[+\\-][0-9]+$")
+  
+  p <- sub(paste0("\\", ex, "$"), "", p)
+  
+  ex <- as.numeric(ex)
+  ex <- as.character(ex)
+  
+  p <- sub("e", "*x*10^", p)
+  p <- paste0(p, ex)
+  
+  p
+}
+
 #' Create labeller function to add cell n labels
 #' 
 #' @param sobj_in Seurat object or data.frame containing plot data.
@@ -549,13 +609,23 @@ load_merge_wins <- function(prfxs, sfxs, paths, group, genes = NULL, file_out = 
   
   # Load bed files
   wins <- paths %>%
-    pmap_dfr(
-      load_bed,
-      col_names = col_names,
-      genes     = genes
-    )
+    pmap_dfr(~ {
+      args <- list(...)
+      
+      args$path %>%
+        load_bed(
+          col_names = col_names,
+          genes     = genes
+        ) %>%
+        mutate(
+          group  = args$group,
+          sample = args$sample,
+          type   = args$type,
+          file   = basename(args$path)
+        )
+    })
   
-  # Merge bed files
+  # Merge window bed files so all files include the same genes
   res <- wins %>%
     merge_wins(..., groups = c("sample", "group"))
   
@@ -819,8 +889,10 @@ add_breaks <- function(breaks = seq(-10, 10), zero_lab = "0 kb") {
 }
 
 # Helper to create 5' and 3' meta plot panels
-create_meta_fig <- function(df_5, df_3, color, ylim_3, sams = NULL, grp = NULL, plot_clrs, se_clmn = NULL, file = NULL,
-                            dims = c(10, 6), plot_ttl = "mean signal (RPKM)", return_list = FALSE, ...) {
+create_meta_fig <- function(df_5, df_3, color, ylim_3, sams = NULL, grp = NULL,
+                            plot_clrs, se_clmn = NULL, file = NULL, dev = "png",
+                            dims = c(10, 6), plot_ttl = "mean signal (RPKM)",
+                            return_list = FALSE, ...) {
   
   # Filter samples
   if (!is.null(sams)) {
@@ -911,7 +983,7 @@ create_meta_fig <- function(df_5, df_3, color, ylim_3, sams = NULL, grp = NULL, 
     ggsave(
       filename = basename(file),
       plot     = res,
-      device   = "png",
+      device   = dev,
       path     = dirname(file),
       width    = dims[1],
       height   = dims[2],
@@ -2150,7 +2222,8 @@ create_browser <- function(bgs, gene, genes_df, genes_db, track_clrs,
   res
 }
 
-.get_bgs <- function(samples, grps, plt_grps, sample_df, results_dir = res_dir) {
+.get_bgs <- function(samples, grps, plt_grps, sample_df,
+                     subsample_region = "_gene", results_dir = res_dir) {
   
   args <- list(
     samples  = samples,
@@ -2168,7 +2241,7 @@ create_browser <- function(bgs, gene, genes_df, genes_db, track_clrs,
           sampling_grp == args$grps,
           plot_grp     == args$plt_grps
         ) %>%
-        mutate(file = str_c(file, "-", sampling_grp, "_gene")) %>%
+        mutate(file = str_c(file, "-", sampling_grp, subsample_region)) %>%
         pull(file)
       
       file.path(results_dir, fl, fl)
@@ -2190,7 +2263,8 @@ create_browser <- function(bgs, gene, genes_df, genes_db, track_clrs,
   res
 }
 
-.get_pauses <- function(samples, grps, plt_grps, sample_df, results_dir = res_dir) {
+.get_pauses <- function(samples, grps, plt_grps, sample_df,
+                        subsample_region = "_gene", results_dir = res_dir) {
   
   args <- list(
     samples  = samples,
@@ -2208,7 +2282,7 @@ create_browser <- function(bgs, gene, genes_df, genes_db, track_clrs,
           sampling_grp == args$grps,
           plot_grp     == args$plt_grps
         ) %>%
-        mutate(file = str_c(file, "-", sampling_grp, "_gene")) %>%
+        mutate(file = str_c(file, "-", sampling_grp, subsample_region)) %>%
         pull(file)
     })
   
