@@ -4,7 +4,7 @@
 # Run fastqc
 rule fastqc:
     input:
-        FASTQ_DIR + "/{fastq}.fastq.gz"
+        FASTQ_DIR + "/{fastq}" + FASTQ_SFX
     output:
         RESULTS + "/fastqc/{fastq}_fastqc.zip",
         RESULTS + "/fastqc/{fastq}_fastqc.html"

@@ -17,6 +17,7 @@ shell.prefix("source ~/.bash_profile; set -o nounset -o pipefail -o errexit -x; 
 # Parameters from config.yaml
 PROJ       = config["PROJ"]
 RAW_DATA   = config["RAW_DATA"]
+FASTQ_SFX  = config["FASTQ_SFX"]
 RESULTS    = config["RESULTS"]
 SAMPLES    = config["SAMPLES"]
 INDEX      = config["INDEX"]
@@ -93,10 +94,19 @@ wildcard_constraints:
 if not os.path.exists(FASTQ_DIR):
     os.makedirs(FASTQ_DIR)
 
-SFX    = ".fastq.gz"
-FQ_SFX = ["_" + x + "_001" + SFX for x in ["R1", "R2"]]
+def _get_sfx(sfx):
+    if sfx == ".fastq.gz":
+        fq_sfx = ["_" + x + "_001" + sfx for x in ["R1", "R2"]]
 
-def _get_fqs(sample, suffix):
+    elif sfx == ".fq.gz":
+        fq_sfx = ["_" + x + sfx for x in ["1", "2"]]
+
+    else:
+        fq_sfx = sfx
+
+    return fq_sfx
+
+def _get_fqs(sample, suffix, full_name = False):
     fq_pat   = sample + "*" + suffix
     fq_paths = []
 
@@ -120,16 +130,24 @@ def _get_fqs(sample, suffix):
 
     # Create symlinks
     # Using subprocess since os.symlink requires a target file instead of target directory
-    if not os.path.exists(FASTQ_DIR + "/" + fastq):
+    fq_lnk = FASTQ_DIR + "/" + fastq
+
+    if not os.path.exists(fq_lnk):
         cmd = "ln -s " + fq_paths + " " + FASTQ_DIR
 
         if cmd != "":
             subprocess.run(cmd, shell = True)
     
-    # Return fastq file name
-    return(re.sub(SFX + "$", "", fastq))
+    # Return fastq path or just the fastq name
+    # FASTQ_SFX is defined outside of function and should be just .fastq.gz or .fq.gz
+    if full_name:
+        return(fq_lnk)
 
-FASTQS = [_get_fqs(x, y) for x in SAMS_UNIQ for y in FQ_SFX]
+    else:
+        return(re.sub(FASTQ_SFX + "$", "", fastq))
+
+FULL_FQ_SFX = _get_sfx(FASTQ_SFX)
+FASTQS      = [_get_fqs(x, y) for x in SAMS_UNIQ for y in FULL_FQ_SFX]
 
 
 # Final output files
@@ -215,7 +233,7 @@ include: "../rules/03_dedup.snake"
 # Run featureCounts
 include: "../rules/04_featureCounts.snake"
 
-# Sample subsampling
+# Library subsampling
 include: "../rules/04_subsample.snake"
 
 # Gene subsampling

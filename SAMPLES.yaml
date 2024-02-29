@@ -7,11 +7,17 @@ PROJ:
     "Xrn2"
 
 
-# Directories containing fastq files, this can be a relative path.
+# Directories containing FASTQ files, this can be a relative path.
 # Multiple directories can be provided. The sample names must correspond
 # to the begining of the fastq name.
 RAW_DATA:
     - "/beevol/home/bentleyd/fastq/220218_A00405_0531_BH352HDRX2"
+
+
+# FASTQ file suffix, can be either '.fastq.gz' or '.fq.gz'
+# this is used to pull fastq files
+FASTQ_SFX:
+   ".fastq.gz"
 
 
 # Directory to store results
