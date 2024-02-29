@@ -15,21 +15,22 @@ shell.prefix("source ~/.bash_profile; set -o nounset -o pipefail -o errexit -x; 
 
 
 # Parameters from config.yaml
-PROJ       = config["PROJ"]
-RAW_DATA   = config["RAW_DATA"]
-FASTQ_SFX  = config["FASTQ_SFX"]
-RESULTS    = config["RESULTS"]
-SAMPLES    = config["SAMPLES"]
-INDEX      = config["INDEX"]
-CHROMS     = config["CHROMS"]
-GTF        = config["GTF"]
-GENES      = config["GENES"]
-MASK       = config["MASK"]
-MEMORY     = config["MEMORY"]
-URL        = config["URL"]
-SSH        = config["SSH"]
-CMD_PARAMS = config["CMD_PARAMS"]
-TEST_GENES = config["TEST_GENES"]
+PROJ         = config["PROJ"]
+RAW_DATA     = config["RAW_DATA"]
+FASTQ_SFX    = config["FASTQ_SFX"]
+RESULTS      = config["RESULTS"]
+SAMPLES      = config["SAMPLES"]
+INDEX        = config["INDEX"]
+CHROMS       = config["CHROMS"]
+GTF          = config["GTF"]
+GENES        = config["GENES"]
+MASK         = config["MASK"]
+MEMORY       = config["MEMORY"]
+URL          = config["URL"]
+SSH          = config["SSH"]
+CMD_PARAMS   = config["CMD_PARAMS"]
+MATRIX_GENES = config["MATRIX_GENES"]
+TEST_GENES   = config["TEST_GENES"]
 
 
 # Files for metaplots

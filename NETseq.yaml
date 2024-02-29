@@ -43,6 +43,13 @@ GENE_SUBSAMPLE_BEDS:
     gene: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/base_lists/GRCh38_4_TSS_pAS.bed.gz"
 
 
+# Bed files with gene coordinates to use for making matrix files
+# genes should be divided by strand
+MATRIX_GENES:
+    pos: "/beevol/home/erickson/ref/hg38/ref/hg38_gene_fw.bed"
+    neg: "/beevol/home/erickson/ref/hg38/ref/hg38_gene_rev.bed"
+
+
 # Regions to use for testing output files from per-gene subsampling. This
 # will double check that each gene in the provided bed file has the same
 # number of overlapping reads for each sample in the subsampling group. This
@@ -90,6 +97,9 @@ CMD_PARAMS:
     umi_pattern:   "NNNNNNNNNNNN"
     umi_tools:     " --method unique --read-length "
     featureCounts: " --extraAttributes 'gene_name,gene_biotype' -s 0 -t gene -O "
+    computeMatrix: " --referencePoint TSS --binSize 100 --upstream 2000 --downstream 2000 --missingDataAsZero --skipZeros -q "
+
+
 
 
 
