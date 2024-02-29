@@ -1,22 +1,26 @@
 # ===== Rules for intersecting reads with genomic regions ======================
 
 
-# Intersect reads with regions for gene subsampling
-rule subsample_metaplot_beds:
+# Intersect reads with metaplot regions
+# these gene counts are used for the per-gene subsampling
+# these are also used for generating plots without subsampling
+rule raw_metaplot_beds:
     input:
         RESULTS + "/{sample}/{sample}_shift.bed.gz"
     output:
-        S   = RESULTS + "/{sample}/metaplot_beds/{sample}_{sub_region}_S.bed.gz",
-        S_N = RESULTS + "/{sample}/metaplot_beds/{sample}_{sub_region}_S_N.bed.gz",
+        S    = RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S.bed.gz",
+        AS   = RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_AS.bed.gz",
+        S_N  = RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S_N.bed.gz",
+        AS_N = RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_AS_N.bed.gz"
     params:
-        job_name = "{sample}_{sub_region}_metaplot_beds",
+        job_name = "{sample}_{region}_metaplot_beds",
         memory   = MEMORY * 2,
-        bed      = lambda wildcards: GENE_SUB_BEDS[wildcards.sub_region]
+        bed      = lambda wildcards: META_BEDS[wildcards.region]
     log:
-        out = RESULTS + "/logs/{sample}_{sub_region}_metaplot_beds.out",
-        err = RESULTS + "/logs/{sample}_{sub_region}_metaplot_beds.err"
+        out = RESULTS + "/logs/{sample}_{region}_metaplot_beds.out",
+        err = RESULTS + "/logs/{sample}_{region}_metaplot_beds.err"
     message:
-        "Intersecting reads for {wildcards.sample} {wildcards.sub_region}"
+        "Intersecting reads for {wildcards.sample} {wildcards.region} without subsampling"
     threads:
         6
     shell:
@@ -30,6 +34,12 @@ rule subsample_metaplot_beds:
             {output.S} \
             {output.S_N} \
             "-wa -c -s"
+
+        intersect_reads \
+            {input} \
+            {params.bed} \
+            {threads} \
+            {output.AS} \
+            {output.AS_N} \
+            "-wa -c -S"
         """
-
-
