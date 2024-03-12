@@ -4,7 +4,7 @@
 # Intersect reads with metaplot regions
 # these gene counts are used for the per-gene subsampling
 # these are also used for generating plots without subsampling
-rule raw_metaplot_beds:
+rule metaplot_beds_nosub:
     input:
         RESULTS + "/{sample}/{sample}_shift.bed.gz"
     output:

@@ -56,8 +56,19 @@ SAMS = [[y, x] for y in SAMPLES for x in SAMPLES[y]]
 GRPS = [x[0] for x in SAMS]
 SAMS = [x[1] for x in SAMS]
 
-GRPS_UNIQ = list(set(GRPS))
-SAMS_UNIQ = list(set(SAMS))
+def _get_uniq_list(list_in):
+    seen = set()
+    out = []
+    
+    for item in list_in:
+        if item not in seen:
+            seen.add(item)
+            out.append(item)
+
+    return(out)
+
+GRPS_UNIQ = _get_uniq_list(GRPS)
+SAMS_UNIQ = _get_uniq_list(SAMS)
 
 
 # Gene subsampling groups
@@ -185,7 +196,10 @@ rule all:
             group = GRPS_UNIQ, sub_region = GENE_SUB_REGS
         ),
 
-        # Bigwigs
+        # Bigwigs without subsampling
+        RESULTS + "/urls/" + PROJ + "_nosub_igv.xml",
+
+        # Bigwigs with subsampling
         expand(
             RESULTS + "/{sam_grp}/{sam_grp}_neg.bw",
             sam_grp = GENE_SUB_GRPS
@@ -233,11 +247,14 @@ include: "../rules/03_dedup.snake"
 # Run featureCounts
 include: "../rules/04_featureCounts.snake"
 
-# Library subsampling
+# Files without subsampling
+include: "../rules/04_metaplots_nosub.snake"
+include: "../rules/05_bigwigs_nosub.snake"
+
+# Sample subsampling
 include: "../rules/04_subsample.snake"
 
 # Gene subsampling
-include: "../rules/04_metaplots_raw.snake"
 include: "../rules/05_gene_subsample.snake"
 
 # Create bigwigs

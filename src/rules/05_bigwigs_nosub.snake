@@ -4,27 +4,27 @@
 # Create bigwigs using single bp read coordinates 
 # Do not reverse strands since read #1 from QIA-seq libraries is the sense
 # direction
-rule bigwigs:
+rule bigwigs_nosub:
     input:
-        RESULTS + "/{sam_grp}/{sam_grp}.bed.gz"
+        RESULTS + "/{sample}/{sample}_shift.bed.gz"
     output:
-        p_bg   = RESULTS + "/{sam_grp}/{sam_grp}_pos.bedgraph.gz",
-        p_bg_N = RESULTS + "/{sam_grp}/{sam_grp}_pos_N.bedgraph.gz",
-        p_bw   = RESULTS + "/{sam_grp}/{sam_grp}_pos.bw",
-        n_bg   = RESULTS + "/{sam_grp}/{sam_grp}_neg.bedgraph.gz",
-        n_bg_N = RESULTS + "/{sam_grp}/{sam_grp}_neg_N.bedgraph.gz",
-        n_bw   = RESULTS + "/{sam_grp}/{sam_grp}_neg.bw"
+        p_bg   = RESULTS + "/{sample}/{sample}_pos.bedgraph.gz",
+        p_bg_N = RESULTS + "/{sample}/{sample}_pos_N.bedgraph.gz",
+        p_bw   = RESULTS + "/{sample}/{sample}_pos.bw",
+        n_bg   = RESULTS + "/{sample}/{sample}_neg.bedgraph.gz",
+        n_bg_N = RESULTS + "/{sample}/{sample}_neg_N.bedgraph.gz",
+        n_bw   = RESULTS + "/{sample}/{sample}_neg.bw"
     params:
-        job_name = "{sam_grp}_bigwig",
-        memory   = MEMORY,
+        job_name = "{sample}_bigwig",
+        memory   = 8,
         chroms   = CHROMS
     log:
-        out = RESULTS + "/logs/{sam_grp}_bigwig.out",
-        err = RESULTS + "/logs/{sam_grp}_bigwig.err"
+        out = RESULTS + "/logs/{sample}_bigwig.out",
+        err = RESULTS + "/logs/{sample}_bigwig.err"
     benchmark:
-        RESULTS + "/benchmarks/{sam_grp}_bigwig.tsv"
+        RESULTS + "/benchmarks/{sample}_bigwig.tsv"
     message:
-        "Creating bigwigs for {wildcards.sam_grp}"
+        "Creating bigwigs for {wildcards.sample}"
     threads:
         6
     shell:
@@ -91,21 +91,21 @@ rule bigwigs:
 
 
 # Create IGV browser session
-rule igv_browser:
+rule igv_browser_nosub:
     input:
         pos = expand(
-            RESULTS + "/{sam_grp}/{sam_grp}_pos.bw",
-            sam_grp = SAM_GRPS
+            RESULTS + "/{sample}/{sample}_pos.bw",
+            sample = SAMS_UNIQ
         ),
         neg = expand(
-            RESULTS + "/{sam_grp}/{sam_grp}_neg.bw",
-            sam_grp = SAM_GRPS
+            RESULTS + "/{sample}/{sample}_neg.bw",
+            sample = SAMS_UNIQ
         )
     output:
-        urls = RESULTS + "/urls/" + PROJ + "_urls.tsv",
-        xml  = RESULTS + "/urls/" + PROJ + "_igv.xml"
+        urls = RESULTS + "/urls/" + PROJ + "_nosub_urls.tsv",
+        xml  = RESULTS + "/urls/" + PROJ + "_nosub_igv.xml"
     params:
-        job_name = PROJ + "_igv",
+        job_name = PROJ + "nosub_igv",
         memory   = 4,
         url      = URL,
         ssh      = SSH
@@ -115,7 +115,7 @@ rule igv_browser:
     benchmark:
         RESULTS + "/benchmarks/" + PROJ + "_igv.tsv"
     message:
-        "Creating " + PROJ + " IGV session"
+        "Creating " + PROJ + " IGV session without subsampling"
     threads:
         1
     shell:
@@ -128,7 +128,7 @@ rule igv_browser:
 
             if [ ! -s $urls ]
             then
-                echo -e "URL\tSAMPLE\tGROUP\tSTRAND" \
+                echo -e "URL\tSAMPLE\tSTRAND" \
                     > $urls
             fi
 
@@ -136,12 +136,11 @@ rule igv_browser:
             do
                 bw=$(basename $path)
                 url={params.url}/$bw
-                grp=$(echo $bw | grep -oP "(?<=-){GRP_REGEX}(?=_"$strand".bw$)")
-                sam=$(echo $bw | grep -oP ".+(?=-$grp)")
+                sam=$(echo $bw | grep -oP ".+(?=_(pos|neg).bw)")
 
                 rsync --perms --chmod=ugo+r $path {params.ssh}
 
-                echo -e "$url\t$sam\t$grp\t$strand" \
+                echo -e "$url\t$sam\t$strand" \
                     >> $urls
             done
         }}
