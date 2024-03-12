@@ -1,4 +1,4 @@
-# mNET-seq analysis workflow
+# NET-seq analysis workflow
 
 This workflow is composed of two separate snakemake pipelines, one
 to perform the initial processing steps and another to identify pause

@@ -11,7 +11,7 @@ PROJ:
 # Multiple directories can be provided. The sample names must correspond
 # to the begining of the fastq name.
 RAW_DATA:
-    - "/beevol/home/bentleyd/fastq/220218_A00405_0531_BH352HDRX2"
+    - "/beevol/home/erickson/fastqs/220218_A00405_0531_BH352HDRX2"
 
 
 # FASTQ file suffix, can be either '.fastq.gz' or '.fq.gz'
@@ -27,10 +27,10 @@ RESULTS:
 
 # Specify base URL and destination to transfer bigwigs
 URL:
-    "http://amc-sandbox.ucdenver.edu/User25/fong-spt5"
+    "http://amc-sandbox.ucdenver.edu/User25/test"
 
 SSH:
-    "sheridanr@amc-sandbox:~/public_html/fong-spt5"
+    "sheridanr@amc-sandbox:~/public_html/test"
 
 
 # Base memory to request for each rule
