@@ -25,10 +25,6 @@ samples:
       Xrn2-WT_r3: "293flpin_Xrn2_WT_R3"
       Xrn2-MT_r3: "293flpin_Xrn2_MT_R3"
 
-    xrn2-r4:
-      Xrn2-WT_r4: "293flpin_Xrn2_WT_R4"
-      Xrn2-MT_r4: "293flpin_Xrn2_MT_R4"
-
 
 # Plot colors
 # 
