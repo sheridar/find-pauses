@@ -10,12 +10,11 @@ pauses.yaml config files.
 ## Getting started
 
 1. Create a new repository using this template
-2. Clone to bodhi and navigate to the project directory
-3. Specify sample names and directory paths using the SAMPLE.yaml config file
-4. Specify sample groups and colors for plotting using the PLOTS.yaml
-   config file
-5. Run the pipeline by submitting the run.sh script through bsub
-6. Check the subsampling test results by running `cat results/stats/*_test.tsv`. This double checks that the per-gene subsampling was performed correctly, each file should be marked with 'PASS' 
+2. Clone and navigate to the project directory
+3. Specify sample names, groups, and directory paths using the SAMPLES.yaml config file
+5. Run the pipeline by submitting the run.sh script
+6. Check the subsampling test results by running `cat results/stats/*_test.tsv`.
+   This double checks that the per-gene subsampling was performed correctly, each file should be marked with 'PASS' 
 
 <br>
 
@@ -43,5 +42,3 @@ pauses.yaml config files.
 3. Identify reads that align to pauses
 4. Generate bed files for metaplots
 5. Create summary plots
-
-
