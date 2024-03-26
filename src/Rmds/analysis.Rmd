@@ -1,5 +1,5 @@
 ---
-title: <p style="font-size:45px;">NET-seq analysis</p>
+title: "`r params$title`"
 author: "Ryan Sheridan"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output: 
@@ -13,8 +13,9 @@ output:
     theme:          "cosmo"
     highlight:      "tango"
 params:
-  samples: "~/Projects/find-pauses/SAMPLES.yaml"
-  config:  "~/Projects/find-pauses/plots.yaml"
+  title:   "<p style=font-size:45px;>NET-seq analysis</p>"
+  samples: "SAMPLES.yaml"
+  config:  "plots.yaml"
 ---
 
 ---

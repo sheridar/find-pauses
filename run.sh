@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-#BSUB -J snake
+#BSUB -J NET-seq
 #BSUB -o logs/snake_%J.out
 #BSUB -e logs/snake_%J.err
 

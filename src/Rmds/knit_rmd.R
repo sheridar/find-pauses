@@ -17,13 +17,14 @@ print(opts)
 
 proj    <- opts$proj
 res_dir <- opts$output
+ttl     <- paste0("<p style=font-size:45px;>", proj, " NET-seq analysis</p>")
 
 output <- here(res_dir, paste0(proj, "_analysis.html"))
 
 # Render Rmd
 render(
   input       = opts$input,
-  output_file = output
+  output_file = output,
+  params      = list(title = ttl)
 )
-
 
