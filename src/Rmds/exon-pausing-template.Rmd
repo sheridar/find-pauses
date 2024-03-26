@@ -3,8 +3,8 @@
 
 # Strings to match samples and create labels
 sam_grp     <- "{{.x}}"
-samples <- plot_grps$samples[[sam_grp]]
-clrs    <- plot_grps$colors[[sam_grp]]
+samples <- plot_grps$SAMPLES[[sam_grp]]
+clrs    <- plot_grps$COLORS[[sam_grp]]
 
 # Sample names
 sams <- samples %>%

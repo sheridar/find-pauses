@@ -12,9 +12,9 @@ output:
     self_contained: true
     theme:          "cosmo"
     highlight:      "tango"
-
 params:
-  config: "PLOTS.yaml"
+  samples: "~/Projects/find-pauses/SAMPLES.yaml"
+  config:  "~/Projects/find-pauses/plots.yaml"
 ---
 
 ---
@@ -36,11 +36,11 @@ knitr::opts_chunk$set(
 
 ```{r "plotting parameters", include = FALSE}
 
-# Set plotting parameters
-yml <- here::here(params$config)
+# Sample groups
+plot_grps <- yaml::read_yaml(here::here(params$samples))
 
-plot_grps   <- yaml::read_yaml(yml)
-plot_params <- plot_grps$params
+# Plotting parameters
+plot_params <- yaml::read_yaml(here::here(params$config))
 
 plot_params$obj_dir <- file.path(res_dir, plot_params$obj_dir)
 plot_params$tab_dir <- file.path(res_dir, plot_params$tab_dir)
@@ -145,7 +145,7 @@ exon_lens <- exon_lens %>%
 # Create list of chunks
 template <- here(plot_params$template_dir, "analysis-template.Rmd")
 
-chunks <- names(plot_grps$samples) %>%
+chunks <- names(plot_grps$SAMPLES) %>%
   map(~ knit_expand(template))
 
 ```
@@ -159,63 +159,3 @@ chunks <- names(plot_grps$samples) %>%
 sessionInfo()
 
 ```
-
-
-
-
-```{r "ENSEMBL DATABASE", eval = FALSE}
-
-library(ensembldb)
-library(Gviz)
-
-# Gene coordinates
-genes_all <- read_tsv(
-  file.path(plot_params$ref_dir, plot_params$list_dir, plot_params$genes_all),
-  col_names = bed_cols
-)
-
-# Create database from gtf
-gtf <- "/home/rmsheridan/ref/annotation/GRCh38/gtf/Homo_sapiens.GRCh38.95.gtf"
-
-ensdb <- here("ref/Homo_sapiens.GRCh38.95.sqlite")
-
-if (!file.exists(ensdb)) {
-  ensdb <- ensDbFromGtf(gtf = gtf, outfile = ensdb)
-}
-
-db <- EnsDb(ensdb)
-
-```
-
-```{r "FIG 1C", fig.width = 6, fig.height = 5, eval = FALSE}
-
-# Load data for browser plots
-bg_sams     <- c("+Spt5_r1", "+Spt5_r2")
-bg_grps     <- c("Spt5-r1", "Spt5-r2")
-bg_plt_grps <- c("Spt5", "Spt5")
-
-bgs     <- .get_bgs(bg_sams, bg_grps, bg_plt_grps, sample_df)
-bg_clrs <- .get_bg_clrs(bg_sams, bg_plt_grps, sample_df)
-pauses  <- .get_pauses(bg_sams, bg_grps, bg_plt_grps, sample_df)
-pzones  <- .get_zones(bg_plt_grps, genes_all)
-
-gene <- "BCAM"
-
-create_browser(
-  bgs        = bgs,
-  gene       = gene,
-  genes_df   = genes_all,
-  genes_db   = db,
-  pauses     = pauses,
-  zones      = pzones,
-  flank      = c(0.08, 0),
-  track_clrs = bg_clrs,
-  track_ttls = c("rep 1", "rep 2"),
-  equal_axis = TRUE,
-  pause_track_height = 0.1,
-  gene_track_height  = 0.1,
-  fontsize   = 18
-)
-
-```
-

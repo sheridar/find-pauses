@@ -15,21 +15,21 @@ shell.prefix("source ~/.bash_profile; set -o nounset -o pipefail -o errexit -x; 
 
 
 # Parameters from config.yaml
-PROJ       = config["PROJ"]
-RAW_DATA   = config["RAW_DATA"]
-FASTQ_SFX  = config["FASTQ_SFX"]
-RESULTS    = config["RESULTS"]
-SAMPLES    = config["SAMPLES"]
-INDEX      = config["INDEX"]
-CHROMS     = config["CHROMS"]
-GTF        = config["GTF"]
-GENES      = config["GENES"]
-MASK       = config["MASK"]
-MEMORY     = config["MEMORY"]
-URL        = config["URL"]
-SSH        = config["SSH"]
-CMD_PARAMS = config["CMD_PARAMS"]
-TEST_GENES = config["TEST_GENES"]
+PROJ        = config["PROJ"]
+RAW_DATA    = config["RAW_DATA"]
+FASTQ_SFX   = config["FASTQ_SFX"]
+RESULTS     = config["RESULTS"]
+ALL_SAMPLES = config["SAMPLES"]
+INDEX       = config["INDEX"]
+CHROMS      = config["CHROMS"]
+GTF         = config["GTF"]
+GENES       = config["GENES"]
+MASK        = config["MASK"]
+MEMORY      = config["MEMORY"]
+URL         = config["URL"]
+SSH         = config["SSH"]
+CMD_PARAMS  = config["CMD_PARAMS"]
+TEST_GENES  = config["TEST_GENES"]
 
 
 # Files for metaplots
@@ -49,6 +49,26 @@ REGIONS = list(META_BEDS.keys())
 # Directories for data and scripts
 FASTQ_DIR = RESULTS + "/fastqs"
 SRC       = "src"
+
+
+# Simplify ALL_SAMPLES dictionary
+# subsampling groups can be listed in multiple sections
+# collapse sections and combine subsampling groups
+SAMPLES = {}
+
+for _, d in ALL_SAMPLES.items():
+    for key, value in d.items():
+
+        if not isinstance(value, dict):
+            value = {key: value}  # make it a dictionary for uniformity
+
+        for _, sub_value in value.items():
+            if key in SAMPLES:
+                if sub_value not in SAMPLES[key]:
+                    result_dict[key].append(sub_value)
+
+            else:
+                result_dict[key] = [sub_value]
 
 
 # Sample and group lists

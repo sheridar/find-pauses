@@ -43,8 +43,8 @@ theme_info <- theme_cowplot() +
     axis.title       = element_text(size = ttl_pt),
     axis.text        = element_text(size = txt_pt),
     axis.line        = element_blank(),
-    panel.border     = element_rect(fill = NA, color = "black", size = ln_pt),
-    axis.ticks       = element_line(size = ln_pt, color = "black")
+    panel.border     = element_rect(fill = NA, color = "black", linewidth = ln_pt),
+    axis.ticks       = element_line(color = "black", linewidth = ln_pt)
   )
 
 theme_colors <- c(
@@ -53,8 +53,8 @@ theme_colors <- c(
   "#238443",  # green
   "#ec7014",  # orange
   "#8c6bb1",  # purple
-  "#737373",  # grey
-  "#41b6c4"   # aqua
+  "#41b6c4",  # aqua
+  "#737373"   # grey
 )
 
 ```
@@ -70,21 +70,44 @@ if (!dir.exists(here(plot_params$tab_dir))) {
   dir.create(here(plot_params$tab_dir), recursive = TRUE, mode = "0750")
 }
 
-# Check sample parameters
-sections <- names(plot_grps$samples)
-colors   <- names(plot_grps$colors)
+# Set sample and replicate names for plots
+# set default names if not provided
+# add replicate IDs
+plot_grps$SAMPLES <- plot_grps$SAMPLES %>%
+  map(~ {
+    ids <- str_c("_r", seq_along(.x))
+    
+    .x %>%
+      map2(ids, ~ {
+        if (is.null(names(.x))) names(.x) <- str_c("sample-", seq_along(.x))
+        
+        names(.x) <- str_c(names(.x), .y)
+        
+        as.list(.x)
+      })
+  })
 
-if (!all(sections %in% colors)) {
-  need <- sections[!sections %in% colors]
-  
-  stop("Colors were not provided for all samples: ", str_c(need, collapse = ", "))
-}
+# Set sample colors
+sections   <- names(plot_grps$SAMPLES)
+sec_colors <- names(plot_grps$COLORS)
+
+missing_colors <- sections[!sections %in% sec_colors]
+
+plot_grps$COLORS[missing_colors] <- plot_grps$SAMPLES[missing_colors] %>%
+  map(~ {
+    n_clrs <- .x %>%
+      map(names) %>%
+      unlist(use.names = FALSE) %>%
+      n_distinct()
+    
+    c("black", theme_colors[seq_len(n_clrs - 1)])
+  })
 
 # Create data.frame with sample info
-sample_df <- plot_grps$samples %>%
+sample_df <- plot_grps$SAMPLES %>%
   imap_dfr(~ {
     plt_grp <- .y
-    clrs    <- plot_grps$colors[[plt_grp]]
+    clrs    <- plot_grps$COLORS[[plt_grp]]
     
     imap_dfr(.x, ~ {
       grp <- .y

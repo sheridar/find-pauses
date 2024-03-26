@@ -3,8 +3,8 @@
 
 # Strings to match samples and create labels
 grp     <- "{{.x}}"
-samples <- plot_grps$samples[[grp]]
-clrs    <- plot_grps$colors[[grp]]
+samples <- plot_grps$SAMPLES[[grp]]
+clrs    <- plot_grps$COLORS[[grp]]
 
 win   <- plot_params$pause_win
 stren <- plot_params$pause_strength

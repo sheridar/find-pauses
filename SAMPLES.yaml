@@ -1,15 +1,13 @@
-#===== Config file containing samples ==========================================
-# This gets appended to the mNET-seq and pausing configs
-
+#===== Sample config file ============================================
 
 # Project name to use for naming summary files
 PROJ:
-    "Xrn2"
+    "MY-PROJECT"
 
 
 # Directories containing FASTQ files, this can be a relative path.
-# Multiple directories can be provided. The sample names must correspond
-# to the begining of the fastq name.
+# * Multiple directories can be provided
+# * The sample names must correspond to the begining of the fastq name
 RAW_DATA:
     - "/beevol/home/erickson/fastqs/220218_A00405_0531_BH352HDRX2"
 
@@ -27,42 +25,71 @@ RESULTS:
 
 # Specify base URL and destination to transfer bigwigs
 URL:
-    "http://amc-sandbox.ucdenver.edu/User25/test"
+    "http://amc-sandbox.ucdenver.edu/User25/MY-PROJECT"
 
 SSH:
-    "sheridanr@amc-sandbox:~/public_html/test"
+    "sheridanr@amc-sandbox:~/public_html/MY-PROJECT"
 
 
 # Base memory to request for each rule
-# The acutal amount requested will be higher for rules that generally
-# require more memory
-# A value of 8 will result in rules requesting between 8Gb - 32Gb of
-# memory
+# * The acutal amount requested will be higher for rules that generally
+#   require more memory
+# * A value of 8 will result in rules requesting between 8Gb - 32Gb of
+#   memory
 MEMORY:
     16
 
 
-# Sample groups to use for subsampling, use the following format. The
-# samples included in each group will be subsampled to the same read
-# depth, so for each group select samples you want to directly compare.
-# The sample names must match the beginning of a fastq file in one of the
-# directories listed under RAW_DATA in NETseq.yaml. If the sample name
-# matches multiple fastqs, an error will be thrown.
+# Sample groups for subsampling, use the following format:
+# * The top level name will be the section name for the knitted document.
+# * Samples included in each sampling group will be subsampled to the same read
+#   depth, so for each group select samples you want to directly compare.
+# * The sample must match the beginning of a fastq file in one of the
+#   RAW_DATA directories.
+# * All samples listed for a section will be plotted together.
+# * Each sample can be given a name to use when creating plots, if this
+#   is excluded, names will be auto-generated.
+# * Sampling groups can be included in multiple sections. This allows the samples
+#   to be plotted in different combinations.
 # 
-# group-name-1:
-#     - "sample_1_file_prefix"
-#     - "sample_2_file_prefix"
+# SAMPLES:
+#     SECTION-1:
+#         SAMPLING-GROUP-1:
+#             sample-1: "fastq_1_prefix"
+#             sample-2: "fastq_2_prefix"
+#             sample-3: "fastq_3_prefix"
 #
-# group-name-2:
-#     - "sample_3_file_prefix"
-#     - "sample_4_file_prefix"
+#         SAMPLING-GROUP-2:
+#             sample-1: "fastq_4_prefix"
+#             sample-2: "fastq_5_prefix"
+#             sample-3: "fastq_6_prefix"
+#
+#     SECTION-2:
+#         SAMPLING-GROUP-1:
+#             - "fastq_1_prefix"  # sampling groups can be included in multiple sections
+#             - "fastq_2_prefix"  # names will be auto-generated
+#
+#     SECTION-3:
+#         ...
 #
 SAMPLES:
-    xrn2-r2:
-        - "293flpin_Xrn2_WT_R2"
-        - "293flpin_Xrn2_MT_R2"
+    Xrn2-1:
+        xrn2-r2:
+            Xrn2-WT: "293flpin_Xrn2_WT_R2"
+            Xrn2-MT: "293flpin_Xrn2_MT_R2"
 
-    xrn2-r3:
-        - "293flpin_Xrn2_WT_R3"
-        - "293flpin_Xrn2_MT_R3"
+        xrn2-r3:
+            Xrn2-WT: "293flpin_Xrn2_WT_R3"
+            Xrn2-MT: "293flpin_Xrn2_MT_R3"
+
+    Xrn2-2:
+        xrn2-r2:
+            "293flpin_Xrn2_WT_R4"
+
+
+# Sample colors
+# * For each section, a color can be provided for each sample name
+# * Colors will be set automatically if they are not provided 
+COLORS:
+    Xrn2: ["black", "#4DB4C2"]
 

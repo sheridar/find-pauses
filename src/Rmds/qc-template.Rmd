@@ -17,7 +17,7 @@ pause_sum  <- str_c(stats_dir, proj, "_", plot_params$pause_win)
 pause_sum  <- str_c(pause_sum, plot_params$pause_strength, "pausing.tsv")
 
 # Sample names
-qc_sams <- plot_grps$samples %>%
+qc_sams <- plot_grps$SAMPLES %>%
   flatten() %>%
   map(unlist, use.names = FALSE)
 
