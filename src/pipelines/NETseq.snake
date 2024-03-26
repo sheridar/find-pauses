@@ -65,10 +65,10 @@ for _, d in ALL_SAMPLES.items():
         for _, sub_value in value.items():
             if key in SAMPLES:
                 if sub_value not in SAMPLES[key]:
-                    result_dict[key].append(sub_value)
+                    SAMPLES[key].append(sub_value)
 
             else:
-                result_dict[key] = [sub_value]
+                SAMPLES[key] = [sub_value]
 
 
 # Sample and group lists
