@@ -71,6 +71,8 @@ int normBed( std::string readsName, std::string inBedName, int colNum, bool leng
         int lastCol = cols.size() - 1;
         std::cout << cols[ lastCol ] << endl;
     }
+
+    return 0;
 }
 
 

@@ -4,12 +4,10 @@ channels:
   - bioconda
   - defaults
 dependencies:
-  - python=3.9
   - fastqc
   - bedtools=2.29.2
   - cutadapt=2.3
   - bowtie2=2.3.2
-  - samtools=1.16.1
+  - samtools
   - subread=2.0.6
-  - gcc=7.4.0
   - r-base=4.0.3

@@ -1,7 +1,7 @@
 # Use a minimal Ubuntu base image
 FROM --platform=linux/amd64 ubuntu:22.04
 
-# no prompts
+# No prompts
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install wget, curl, ca-certificates, and build essentials
@@ -12,8 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     build-essential \
     libffi-dev \
     libssl-dev \
-    zlib1g-dev \
-    bedtools && \
+    zlib1g-dev && \
     apt-get clean && \
     apt-get autoremove --yes && \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
@@ -38,3 +37,16 @@ RUN source /opt/conda/bashrc && \
     pip cache purge && \
     micromamba clean --all --yes
 
+# Set environment variables
+ENV PATH="/opt/conda/envs/base/bin:$PATH"
+
+# Install R packages
+COPY renv.lock .
+
+RUN source /opt/conda/bashrc && \
+    micromamba activate base && \
+    Rscript -e "install.packages('renv', repos = 'http://cran.rstudio.com')" && \
+    Rscript -e "renv::restore(lockfile = 'renv.lock')"
+
+# Activate the environment in ENTRYPOINT
+ENTRYPOINT ["/bin/bash", "-c", "source /opt/conda/bashrc && micromamba activate base && exec bash"]
