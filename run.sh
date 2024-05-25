@@ -6,12 +6,14 @@
 
 set -o nounset -o pipefail -o errexit -x
 
-module load fastqc
-module load bowtie2
-module load samtools
-module load subread
-module load gcc/7.4.0
-module load R/4.0.3
+# module load fastqc
+# module load bowtie2
+# module load samtools
+# module load subread
+# module load gcc/7.4.0
+# module load R/4.0.3
+
+module load singularity
 
 mkdir -p logs
 
@@ -28,8 +30,10 @@ run_snakemake() {
         -R "rusage[mem={params.memory}] span[hosts=1]"
         -n {threads} '
 
-    snakemake -n \
+    snakemake \
         --snakefile $snake_file \
+        --use-singularity \
+        --singularity-args '--bind /beevol/home' \
         --drmaa "$args" \
         --jobs 100 \
         --configfiles $config_file
@@ -49,6 +53,6 @@ run_snakemake $snake "$samples $config"
 snake=$pipe_dir/pauses.snake
 config=pauses.yaml
 
-run_snakemake $snake "$samples $config"
+# run_snakemake $snake "$samples $config"
 
 

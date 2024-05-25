@@ -1,8 +1,14 @@
 #===== Sample config file ============================================
 
+
 # Project name to use for naming summary files
 PROJ:
     "MY-PROJECT"
+
+
+# Docker container to use for pipeline
+CONTAINER:
+    "docker://rmsheridan/find-pauses:v2"
 
 
 # Directories containing FASTQ files, this can be a relative path.

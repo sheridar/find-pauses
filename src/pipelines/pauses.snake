@@ -1,6 +1,11 @@
 #===== Snake pipeline for identifying pauses from mNET-seq data ================
 
 
+# Docker container
+container:
+    "docker://rmsheridan/find-pauses:v1"
+
+
 # Configure shell for all rules
 shell.executable("/bin/bash")
 shell.prefix("set -o nounset -o pipefail -o errexit -x; ")

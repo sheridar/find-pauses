@@ -1,0 +1,25 @@
+# ===== Rules to set up pipeline =====================
+
+
+rule compile_cpp:
+    input:
+        SRC + "/{script}.cpp"
+    output:
+        SRC + "/{script}"
+    params:
+        job_name = "{script}_compile",
+        memory   = MEMORY,
+        chroms   = CHROMS
+    log:
+        out = RESULTS + "/logs/{script}.out",
+        err = RESULTS + "/logs/{script}.err"
+    threads:
+        1
+    shell:
+        """
+        g++ -std=c++11 {input} -o {output}
+
+        head {params.chroms} \
+            > {SRC}/TEST.chroms
+        """
+

@@ -1,5 +1,7 @@
 # ===== Snake file for processing mNET-seq data ================================
 
+
+# Python packages
 from pytools.persistent_dict import PersistentDict
 import os
 import glob
@@ -12,6 +14,11 @@ import random
 # Configure shell for all rules
 shell.executable("/bin/bash")
 shell.prefix("source ~/.bash_profile; set -o nounset -o pipefail -o errexit -x; ")
+
+
+# Docker container
+container:
+    config["CONTAINER"]
 
 
 # Parameters from config.yaml
@@ -31,11 +38,17 @@ SSH         = config["SSH"]
 CMD_PARAMS  = config["CMD_PARAMS"]
 TEST_GENES  = config["TEST_GENES"]
 
+META_BEDS = config["META_BEDS"]
+GENE_SUB_BEDS = config["GENE_SUBSAMPLE_BEDS"]
+
+
+# Directories for data and scripts
+FASTQ_DIR = RESULTS + "/fastqs"
+REF       = "ref"
+SRC       = "src"
+
 
 # Files for metaplots
-META_BEDS = config["META_BEDS"]
-
-GENE_SUB_BEDS = config["GENE_SUBSAMPLE_BEDS"]
 GENE_SUB_REGS = list(GENE_SUB_BEDS.keys())
 
 if GENE_SUB_REGS & META_BEDS.keys():
@@ -46,9 +59,9 @@ META_BEDS.update(dict(GENE_SUB_BEDS))
 REGIONS = list(META_BEDS.keys())
 
 
-# Directories for data and scripts
-FASTQ_DIR = RESULTS + "/fastqs"
-SRC       = "src"
+# Scripts to compile
+SCRIPTS = glob.glob(os.path.join(SRC, "*.cpp"))
+SCRIPTS = [os.path.splitext(os.path.basename(script))[0] for script in SCRIPTS]
 
 
 # Simplify ALL_SAMPLES dictionary
@@ -184,6 +197,12 @@ FASTQS      = [_get_fqs(x, y) for x in SAMS_UNIQ for y in FULL_FQ_SFX]
 # Final output files
 rule all:
     input:
+        # Compile scripts
+        expand(
+            SRC + "/{script}",
+            script = SCRIPTS
+        ),
+
         # FastQC
         RESULTS + "/stats/" + PROJ + "_fastqc.tsv",
 
@@ -251,6 +270,9 @@ rule all:
             group = GRPS_UNIQ
         )
 
+
+# Compile C++ code
+include: "../rules/00_setup.snake"
 
 # Run FastQC
 include: "../rules/01_fastqc.snake"
