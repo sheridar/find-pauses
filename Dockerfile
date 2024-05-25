@@ -29,24 +29,31 @@ RUN curl -sL https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj && 
 COPY environment.yml .
 
 # Update micromamba environment with environment.yml
+# for unknown reason fastqc and pytools do not get installed
+# when included in environment.yml
 SHELL ["/bin/bash", "-l" ,"-c"]
 
 RUN source /opt/conda/bashrc && \
     micromamba activate && \
     micromamba update -n base -f environment.yml && \
+    micromamba install -c bioconda -n base fastqc && \
+    pip install pytools && \
     pip cache purge && \
     micromamba clean --all --yes
 
 # Set environment variables
 ENV PATH="/opt/conda/envs/base/bin:$PATH"
 
-# Install R packages
-COPY renv.lock .
+# # Install R packages
+# COPY renv.lock .
+# 
+# RUN source /opt/conda/bashrc && \
+#     micromamba activate base && \
+#     Rscript -e "install.packages('renv', repos = 'http://cran.rstudio.com')" && \
+#     Rscript -e "renv::restore(lockfile = 'renv.lock')"
 
-RUN source /opt/conda/bashrc && \
-    micromamba activate base && \
-    Rscript -e "install.packages('renv', repos = 'http://cran.rstudio.com')" && \
-    Rscript -e "renv::restore(lockfile = 'renv.lock')"
+# Create .bashrc file to activate environment
+RUN echo "source /opt/conda/etc/profile.d/micromamba.sh && micromamba activate base" >> /root/.bashrc
 
 # Activate the environment in ENTRYPOINT
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/conda/bashrc && micromamba activate base && exec bash"]
