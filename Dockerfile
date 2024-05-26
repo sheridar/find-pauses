@@ -8,6 +8,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     curl \
+    unzip \
     ca-certificates \
     build-essential \
     libffi-dev \
@@ -29,7 +30,7 @@ RUN curl -sL https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj && 
 COPY environment.yml .
 
 # Update micromamba environment with environment.yml
-# for unknown reason fastqc and pytools do not get installed
+# for unknown reasonis fastqc, samtools, and pytools do not get installed
 # when included in environment.yml
 SHELL ["/bin/bash", "-l" ,"-c"]
 
@@ -37,6 +38,7 @@ RUN source /opt/conda/bashrc && \
     micromamba activate && \
     micromamba update -n base -f environment.yml && \
     micromamba install -c bioconda -n base fastqc && \
+    micromamba install -c bioconda -c conda-forge -n base samtools=1.13 && \
     pip install pytools && \
     pip cache purge && \
     micromamba clean --all --yes
