@@ -141,9 +141,8 @@ wildcard_constraints:
 if not os.path.exists(FASTQ_DIR):
     os.makedirs(FASTQ_DIR)
 
-# FASTQ_SFX = [_detect_fq_sfx(x, RAW_DATA) for x in SAMS_UNIQ]
-
 FASTQS = [_get_fqs(x, RAW_DATA, FASTQ_DIR) for x in SAMS_UNIQ]
+FASTQS = sum(FASTQS, [])
 
 
 # Final output files
