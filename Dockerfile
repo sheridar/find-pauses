@@ -32,13 +32,17 @@ COPY environment.yml .
 # Update micromamba environment with environment.yml
 # for unknown reasonis fastqc, samtools, and pytools do not get installed
 # when included in environment.yml
+# R v4.1.0 gets installed even though 4.0.3 is specified
 SHELL ["/bin/bash", "-l" ,"-c"]
 
 RUN source /opt/conda/bashrc && \
     micromamba activate && \
     micromamba update -n base -f environment.yml && \
-    micromamba install -c bioconda -n base fastqc && \
-    micromamba install -c bioconda -c conda-forge -n base samtools=1.13 && \
+    micromamba install -c bioconda -c conda-forge -c default -n base \
+        rsync \
+        fastqc \
+        ucsc-bedgraphtobigwig \
+        samtools=1.13 && \
     pip install pytools && \
     pip cache purge && \
     micromamba clean --all --yes
