@@ -1,4 +1,7 @@
+# ===== Functions for pipeline =====================
 
+
+# Find all fastqs matching sample name in provided directories
 def _find_fqs(sample, dirs):
     fq_pat   = ".*" + sample + r".+\.(fastq|fq)\.gz$"
     fq_paths = []
@@ -16,6 +19,9 @@ def _find_fqs(sample, dirs):
     return(fq_paths)
 
 
+# Determine the suffix (e.g. fastq.gz) for a list of fastqs matching a single
+# sample name the expectation is that all fastqs in the list will have the
+# same suffix
 def _get_fq_sfx(fqs):
     sfx = []
     
@@ -38,6 +44,8 @@ def _get_fq_sfx(fqs):
     return(sfx)
 
 
+# For the fastq suffix (e.g. fastq.gz) get the complete suffix for both reads
+# (e.g. _R1_001.fastq.gz)
 def _get_full_fq_sfxs(sfx):
     if sfx == ".fastq.gz":
         fq_sfx = ["_" + x + "_001" + sfx for x in ["R1", "R2"]]
@@ -51,15 +59,7 @@ def _get_full_fq_sfxs(sfx):
     return fq_sfx
 
 
-def _detect_fq_sfx(sample, dirs):
-    
-    fq_paths = _find_fqs(sample, dirs)
-
-    sfx = _get_fq_sfx(fq_paths)
-
-    return(sfx)
-
-
+# Get the fastq file for both reads for the provided sample name
 def _get_fqs(sample, dirs, link_dir, full_name = False):
 
     fq_paths = _find_fqs(sample, dirs)
