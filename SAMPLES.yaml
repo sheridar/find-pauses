@@ -18,12 +18,6 @@ RAW_DATA:
     - "/beevol/home/erickson/fastqs/220218_A00405_0531_BH352HDRX2"
 
 
-# FASTQ file suffix, can be either '.fastq.gz' or '.fq.gz'
-# this is used to pull fastq files
-FASTQ_SFX:
-   ".fastq.gz"
-
-
 # Directory to store results
 RESULTS:
     "results"

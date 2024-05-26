@@ -10,6 +10,7 @@ dependencies:
   - gzip
   - random
   - pysam
+  - unzip
   - umi_tools=0.5.4
   - bedtools=2.29.2
   - cutadapt=2.3
