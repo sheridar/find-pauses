@@ -8,7 +8,7 @@ PROJ:
 
 # Docker container to use for pipeline
 CONTAINER:
-    "docker://rmsheridan/find-pauses:v2"
+    "docker://rmsheridan/find-pauses:v3"
 
 
 # Directories containing FASTQ files, this can be a relative path.

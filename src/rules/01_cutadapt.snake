@@ -3,7 +3,7 @@
 
 # Function to retrieve fastq paths
 def _get_fq_paths(wildcards):
-    fqs = _get_fqs(wildcards.sample, RAW_DATA, full_name = True)
+    fqs = _get_fqs(wildcards.sample, RAW_DATA, FASTQ_DIR, full_name = True)
 
     return fqs
 

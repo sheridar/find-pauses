@@ -30,7 +30,7 @@ run_snakemake() {
         -R "rusage[mem={params.memory}] span[hosts=1]"
         -n {threads} '
 
-    snakemake \
+    snakemake -n \
         --snakefile $snake_file \
         --use-singularity \
         --singularity-args '--bind /beevol/home' \
