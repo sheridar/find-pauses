@@ -1,6 +1,11 @@
 #===== Config file for filtering and aligning mNET-seq reads ===================
 
 
+# Docker container to use for pipeline
+CONTAINER:
+    "docker://rmsheridan/find-pauses:v5"
+
+
 # Path to bowtie2 index
 INDEX:
     "/beevol/home/rbilab/ref/indices/bowtie2/human/GRCh38/GRCh38"

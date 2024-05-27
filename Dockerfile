@@ -29,22 +29,12 @@ RUN curl -sL https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj && 
 # Copy the environment.yml file into the container
 COPY environment.yml .
 
-# Update micromamba environment with environment.yml
-# for unknown reasonis fastqc, samtools, and pytools do not get installed
-# when included in environment.yml
-# R v4.1.0 gets installed even though 4.0.3 is specified
+# Create micromamba environment with environment.yml
+# this works better when creating a new environment as opposed to updating base
 SHELL ["/bin/bash", "-l" ,"-c"]
 
 RUN source /opt/conda/bashrc && \
-    micromamba activate && \
-    micromamba update -n base -f environment.yml && \
-    micromamba install -c bioconda -c conda-forge -c default -n base \
-        rsync \
-        fastqc \
-        ucsc-bedgraphtobigwig \
-        samtools=1.13 && \
-    pip install pytools && \
-    pip cache purge && \
+    micromamba create -n find-pauses -f environment.yml && \
     micromamba clean --all --yes
 
 # Set environment variables
@@ -63,4 +53,4 @@ ENV MAMBA_ROOT_PREFIX="/opt/conda"
 # RUN echo "source /opt/conda/etc/profile.d/micromamba.sh && micromamba activate base" >> /root/.bashrc
 
 # Activate the environment in ENTRYPOINT
-ENTRYPOINT ["/bin/bash", "-c", "source /opt/conda/bashrc && micromamba activate base && exec bash"]
+ENTRYPOINT ["/bin/bash", "-c", "source /opt/conda/bashrc && micromamba activate find-pauses && exec bash"]

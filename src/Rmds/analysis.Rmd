@@ -15,7 +15,7 @@ output:
 params:
   title:   "<p style=font-size:45px;>NET-seq analysis</p>"
   samples: "SAMPLES.yaml"
-  config:  "plots.yaml"
+  config:  "src/configs/plots.yaml"
 ---
 
 ---
