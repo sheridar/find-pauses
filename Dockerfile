@@ -38,7 +38,7 @@ RUN source /opt/conda/bashrc && \
     micromamba clean --all --yes
 
 # Set environment variables
-ENV PATH="/opt/conda/bin:$PATH"
+ENV PATH="/opt/conda/envs/find-pauses/bin:$PATH"
 ENV MAMBA_ROOT_PREFIX="/opt/conda"
 
 # # Install R packages
@@ -50,7 +50,7 @@ ENV MAMBA_ROOT_PREFIX="/opt/conda"
 #     Rscript -e "renv::restore(lockfile = 'renv.lock')"
 
 # # Create .bashrc file to activate environment
-# RUN echo "source /opt/conda/etc/profile.d/micromamba.sh && micromamba activate base" >> /root/.bashrc
+# RUN echo "source /opt/conda/etc/profile.d/micromamba.sh && micromamba activate find-pauses" >> /root/.bashrc
 
 # Activate the environment in ENTRYPOINT
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/conda/bashrc && micromamba activate find-pauses && exec bash"]
