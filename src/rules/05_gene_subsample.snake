@@ -25,6 +25,8 @@ rule gene_subsample_1:
     threads:
         1
     run:
+        import gzip
+
         # Persistent dictionary for storing minimum gene counts for subsampling
         # clear the dictionary to remove results from previous runs
         GENES_DICT = PersistentDict("GENES_DICT_" + wildcards.group + "_" + wildcards.sub_region)
@@ -93,6 +95,10 @@ rule gene_subsample_2:
     threads:
         6
     run:
+        from pytools.persistent_dict import PersistentDict
+        import random
+        import gzip
+
         # Persistent dictionary
         # this contains the minimum number of reads aligning to each gene for
         # the subsampling group

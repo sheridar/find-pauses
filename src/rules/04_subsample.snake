@@ -122,6 +122,9 @@ rule subsample_1:
         1
     run:
         # Identify file with smallest number of reads
+        from pytools.persistent_dict import PersistentDict
+        import gzip
+
         d = dict()
 
         for file in input:
@@ -166,6 +169,8 @@ rule subsample_2:
     threads:
         16
     run:
+        from pytools.persistent_dict import PersistentDict
+
         MIN_READS = READS_DICT.fetch(wildcards.group)
 
         shell(

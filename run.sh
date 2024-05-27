@@ -34,12 +34,16 @@ run_snakemake() {
 
 run() {
     run_snakemake \
-        src/pipeline/net.snake \
+        src/pipelines/net.snake \
         "SAMPLES.yaml src/configs/net.yaml src/configs/pauses.yaml"
 }
 
 
-# Run pipeline using singularity
-singularity exec --bind /beevol/home docker://rmsheridan/find-pauses:v5 run
+# # Run pipeline using singularity
+# singularity exec --bind /beevol/home docker://rmsheridan/find-pauses:v5 run
+
+run_snakemake \
+    src/pipelines/net.snake \
+    "SAMPLES.yaml src/configs/net.yaml src/configs/pauses.yaml"
 
 

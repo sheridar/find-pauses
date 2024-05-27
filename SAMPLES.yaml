@@ -13,31 +13,12 @@ RAW_DATA:
     - "/beevol/home/erickson/fastqs/220218_A00405_0531_BH352HDRX2"
 
 
-# Directory to store results
-RESULTS:
-    "results"
-
-
 # Specify base URL and destination to transfer bigwigs
 URL:
     "http://amc-sandbox.ucdenver.edu/User25/MY-PROJECT"
 
 SSH:
-    "sheridanr@amc-sandbox:~/public_html/MY-PROJECT"
-
-
-# Should intermediate file be kept
-KEEP_INTERMEDIATE_FILES:
-    False
-
-
-# Base memory to request for each rule
-# * The acutal amount requested will be higher for rules that generally
-#   require more memory
-# * A value of 8 will result in rules requesting between 8Gb - 32Gb of
-#   memory
-MEMORY:
-    16
+    "amc-sandbox:~/public_html/MY-PROJECT"
 
 
 # Sample groups for subsampling, use the following format:

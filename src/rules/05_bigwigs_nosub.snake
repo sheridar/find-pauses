@@ -180,6 +180,8 @@ rule igv_browser_nofilt:
         memory   = 4,
         url      = URL,
         ssh      = SSH
+    container:
+        None
     log:
         out = RESULTS + "/logs/" + PROJ + "nofilt_igv.out",
         err = RESULTS + "/logs/" + PROJ + "nofilt_igv.err"

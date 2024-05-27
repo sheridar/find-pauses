@@ -6,6 +6,25 @@ CONTAINER:
     "docker://rmsheridan/find-pauses:v5"
 
 
+# Directory to store results
+RESULTS:
+    "results"
+
+
+# Should intermediate file be kept
+KEEP_INTERMEDIATE_FILES:
+    False
+
+
+# Base memory to request for each rule
+# * The acutal amount requested will be higher for rules that generally
+#   require more memory
+# * A value of 8 will result in rules requesting between 8Gb - 32Gb of
+#   memory
+MEMORY:
+    16
+
+
 # Path to bowtie2 index
 INDEX:
     "/beevol/home/rbilab/ref/indices/bowtie2/human/GRCh38/GRCh38"
