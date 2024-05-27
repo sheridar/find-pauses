@@ -1,19 +1,28 @@
 # ===== Snake file for processing mNET-seq data ================================
 
 
+# Configure shell for all rules
+shell.executable("/bin/bash")
+shell.prefix("source ~/.bash_profile; set -o nounset -o pipefail -o errexit -x; ")
+
+
 # Python packages
 from pytools.persistent_dict import PersistentDict
 import os
 import glob
 import re
-#import subprocess
-#import gzip
-#import random
 
 
-# Configure shell for all rules
-shell.executable("/bin/bash")
-shell.prefix("source ~/.bash_profile; set -o nounset -o pipefail -o errexit -x; ")
+# Add genome specific config
+GENOME = config["GENOME"]
+
+GENOME_CONFIG = "src/configs/" + GENOME + ".yaml"
+
+if not os.path.exists(GENOME_CONFIG):
+    sys.exit("ERROR: " + GENOME + " is not a valid GENOME selection.")
+
+configfile:
+    GENOME_CONFIG
 
 
 # Include intermediate files
@@ -56,8 +65,7 @@ META_BEDS     = config["META_BEDS"]
 
 # Directories for data and scripts
 FASTQ_DIR = RESULTS + "/fastqs"
-REF       = "ref"
-SRC       = "src"
+SRC = "src"
 
 
 # Files for metaplots
@@ -72,7 +80,7 @@ REGIONS = list(META_BEDS.keys())
 
 
 # Scripts to compile
-SCRIPTS = glob.glob(os.path.join(SRC, "*.cpp"))
+SCRIPTS = glob.glob(SRC + "/*.cpp")
 SCRIPTS = [os.path.splitext(os.path.basename(script))[0] for script in SCRIPTS]
 
 

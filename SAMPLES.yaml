@@ -1,4 +1,4 @@
-#===== Sample config file ============================================
+# ===== Sample config file ============================================
 
 
 # Project name to use for naming summary files
@@ -11,6 +11,12 @@ PROJ:
 # * The sample names must correspond to the begining of the fastq name
 RAW_DATA:
     - "/beevol/home/erickson/fastqs/220218_A00405_0531_BH352HDRX2"
+
+
+# Genome to use for analysis
+# the specified genome must have a config file present in src/configs
+GENOME:
+    "GRCh38"
 
 
 # Specify base URL and destination to transfer bigwigs
@@ -73,4 +79,5 @@ SAMPLES:
 # * Colors will be set automatically if they are not provided 
 COLORS:
     Xrn2: ["black", "#4DB4C2"]
+
 

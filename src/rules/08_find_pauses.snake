@@ -285,7 +285,7 @@ rule pause_metaplots:
                 | awk -v OFS="\t" -v strand=$strand '($6 == strand) {{$4 = $4"*"$5"*"; print}}' \
                 | bedtools slop -s -g {params.chroms} -l 49 -r 50 \
                 | bedtools makewindows -b - $args \
-                | awk -v FS="*_" -v OFS="\t" -v strand=$strand '{{print $1, $2, strand}}'
+                | awk -v FS="\*_" -v OFS="\t" -v strand=$strand '{{print $1, $2, strand}}'
         }}
 
         make_wins {input.pauses} "+" " -n 100 -i srcwinnum " \

@@ -1,22 +1,11 @@
-#===== Plotting parameters ===========================================
+# ===== Config file lotting parameters =========================================
+
 
 overwrite:         true                                                                 # Overwrite saved R objects
 
 template_dir:      "src/Rmds"                                                           # Directory containing Rmd templates
 obj_dir:           "objects"                                                            # Directory to save R objects
 tab_dir:           "tables"                                                             # Directory to save tables
-ref_dir:           "/beevol/home/sheridanr/ref"                                         # Reference directory
-list_dir:          "gene_lists/GRCh38"                                                  # Gene list directory from ref_dir path
-genome:            "genome/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa.fai" # Chromosome sizes
-fasta:             "genome/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa"     # Fasta for pulling sequences
-genes_all:         "base_lists/GRCh38_HCT116_genes.bed.gz"
-genes_5:           "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for 5' metaplots
-genes_3:           "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for 3' metaplots
-genes_zone:        "base_lists/GRCh38_2ksep.bed.gz"                                     # Gene list for pausing zone plots
-genes_pause:       "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for pause metaplots and sequence logos
-
-exons:             "/splicing_lists/GRCh38_exons.bed.gz"                                # Bed file containing exon coordinates
-trxn_info:         "/base_lists/base_gene_files/GRCh38_transcripts.bed.gz"              # Bed file containing transcript info to use for filtering exons
 
 gene_min_pct:      0.1                                                                  # Fraction of lowest expressing genes to exclude
 pause_strength:    "_strong_"                                                           # Pause strength label to use for loading input files
@@ -27,4 +16,5 @@ pause_lims:        [0, 1]                                                       
 tss_lim:           1                                                                    # Min number of raw reads for TSS boxplots
 body_lim:          1                                                                    # Min number of reads/kb for gene body region
 only_shared:       true                                                                 # Only include genes in TSS boxplots that have data for all regions
+
 

@@ -59,7 +59,8 @@ rule gene_subsample_test:
             then
                 local res='PASS'
             else
-                local res='FAIL'
+                echo "ERROR: gene subsampling test failed for ${{bgs}}." >&2
+                exit 1
             fi
         
             for file in ${{bgs[@]}}
@@ -132,7 +133,8 @@ rule subsample_test:
         then
             res='PASS'
         else
-            res='FAIL'
+            echo "ERROR: sample subsampling test failed for {input.pos} {input.neg}." >&2
+            exit 1
         fi
 
         echo -e "{wildcards.group}\t$res" \

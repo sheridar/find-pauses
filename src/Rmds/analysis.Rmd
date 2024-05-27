@@ -41,7 +41,9 @@ knitr::opts_chunk$set(
 plot_grps <- yaml::read_yaml(here::here(params$samples))
 
 # Plotting parameters
-plot_params <- yaml::read_yaml(here::here(params$config))
+plot_params   <- yaml::read_yaml(here::here(params$config))
+genome_params <- yaml::read_yaml(here::here(params$genome))
+plot_params   <- append(plot_params, genome_params)
 
 plot_params$obj_dir <- file.path(res_dir, plot_params$obj_dir)
 plot_params$tab_dir <- file.path(res_dir, plot_params$tab_dir)

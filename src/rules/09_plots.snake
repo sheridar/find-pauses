@@ -58,6 +58,7 @@ rule create_plots:
         Rscript $script \
             -i $Rmd \
             -p {PROJ} \
+            -g {GENOME_CONFIG} \
             -o {RESULTS}
         """
 
