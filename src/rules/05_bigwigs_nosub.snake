@@ -8,11 +8,12 @@ rule bigwigs_nosub:
     input:
         RESULTS + "/{sample}/{sample}_shift.bed.gz"
     output:
-        p_bg   = RESULTS + "/{sample}/{sample}_pos.bedgraph.gz",
-        p_bg_N = RESULTS + "/{sample}/{sample}_pos_N.bedgraph.gz",
+        p_bg   = temp_fn(RESULTS + "/{sample}/{sample}_pos.bedgraph.gz"),
+        p_bg_N = temp_fn(RESULTS + "/{sample}/{sample}_pos_N.bedgraph.gz"),
+        n_bg   = temp_fn(RESULTS + "/{sample}/{sample}_neg.bedgraph.gz"),
+        n_bg_N = temp_fn(RESULTS + "/{sample}/{sample}_neg_N.bedgraph.gz"),
+
         p_bw   = RESULTS + "/{sample}/{sample}_pos.bw",
-        n_bg   = RESULTS + "/{sample}/{sample}_neg.bedgraph.gz",
-        n_bg_N = RESULTS + "/{sample}/{sample}_neg_N.bedgraph.gz",
         n_bw   = RESULTS + "/{sample}/{sample}_neg.bw"
     params:
         job_name = "{sample}_bigwig",
@@ -112,11 +113,12 @@ rule bigwigs_nofilt:
     input:
         RESULTS + "/{sample}/{sample}_nofilt.bed.gz"
     output:
-        p_bg   = RESULTS + "/{sample}/{sample}_nofilt_pos.bedgraph.gz",
-        p_bg_N = RESULTS + "/{sample}/{sample}_nofilt_pos_N.bedgraph.gz",
+        p_bg   = temp_fn(RESULTS + "/{sample}/{sample}_nofilt_pos.bedgraph.gz"),
+        p_bg_N = temp_fn(RESULTS + "/{sample}/{sample}_nofilt_pos_N.bedgraph.gz"),
+        n_bg   = temp_fn(RESULTS + "/{sample}/{sample}_nofilt_neg.bedgraph.gz"),
+        n_bg_N = temp_fn(RESULTS + "/{sample}/{sample}_nofilt_neg_N.bedgraph.gz"),
+
         p_bw   = RESULTS + "/{sample}/{sample}_nofilt_pos.bw",
-        n_bg   = RESULTS + "/{sample}/{sample}_nofilt_neg.bedgraph.gz",
-        n_bg_N = RESULTS + "/{sample}/{sample}_nofilt_neg_N.bedgraph.gz",
         n_bw   = RESULTS + "/{sample}/{sample}_nofilt_neg.bw"
     params:
         job_name = "{sample}_nofilt_bigwig",
@@ -209,4 +211,4 @@ rule igv_browser_nofilt:
             {output.xml}
         """
 
- 
+

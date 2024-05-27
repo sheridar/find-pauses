@@ -103,7 +103,8 @@ def _get_fqs(sample, dirs, link_dir, full_name = False):
             fastqs.append(fq_lnk)
     
         else:
-            fastqs.append(re.sub(sfx + "$", "", fastq))
+            fastqs.append(fastq)
     
     return(fastqs)
+
 

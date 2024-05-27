@@ -36,6 +36,8 @@ intersect_reads() {
     rm $tmp_1 $tmp_2
 }
 
+
+# Create bigwigs
 create_bigwig() {
     local reads="$1"
     local strand="$2"
@@ -79,7 +81,8 @@ create_bigwig() {
     rm $tmp_1 $tmp_2 $tmp_3
 }
 
-# Create files with URLs
+
+# Write URLs
 create_urls() {
     local paths=$1
     local ssh="$2"
@@ -123,4 +126,5 @@ create_urls() {
             >> "$url_file"
     done
 }
+
 

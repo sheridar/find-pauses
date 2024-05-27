@@ -7,8 +7,8 @@ rule dedup:
         bam = RESULTS + "/{sample}/{sample}.bam",
         bai = RESULTS + "/{sample}/{sample}.bam.bai"
     output:
-        bam   = RESULTS + "/{sample}/{sample}_dedup.bam",
-        bai   = RESULTS + "/{sample}/{sample}_dedup.bam.bai",
+        bam   = temp_fn(RESULTS + "/{sample}/{sample}_dedup.bam"),
+        bai   = temp_fn(RESULTS + "/{sample}/{sample}_dedup.bam.bai"),
         stats = RESULTS + "/{sample}/{sample}_dedup_stats.txt"
     params:
         job_name = "{sample}_dedup",

@@ -16,8 +16,8 @@ rule extract_umi:
     input:
         _get_fq_paths
     output:
-        R1  = temp(RESULTS + "/{sample}/{sample}_R1_umi.fastq.gz"),
-        R2  = temp(RESULTS + "/{sample}/{sample}_R2_umi.fastq.gz"),
+        R1  = temp_fn(RESULTS + "/{sample}/{sample}_R1_umi.fastq.gz"),
+        R2  = temp_fn(RESULTS + "/{sample}/{sample}_R2_umi.fastq.gz"),
         log = RESULTS + "/logs/{sample}_extract_umi.out"
     params:
         job_name = "{sample}_umi_extract",
@@ -50,8 +50,8 @@ rule cutadapt:
         R1 = RESULTS + "/{sample}/{sample}_R1_umi.fastq.gz",
         R2 = RESULTS + "/{sample}/{sample}_R2_umi.fastq.gz"
     output:
-        R1    = RESULTS + "/{sample}/{sample}_R1_trim.fastq.gz",
-        R2    = RESULTS + "/{sample}/{sample}_R2_trim.fastq.gz",
+        R1    = temp_fn(RESULTS + "/{sample}/{sample}_R1_trim.fastq.gz"),
+        R2    = temp_fn(RESULTS + "/{sample}/{sample}_R2_trim.fastq.gz"),
         stats = RESULTS + "/{sample}/{sample}_cutadapt_stats.txt"
     params:
         job_name = "{sample}_cutadapt",

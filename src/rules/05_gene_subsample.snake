@@ -77,9 +77,9 @@ rule gene_subsample_2:
         bed   = RESULTS + "/{sample}/metaplot_beds/{sample}_{sub_region}_S.bed.gz",
         sum   = RESULTS + "/stats/{group}_{sub_region}_summary.tsv"
     output:
-        reads = RESULTS      + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_reads.bed.gz",
+        reads =      RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_reads.bed.gz",
         tmp   = temp(RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_tmp.bed"),
-        sub   = RESULTS      + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}.bed.gz"
+        sub   =      RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}.bed.gz"
     params:
         job_name = "{sample}_{group}_{sub_region}",
         memory   = MEMORY * 2

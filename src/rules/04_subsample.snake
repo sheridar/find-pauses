@@ -6,7 +6,7 @@ rule create_beds:
     input:
         RESULTS + "/{sample}/{sample}_dedup.bam"
     output:
-        bed   = RESULTS + "/{sample}/{sample}.bed.gz",
+        bed   = temp_fn(RESULTS + "/{sample}/{sample}.bed.gz"),
         shift = RESULTS + "/{sample}/{sample}_shift.bed.gz",
         stats = RESULTS + "/{sample}/{sample}_filt_stats.tsv"
     params:
@@ -208,6 +208,5 @@ rule sub_summary:
                 >> {output}
         done
         """
-
 
 

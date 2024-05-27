@@ -7,26 +7,26 @@ CHROMS:
 
 
 # Path to bed file containing regions to use for identifying pauses.
-GENES:
+PAUSE_GENES:
     "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_4_TSS_+5kb.bed.gz"
 
 
 # Path to bed file containing regions to exclude from analysis. Pauses
 # overlapping these regions will be removed. 
-MASK:
+PAUSE_MASK:
     - "/beevol/home/sheridanr/ref/gene_lists/GRCh38/base_lists/GRCh38_snoRNAs.bed.gz"
     - "/beevol/home/sheridanr/ref/gene_lists/GRCh38/splicing_lists/GRCh38_5ss_2bp.bed.gz"
     - "/beevol/home/sheridanr/ref/gene_lists/GRCh38/splicing_lists/GRCh38_3ss_2bp.bed.gz"
 
 
-# Regions used previously for subsampling reads
-# The samples in each group will be subsampled to the same read depth for
-# the provided regions. These files should be bed files with the regions
-# containing the regions to use for each gene.
-GENE_SUBSAMPLE_BEDS:
-    tss:  "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_TSS_+500bp.bed.gz"
-    body: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_4_+500bp_pAS.bed.gz"
-    gene: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/base_lists/GRCh38_4_TSS_pAS.bed.gz"
+# # Regions used previously for subsampling reads
+# # The samples in each group will be subsampled to the same read depth for
+# # the provided regions. These files should be bed files with the regions
+# # containing the regions to use for each gene.
+# GENE_SUBSAMPLE_BEDS:
+#     tss:  "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_TSS_+500bp.bed.gz"
+#     body: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_4_+500bp_pAS.bed.gz"
+#     gene: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/base_lists/GRCh38_4_TSS_pAS.bed.gz"
 
 
 # Window sizes to use for finding pauses
@@ -48,14 +48,13 @@ PAUSE_ROUND:
 # Bed files to use for counting pauses, the resulting output files
 # can be used to generate metaplots. For each bed file, provide a unique
 # name to use for naming output files.
-META_BEDS:
+PAUSE_META_BEDS:
     5-TSS-100bp:   "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_TSS_+100bp.bed.gz"
     5-100bp-300bp: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_+100bp_+300bp.bed.gz"
     5-300bp-500bp: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_+300bp_+500bp.bed.gz"
     5-500bp-1kb:   "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_+500bp_+1kb.bed.gz"
     4-200bp:       "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_windows/GRCh38_4_TSS_pAS_200bp.bed.gz"
     5-10bp:        "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_windows/GRCh38_5_-2kb_+2kb_10bp.bed.gz"
-    5-50bp:        "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_windows/GRCh38_5_-5kb_+5kb_50bp.bed.gz"
     3-50bp:        "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_windows/GRCh38_3_-5kb_+5kb_50bp.bed.gz"
     exons:         "/beevol/home/sheridanr/ref/gene_lists/GRCh38/splicing_lists/GRCh38_exons.bed.gz"
     introns:       "/beevol/home/sheridanr/ref/gene_lists/GRCh38/splicing_lists/GRCh38_introns.bed.gz"

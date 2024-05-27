@@ -8,7 +8,7 @@ PROJ:
 
 # Docker container to use for pipeline
 CONTAINER:
-    "docker://rmsheridan/find-pauses:v3"
+    "docker://rmsheridan/find-pauses:v4"
 
 
 # Directories containing FASTQ files, this can be a relative path.
@@ -29,6 +29,11 @@ URL:
 
 SSH:
     "sheridanr@amc-sandbox:~/public_html/MY-PROJECT"
+
+
+# Should intermediate file be kept
+KEEP_INTERMEDIATE_FILES:
+    False
 
 
 # Base memory to request for each rule

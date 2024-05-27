@@ -6,14 +6,23 @@ from pytools.persistent_dict import PersistentDict
 import os
 import glob
 import re
-import subprocess
-import gzip
-import random
+#import subprocess
+#import gzip
+#import random
 
 
 # Configure shell for all rules
 shell.executable("/bin/bash")
 shell.prefix("source ~/.bash_profile; set -o nounset -o pipefail -o errexit -x; ")
+
+
+# Include intermediate files
+if config["KEEP_INTERMEDIATE_FILES"]:
+    def temp_fn(file):
+        return(file)
+
+else:
+    temp_fn = temp
 
 
 # Docker container
@@ -22,7 +31,7 @@ container:
 
 
 # Functions for pipeline
-include: "../rules/funs.snake"
+include: "../rules/funs.py"
 
 
 # Parameters from config.yaml
@@ -41,8 +50,8 @@ SSH         = config["SSH"]
 CMD_PARAMS  = config["CMD_PARAMS"]
 TEST_GENES  = config["TEST_GENES"]
 
-META_BEDS = config["META_BEDS"]
 GENE_SUB_BEDS = config["GENE_SUBSAMPLE_BEDS"]
+META_BEDS     = config["META_BEDS"]
 
 
 # Directories for data and scripts
@@ -88,6 +97,7 @@ for _, d in ALL_SAMPLES.items():
 
 
 # Sample and group lists
+# do not use list(set()) since need to maintain order
 SAMS = [[y, x] for y in SAMPLES for x in SAMPLES[y]]
 GRPS = [x[0] for x in SAMS]
 SAMS = [x[1] for x in SAMS]
@@ -134,7 +144,12 @@ wildcard_constraints:
     length  = "[a-zA-Z]+",
     sample  = "[a-zA-Z0-9_]+",
     group   = GRP_REGEX,
-    sam_grp = "[a-zA-Z0-9_\-]+-[a-zA-Z0-9_\-]+"
+    sam_grp = "[a-zA-Z0-9_\-]+-[a-zA-Z0-9_\-]+",
+
+    win          = "[0-9]+",
+    stren        = "(_(?!sep).*_)",
+    stren_grp    = "(_(?!sep).*_|_)",
+    pause_region = "[a-zA-Z0-9\-]+"
 
 
 # Create symlinks for fastqs
@@ -143,6 +158,10 @@ if not os.path.exists(FASTQ_DIR):
 
 FASTQS = [_get_fqs(x, RAW_DATA, FASTQ_DIR) for x in SAMS_UNIQ]
 FASTQS = sum(FASTQS, [])
+
+
+# Pausing pipeline
+include: "pauses.snake"
 
 
 # Final output files
@@ -219,7 +238,38 @@ rule all:
         expand(
             RESULTS + "/stats/{group}_test.tsv",
             group = GRPS_UNIQ
-        )
+        ),
+
+        # Pauses
+        expand(
+            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_pauses.bed.gz",
+            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE
+        ),
+
+        expand(
+            RESULTS + "/stats/" + PROJ + "_{win}{stren_grp}pausing.tsv",
+            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
+        ),
+
+        expand(
+            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pause_reads.bed.gz",
+            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
+        ),
+
+        # Pause density metaplot bed files
+        expand(
+            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_{pause_region}.bed.gz",
+            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS, pause_region = PAUSE_REGIONS
+        ),
+
+        # Signal around pauses
+        expand(
+            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_meta_N.bed.gz",
+            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
+        ),
+
+        # Plots
+        RESULTS + "/" + PROJ + "_analysis.html"
 
 
 # Setup code for pipeline
@@ -258,5 +308,8 @@ include: "../rules/06_metaplots_stranded.snake"
 
 # Test output files
 include: "../rules/07_test.snake"
+
+# Generate plots
+include: "../rules/09_plots.snake"
 
 

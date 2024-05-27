@@ -42,17 +42,8 @@ run_snakemake() {
 
 # Run pipeline to process mNET-seq reads
 pipe_dir=src/pipelines
-samples=SAMPLES.yaml
+snake=$pipe_dir/net.snake
 
-snake=$pipe_dir/NETseq.snake
-config=NETseq.yaml
-
-run_snakemake $snake "$samples $config"
-
-# Run pipeline to identify pause sites
-snake=$pipe_dir/pauses.snake
-config=pauses.yaml
-
-# run_snakemake $snake "$samples $config"
+run_snakemake $snake "SAMPLES.yaml net.yaml pauses.yaml"
 
 

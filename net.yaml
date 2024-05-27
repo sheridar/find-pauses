@@ -61,7 +61,6 @@ META_BEDS:
     5-500bp-1kb:   "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_+500bp_+1kb.bed.gz"
     4-200bp:       "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_windows/GRCh38_4_TSS_pAS_200bp.bed.gz"
     5-10bp:        "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_windows/GRCh38_5_-2kb_+2kb_10bp.bed.gz"
-    5-50bp:        "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_windows/GRCh38_5_-5kb_+5kb_50bp.bed.gz"
     3-50bp:        "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_windows/GRCh38_3_-5kb_+5kb_50bp.bed.gz"
     5ss-wins:      "/beevol/home/sheridanr/ref/gene_lists/GRCh38/splicing_lists/GRCh38_5ss_50bp_1bp.bed.gz"
     exons:         "/beevol/home/sheridanr/ref/gene_lists/GRCh38/splicing_lists/GRCh38_exons.bed.gz"

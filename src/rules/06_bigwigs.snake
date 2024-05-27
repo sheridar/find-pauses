@@ -8,11 +8,12 @@ rule bigwigs:
     input:
         RESULTS + "/{sam_grp}/{sam_grp}.bed.gz"
     output:
-        p_bg   = RESULTS + "/{sam_grp}/{sam_grp}_pos.bedgraph.gz",
-        p_bg_N = RESULTS + "/{sam_grp}/{sam_grp}_pos_N.bedgraph.gz",
+        p_bg   = temp_fn(RESULTS + "/{sam_grp}/{sam_grp}_pos.bedgraph.gz"),
+        p_bg_N = temp_fn(RESULTS + "/{sam_grp}/{sam_grp}_pos_N.bedgraph.gz"),
+        n_bg   = temp_fn(RESULTS + "/{sam_grp}/{sam_grp}_neg.bedgraph.gz"),
+        n_bg_N = temp_fn(RESULTS + "/{sam_grp}/{sam_grp}_neg_N.bedgraph.gz"),
+
         p_bw   = RESULTS + "/{sam_grp}/{sam_grp}_pos.bw",
-        n_bg   = RESULTS + "/{sam_grp}/{sam_grp}_neg.bedgraph.gz",
-        n_bg_N = RESULTS + "/{sam_grp}/{sam_grp}_neg_N.bedgraph.gz",
         n_bw   = RESULTS + "/{sam_grp}/{sam_grp}_neg.bw"
     params:
         job_name = "{sam_grp}_bigwig",

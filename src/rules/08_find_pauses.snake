@@ -4,26 +4,28 @@
 # Find pause sites
 # Identify pause sites using a cutoff of 3 stdev above the mean for each
 # 200 bp window
+PAUSE_SEP = 30
+
 rule find_pauses:
     input:
-        pos_bg = RESULTS + "/{sample}/{sample}_pos.bedgraph.gz",
-        neg_bg = RESULTS + "/{sample}/{sample}_neg.bedgraph.gz"
+        pos_bg = RESULTS + "/{sam_grp}/{sam_grp}_pos.bedgraph.gz",
+        neg_bg = RESULTS + "/{sam_grp}/{sam_grp}_neg.bedgraph.gz"
     output:
-        pauses = RESULTS + "/{sample}/pauses/{sample}_{win}_pauses.bed.gz",
-        sep    = RESULTS + "/{sample}/pauses/{sample}_{win}_sep_pauses.bed.gz"
+        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_pauses.bed.gz",
+        sep    = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_sep_pauses.bed.gz"
     params:
-        job_name = "{sample}_{win}_find_pauses",
+        job_name = "{sam_grp}_{win}_find_pauses",
         memory   = MEMORY * 4,
-        genes    = GENES,
-        mask     = MASK,
+        genes    = PAUSE_GENES,
+        mask     = PAUSE_MASK,
         chroms   = CHROMS
     log:
-        out = RESULTS + "/logs/{sample}_{win}_pauses.out",
-        err = RESULTS + "/logs/{sample}_{win}_pauses.err"
+        out = RESULTS + "/logs/{sam_grp}_{win}_pauses.out",
+        err = RESULTS + "/logs/{sam_grp}_{win}_pauses.err"
     benchmark:
-        RESULTS + "/benchmarks/{sample}_{win}_pauses.tsv"
+        RESULTS + "/benchmarks/{sam_grp}_{win}_pauses.tsv"
     message:
-        "Finding pauses for {wildcards.sample} using {wildcards.win}bp window"
+        "Finding pauses for {wildcards.sam_grp} using {wildcards.win}bp window"
     threads:
         4
     shell:
@@ -72,9 +74,9 @@ rule find_pauses:
         bedtools closest -k 2 -d -s \
             -a {output.pauses} \
             -b {output.pauses} \
-            | awk '$13 > 30' \
+            | awk '$13 > {PAUSE_SEP}' \
             | cut -f1-6 \
-            | sort -k1,1 -k2,2n -k3,3n -u \
+            | sort -S1G --parallel={threads} -k1,1 -k2,2n -k3,3n -u \
             | gzip \
             > {output.sep}
         """
@@ -83,21 +85,21 @@ rule find_pauses:
 # Identify strong pauses
 rule strong_pauses:
     input:
-        RESULTS + "/{sample}/pauses/{sample}_{win}_pauses.bed.gz"
+        RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_pauses.bed.gz"
     output:
-        pauses = RESULTS + "/{sample}/pauses/{sample}_{win}{stren}pauses.bed.gz",
-        sep    = RESULTS + "/{sample}/pauses/{sample}_{win}_sep{stren}pauses.bed.gz"
+        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren}pauses.bed.gz",
+        sep    = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_sep{stren}pauses.bed.gz"
     params:
-        job_name = "{sample}_{win}{stren}pauses",
+        job_name = "{sam_grp}_{win}{stren}pauses",
         memory   = MEMORY,
         r        = lambda wildcards: PAUSE_ROUND[wildcards.stren]
     log:
-        out = RESULTS + "/logs/{sample}_{win}{stren}pauses.out",
-        err = RESULTS + "/logs/{sample}_{win}{stren}pauses.err"
+        out = RESULTS + "/logs/{sam_grp}_{win}{stren}pauses.out",
+        err = RESULTS + "/logs/{sam_grp}_{win}{stren}pauses.err"
     benchmark:
-        RESULTS + "/benchmarks/{sample}_{win}{stren}pauses.tsv"
+        RESULTS + "/benchmarks/{sam_grp}_{win}{stren}pauses.tsv"
     message:
-        "Filtering {wildcards.stren} pauses ({wildcards.win}bp window) for {wildcards.sample}"
+        "Filtering {wildcards.stren} pauses ({wildcards.win}bp window) for {wildcards.sam_grp}"
     threads:
         1
     shell:
@@ -126,7 +128,7 @@ rule strong_pauses:
         bedtools closest -k 2 -d -s \
             -a {output.pauses} \
             -b {output.pauses} \
-            | awk '$13 > 30' \
+            | awk '$13 > {PAUSE_SEP}' \
             | cut -f1-6 \
             | sort -S1G --parallel={threads} -k1,1 -k2,2n -k3,3n -u \
             | pigz -p {threads} \
@@ -137,18 +139,18 @@ rule strong_pauses:
 # Get reads that align to pauses
 rule pause_reads:
     input:
-        reads  = RESULTS + "/{sample}/{sample}.bed.gz",
-        pauses = RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pauses.bed.gz"
+        reads  = RESULTS + "/{sam_grp}/{sam_grp}.bed.gz",
+        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses.bed.gz"
     output:
-        RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pause_reads.bed.gz"
+        RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pause_reads.bed.gz"
     params:
-        job_name = "{sample}_{win}{grp}pause_reads",
+        job_name = "{sam_grp}_{win}{grp}pause_reads",
         memory   = MEMORY
     log:
-        out = RESULTS + "/logs/{sample}_{win}{grp}pause_reads.out",
-        err = RESULTS + "/logs/{sample}_{win}{grp}pause_reads.err"
+        out = RESULTS + "/logs/{sam_grp}_{win}{grp}pause_reads.out",
+        err = RESULTS + "/logs/{sam_grp}_{win}{grp}pause_reads.err"
     message:
-        "Intersecting reads with {wildcards.grp} pauses ({wildcards.win}bp window) for {wildcards.sample}"
+        "Intersecting reads with {wildcards.grp} pauses ({wildcards.win}bp window) for {wildcards.sam_grp}"
     threads:
         6
     shell:
@@ -166,8 +168,8 @@ rule pause_reads:
 rule pausing_summary:
     input:
         expand(
-            RESULTS + "/{sample}/pauses/{sample}_{{win}}{{grp}}pauses.bed.gz",
-            sample = SAMPLES
+            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{{win}}{{grp}}pauses.bed.gz",
+            sam_grp = GENE_SUB_GRPS
         )
     output:
         RESULTS + "/stats/" + PROJ + "_{win}{grp}pausing.tsv"
@@ -209,20 +211,20 @@ rule pausing_summary:
 # Create files to plot pause density
 rule pause_density:
     input:
-        pauses = RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pauses.bed.gz",
-        reads  = RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pause_reads.bed.gz"
+        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses.bed.gz",
+        reads  = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pause_reads.bed.gz"
     output:
-        pauses = RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pauses_{region}.bed.gz",
-        reads  = RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pause_reads_{region}.bed.gz"
+        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses_{pause_region}.bed.gz",
+        reads  = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pause_reads_{pause_region}.bed.gz"
     params:
-        job_name = "{sample}_{region}_{win}{grp}pause_density",
+        job_name = "{sam_grp}_{pause_region}_{win}{grp}pause_density",
         memory   = MEMORY,
-        bed      = lambda wildcards: META_BEDS[wildcards.region]
+        bed      = lambda wildcards: PAUSE_META_BEDS[wildcards.pause_region]
     log:
-        out = RESULTS + "/logs/{sample}_{win}{grp}{region}_density.out",
-        err = RESULTS + "/logs/{sample}_{win}{grp}{region}_density.err"
+        out = RESULTS + "/logs/{sam_grp}_{win}{grp}{pause_region}_density.out",
+        err = RESULTS + "/logs/{sam_grp}_{win}{grp}{pause_region}_density.err"
     message:
-        "Intersecting {wildcards.grp} pauses ({wildcards.win}bp window) for {wildcards.sample} {wildcards.region}"
+        "Intersecting {wildcards.grp} pauses ({wildcards.win}bp window) for {wildcards.sam_grp} {wildcards.pause_region}"
     threads:
         6
     shell:
@@ -248,25 +250,27 @@ rule pause_density:
 # Create metaplot files for the region around pauses
 rule pause_metaplots:
     input:
-        reads  = RESULTS + "/{sample}/{sample}.bed.gz",
-        pauses = RESULTS + "/{sample}/pauses/{sample}_{win}_sep{grp}pauses.bed.gz"
+        reads  = RESULTS + "/{sam_grp}/{sam_grp}.bed.gz",
+        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_sep{grp}pauses.bed.gz"
     output:
-        wins     = RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pauses_wins.bed.gz",
-        counts   = RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pauses_meta.bed.gz",
-        counts_N = RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pauses_meta_N.bed.gz"
+        wins     = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses_wins.bed.gz",
+        counts   = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses_meta.bed.gz",
+        counts_N = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses_meta_N.bed.gz"
     params:
-        job_name = "{sample}_{win}{grp}pause_metaplots",
+        job_name = "{sam_grp}_{win}{grp}pause_metaplots",
         memory   = MEMORY,
         chroms   = CHROMS
     log:
-        out = RESULTS + "/logs/{sample}_{win}{grp}pause_metaplots.out",
-        err = RESULTS + "/logs/{sample}_{win}{grp}pause_metaplots.err"
+        out = RESULTS + "/logs/{sam_grp}_{win}{grp}pause_metaplots.out",
+        err = RESULTS + "/logs/{sam_grp}_{win}{grp}pause_metaplots.err"
     message:
-        "Creating {wildcards.grp} pause ({wildcards.win}bp window) metaplot files for {wildcards.sample}"
+        "Creating {wildcards.grp} pause ({wildcards.win}bp window) metaplot files for {wildcards.sam_grp}"
     threads:
         6
     shell:
         """
+        source {SRC}/funs.sh
+
         tmp_dir=$(dirname {output.wins})
 
         # Create windows for the region around pause sites
@@ -297,28 +301,14 @@ rule pause_metaplots:
 
         rm $tmp_wins
 
-        # Intersect reads with pause windows 
-        tmp_reads=$(mktemp -p $tmp_dir tmp_reads.XXXXX)
-        tmp_bed=$(mktemp -p $tmp_dir tmp_bed.XXXXX)
-        
-        zcat -f {input.reads} \
-            > $tmp_reads
-        
-        cat $tmp_reads \
-            | bedtools intersect -sorted -wa -c -a {output.wins} -b - -s \
-            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-            > $tmp_bed
-
-        {SRC}/norm_bed $tmp_reads $tmp_bed 7 -len \
-            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-            | pigz -p {threads} \
-            > {output.counts_N}
-
-        cat $tmp_bed \
-            | pigz -p {threads} \
-            > {output.counts} 
-
-        rm $tmp_reads $tmp_bed
+        # Intersect reads with pause windows
+        intersect_reads \
+            {input.reads} \
+            {output.wins} \
+            {threads} \
+            {output.counts} \
+            {output.counts_N} \
+            "-wa -c -s"
         """
 
 
