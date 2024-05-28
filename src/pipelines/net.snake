@@ -56,7 +56,7 @@ MASK        = config["MASK"]
 MEMORY      = config["MEMORY"]
 URL         = config["URL"]
 SSH         = config["SSH"]
-SSH_KEY     = config["SSH_KEY"]
+SSH_KEY_DIR = config["SSH_KEY_DIR"]
 CMD_PARAMS  = config["CMD_PARAMS"]
 TEST_GENES  = config["TEST_GENES"]
 
@@ -319,6 +319,6 @@ include: "../rules/06_metaplots_stranded.snake"
 include: "../rules/07_test.snake"
 
 # Generate plots
-include: "../rules/09_plots.snake"
+include: "../rules/08_plots.snake"
 
 

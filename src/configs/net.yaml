@@ -1,16 +1,6 @@
 #===== Config file for filtering and aligning mNET-seq reads ===================
 
 
-# Docker container to use for pipeline
-CONTAINER:
-    "docker://rmsheridan/find-pauses:v6"
-
-
-# Directory to store results
-RESULTS:
-    "results"
-
-
 # Should intermediate file be kept
 KEEP_INTERMEDIATE_FILES:
     False

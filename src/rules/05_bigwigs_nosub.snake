@@ -71,10 +71,11 @@ rule igv_browser_nosub:
         urls = RESULTS + "/urls/" + PROJ + "_nosub_urls.tsv",
         xml  = RESULTS + "/urls/" + PROJ + "_nosub_igv.xml"
     params:
-        job_name = PROJ + "_nosub_igv",
-        memory   = 4,
-        url      = URL,
-        ssh      = SSH
+        job_name    = PROJ + "_nosub_igv",
+        memory      = 4,
+        url         = URL,
+        ssh         = SSH,
+        ssh_key_dir = SSH_KEY_DIR
     log:
         out = RESULTS + "/logs/" + PROJ + "_nosub_igv.out",
         err = RESULTS + "/logs/" + PROJ + "_nosub_igv.err"
@@ -88,20 +89,17 @@ rule igv_browser_nosub:
         """
         source {SRC}/funs.sh
 
-        if [ ! -d "$HOME/.ssh" ] && [ ! -L "$HOME/.ssh" ]
-        then
-            ln -s "{SSH_KEY}" "$HOME"
-        fi
-
         create_urls \
             "{input.pos}" \
             {params.ssh} \
+            {params.ssh_key_dir} \
             {params.url} \
             {output.urls}
 
         create_urls \
             "{input.neg}" \
             {params.ssh} \
+            {params.ssh_key_dir} \
             {params.url} \
             {output.urls}
 
@@ -181,10 +179,11 @@ rule igv_browser_nofilt:
         urls = RESULTS + "/urls/" + PROJ + "_nofilt_urls.tsv",
         xml  = RESULTS + "/urls/" + PROJ + "_nofilt_igv.xml"
     params:
-        job_name = PROJ + "_nofilt_igv",
-        memory   = 4,
-        url      = URL,
-        ssh      = SSH
+        job_name    = PROJ + "_nofilt_igv",
+        memory      = 4,
+        url         = URL,
+        ssh         = SSH,
+        ssh_key_dir = SSH_KEY_DIR
     log:
         out = RESULTS + "/logs/" + PROJ + "nofilt_igv.out",
         err = RESULTS + "/logs/" + PROJ + "nofilt_igv.err"
@@ -198,20 +197,17 @@ rule igv_browser_nofilt:
         """
         source {SRC}/funs.sh
 
-        if [ ! -d "$HOME/.ssh" ] && [ ! -L "$HOME/.ssh" ]
-        then
-            ln -s "{SSH_KEY}" "$HOME"
-        fi
-
         create_urls \
             "{input.pos}" \
             {params.ssh} \
+            {params.ssh_key_dir} \
             {params.url} \
             {output.urls}
 
         create_urls \
             "{input.neg}" \
             {params.ssh} \
+            {params.ssh_key_dir} \
             {params.url} \
             {output.urls}
 

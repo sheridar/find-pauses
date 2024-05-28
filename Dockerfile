@@ -6,9 +6,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Install wget, curl, ca-certificates, and build essentials
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    vim \
     wget \
     curl \
     unzip \
+    openssh-client \
     ca-certificates \
     build-essential \
     libffi-dev \
@@ -41,16 +43,15 @@ RUN source /opt/conda/bashrc && \
 ENV PATH="/opt/conda/envs/find-pauses/bin:$PATH"
 ENV MAMBA_ROOT_PREFIX="/opt/conda"
 
-# # Install R packages
-# COPY renv.lock .
-# 
-# RUN source /opt/conda/bashrc && \
-#     micromamba activate base && \
-#     Rscript -e "install.packages('renv', repos = 'http://cran.rstudio.com')" && \
-#     Rscript -e "renv::restore(lockfile = 'renv.lock')"
+# Install R packages
+COPY renv.lock .
 
-# # Create .bashrc file to activate environment
-# RUN echo "source /opt/conda/etc/profile.d/micromamba.sh && micromamba activate find-pauses" >> /root/.bashrc
+RUN source /opt/conda/bashrc && \
+    micromamba activate find-pauses && \
+    Rscript -e "install.packages('renv', repos = 'http://cran.rstudio.com')" && \
+    Rscript -e "renv::restore(lockfile = 'renv.lock')"
 
 # Activate the environment in ENTRYPOINT
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/conda/bashrc && micromamba activate find-pauses && exec bash"]
+
+

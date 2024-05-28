@@ -71,10 +71,11 @@ rule igv_browser:
         urls = RESULTS + "/urls/" + PROJ + "_urls.tsv",
         xml  = RESULTS + "/urls/" + PROJ + "_igv.xml"
     params:
-        job_name = PROJ + "_igv",
-        memory   = 4,
-        url      = URL,
-        ssh      = SSH
+        job_name    = PROJ + "_igv",
+        memory      = 4,
+        url         = URL,
+        ssh         = SSH,
+        ssh_key_dir = SSH_KEY_DIR
     log:
         out = RESULTS + "/logs/" + PROJ + "_igv.out",
         err = RESULTS + "/logs/" + PROJ + "_igv.err"
@@ -88,14 +89,10 @@ rule igv_browser:
         """
         source {SRC}/funs.sh
 
-        if [ ! -d "$HOME/.ssh" ] && [ ! -L "$HOME/.ssh" ]
-        then
-            ln -s "{SSH_KEY}" "$HOME"
-        fi
-
         create_urls \
             "{input.pos}" \
             {params.ssh} \
+            {params.ssh_key_dir} \
             {params.url} \
             {output.urls} \
             {GRP_REGEX}
@@ -103,6 +100,7 @@ rule igv_browser:
         create_urls \
             "{input.neg}" \
             {params.ssh} \
+            {params.ssh_key_dir} \
             {params.url} \
             {output.urls} \
             {GRP_REGEX}

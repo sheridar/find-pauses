@@ -122,6 +122,6 @@ ALL_STREN_GRPS.append("_")
 
 
 # Identify pause sites
-include: "../rules/08_find_pauses.snake"
+include: "../rules/07_find_pauses.snake"
 
 

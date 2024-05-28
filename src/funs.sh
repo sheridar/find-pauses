@@ -86,12 +86,21 @@ create_bigwig() {
 create_urls() {
     local paths=$1
     local ssh="$2"
-    local url="$3"
-    local url_file="$4"
-    local grp_re="${5:-}"
+    local ssh_key_dir="$3"
+    local url="$4"
+    local url_file="$5"
+    local grp_re="${6:-}"
 
     local header="URL\tSAMPLE\tSTRAND"
     local cmd='echo -e $url\t$sam\t$strand'
+
+    # When running in docker container $HOME becomes workflow working directory
+    # need to link .ssh folder to ensure ssh credentials are available within
+    # container
+    if [ ! -d "$HOME/.ssh" ] && [ ! -L "$HOME/.ssh" ]
+    then
+        ln -s "$ssh_key_dir" "$HOME"
+    fi
 
     if [ ! -z "$grp_re" ]
     then
