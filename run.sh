@@ -1,18 +1,14 @@
 #! /usr/bin/env bash
 
-#BSUB -J NET-seq
-#BSUB -o logs/snake_%J.out
-#BSUB -e logs/snake_%J.err
-
 set -o nounset -o pipefail -o errexit
 
 mkdir -p logs
 
 
 # Script default inputs
-CONTAINER='docker://rmsheridan/find-pauses:latest'
-RESULTS='results'
-DRY_RUN=0
+container='docker://rmsheridan/find-pauses:latest'
+results='results'
+dry_run=0
 
 
 # Parse arguments
@@ -21,7 +17,7 @@ usage() {
 OPTIONS
 -h, display this message.
 -c, container to use for running pipeline
--r, directory to output results
+-r, directory to use for writing results
 -d, execute dry-run to test pipeline
     """
 }
@@ -33,9 +29,9 @@ do
             usage
             exit 0
             ;;
-        c) CONTAINER="$OPTARG" ;;
-        r) RESULTS="$OPTARG" ;;
-        d) DRY_RUN=1 ;;
+        c) container="$OPTARG" ;;
+        r) results="$OPTARG" ;;
+        d) dry_run=1 ;;
         :)
             echo -e "\nERROR: -$OPTARG requires an argument"
 
@@ -50,25 +46,18 @@ do
 done
 
 
-# Load modules
-module load singularity
-
-
 # This is required to bind file system to container
 # this is specific for amc-bodhi and would need to be updated if running on
 # different system
 sng_args='--bind /beevol/home'
+ssh_key_dir="$HOME/.ssh"
 
 
-# Functions to run snakemake
+# Function to run snakemake
 run_snakemake() {
-    local snake_file='src/pipelines/net.snake'
-    local cfig_dir='src/configs'
-    local cfig_files="SAMPLES.yaml $cfig_dir/net.yaml $cfig_dir/pauses.yaml"
-
     local snake_args=${snake_args:-}
 
-    if [ "$DRY_RUN" -eq 1 ]
+    if [ "$dry_run" -eq 1 ]
     then
         local snake_args='-n'
     fi
@@ -81,17 +70,46 @@ run_snakemake() {
         -n {threads} '
 
     snakemake $snake_args \
-        --snakefile "$snake_file" \
+        --snakefile 'src/pipelines/net.snake' \
         --use-singularity \
-        --singularity-args "$sng_args" \
+        --singularity-args '--bind /beevol/home' \
         --drmaa "$args" \
         --jobs 100 \
-        --config CONTAINER="$CONTAINER" RESULTS="$RESULTS" SSH_KEY_DIR="$HOME/.ssh" \
-        --configfiles $cfig_files 
+        --config CONTAINER="$container" RESULTS="$results" SSH_KEY_DIR="$ssh_key_dir" \
+        --configfiles 'SAMPLES.yaml' 'src/configs/net.yaml' 'src/configs/pauses.yaml'
 }
 
 
-# Run pipeline using singularity
-singularity exec "$sng_args" "$CONTAINER" run_snakemake
+# Run the pipeline using singularity
+# make function and variables available to bsub
+function_def=$(declare -f run_snakemake | sed 's/"/\\"/g' | sed "s/'/\\'/g")
+
+export function_def
+export container
+export results
+export ssh_key_dir
+export dry_run
+export sng_args
+
+module load singularity
+
+bsub \
+    -J 'NET-seq' \
+    -o 'logs/net_%J.out' \
+    -e 'logs/net_%J.err' <<EOF
+#! /usr/bin/env bash
+
+$function_def
+
+singularity exec \
+    $sng_args \
+    --env function_def="$function_def" \
+    --env container="$container" \
+    --env results="$results" \
+    --env ssh_key_dir="$ssh_key_dir" \
+    --env dry_run=$dry_run \
+    "$container" \
+    bash -c "eval \"$function_def\"; run_snakemake"
+EOF
 
 
