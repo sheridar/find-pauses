@@ -6,32 +6,43 @@ mkdir -p logs
 
 
 # Script default inputs
-container='docker://rmsheridan/find-pauses:latest'
-results='results'
+snake_exec='/beevol/home/sheridanr/.local/bin/snakemake'
+bind_dir='/beevol/home'
 dry_run=0
+
+if [ ! -f "$snake_exec" ] || [ ! -x "$snake_exec" ]
+then
+    snake_exec=snakemake
+fi
 
 
 # Parse arguments
 usage() {
     echo """
+This will submit the pipeline to the LSF job manager, before submitting
+update the SAMPLES.yaml config file with the correct sample names/paths.
+
 OPTIONS
 -h, display this message.
--c, container to use for running pipeline
--r, directory to use for writing results
 -d, execute dry-run to test pipeline
+-s, snakemake executable to use when running pipeline,
+    default is $snake_exec
+-b, home directory path to bind to container, this is required for access
+    to files that are outside of the workflow directory,
+    default is $bind_dir
     """
 }
 
-while getopts ":hc:r:d" args
+while getopts ":hds:b:" args
 do
     case "$args" in
         h)
             usage
             exit 0
             ;;
-        c) container="$OPTARG" ;;
-        r) results="$OPTARG" ;;
         d) dry_run=1 ;;
+        s) snake_exec="$OPTARG" ;;
+        b) bind_dir="$OPTARG" ;;
         :)
             echo -e "\nERROR: -$OPTARG requires an argument"
 
@@ -44,13 +55,6 @@ do
             ;;
     esac
 done
-
-
-# This is required to bind file system to container
-# this is specific for amc-bodhi and would need to be updated if running on
-# different system
-ssh_key_dir="$HOME/.ssh"
-snake_exec='/beevol/home/sheridanr/.local/bin/snakemake'
 
 
 # Function to run snakemake
@@ -72,12 +76,18 @@ run_snakemake() {
     "$snake_exec" $snake_args \
         --snakefile 'src/pipelines/net.snake' \
         --use-singularity \
-        --singularity-args '--bind /beevol/home' \
+        --singularity-args "--bind $bind_dir" \
         --drmaa "$args" \
         --jobs 100 \
-        --config CONTAINER="$container" RESULTS="$results" SSH_KEY_DIR="$ssh_key_dir" \
+        --config SSH_KEY_DIR="$ssh_key_dir" \
         --configfiles 'SAMPLES.yaml' 'src/configs/net.yaml' 'src/configs/pauses.yaml'
 }
+
+
+# Path to .ssh directory
+# this is used to provide the container access to ssh keys for
+# transferring files
+ssh_key_dir="$HOME/.ssh"
 
 
 # Run the pipeline
@@ -85,9 +95,8 @@ run_snakemake() {
 function_def=$(declare -f run_snakemake)
 
 export snake_exec
+export bind_dir
 export function_def
-export container
-export results
 export ssh_key_dir
 export dry_run
 

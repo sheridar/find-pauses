@@ -6,6 +6,16 @@ PROJ:
     "MY-PROJECT"
 
 
+# Docker container to use for pipeline
+CONTAINER:
+    "docker://rmsheridan/find-pauses:latest"
+
+
+# Directory to save results
+RESULTS:
+    "results"
+
+
 # Directories containing FASTQ files, this can be a relative path.
 # * Multiple directories can be provided
 # * The sample names must correspond to the begining of the fastq name
