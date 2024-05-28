@@ -275,10 +275,10 @@ rule all:
         expand(
             RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_meta_N.bed.gz",
             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
-        )
+        ),
 
-       #  # Plots
-       #  RESULTS + "/" + PROJ + "_analysis.html"
+        # Plots
+        RESULTS + "/" + PROJ + "_analysis.html"
 
 
 # Setup code for pipeline

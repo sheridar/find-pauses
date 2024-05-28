@@ -49,8 +49,8 @@ done
 # This is required to bind file system to container
 # this is specific for amc-bodhi and would need to be updated if running on
 # different system
-sng_args='--bind /beevol/home'
 ssh_key_dir="$HOME/.ssh"
+snake_exec='/beevol/home/sheridanr/.local/bin/snakemake'
 
 
 # Function to run snakemake
@@ -69,7 +69,7 @@ run_snakemake() {
         -R "rusage[mem={params.memory}] span[hosts=1]"
         -n {threads} '
 
-    snakemake $snake_args \
+    "$snake_exec" $snake_args \
         --snakefile 'src/pipelines/net.snake' \
         --use-singularity \
         --singularity-args '--bind /beevol/home' \
@@ -80,16 +80,16 @@ run_snakemake() {
 }
 
 
-# Run the pipeline using singularity
+# Run the pipeline
 # make function and variables available to bsub
-function_def=$(declare -f run_snakemake | sed 's/"/\\"/g' | sed "s/'/\\'/g")
+function_def=$(declare -f run_snakemake)
 
+export snake_exec
 export function_def
 export container
 export results
 export ssh_key_dir
 export dry_run
-export sng_args
 
 module load singularity
 
@@ -101,15 +101,8 @@ bsub \
 
 $function_def
 
-singularity exec \
-    $sng_args \
-    --env function_def="$function_def" \
-    --env container="$container" \
-    --env results="$results" \
-    --env ssh_key_dir="$ssh_key_dir" \
-    --env dry_run=$dry_run \
-    "$container" \
-    bash -c "eval \"$function_def\"; run_snakemake"
+run_snakemake
+
 EOF
 
 
