@@ -7,15 +7,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Install wget, curl, ca-certificates, and build essentials
 # everything before vim was recommended for singularity
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    pkg-config \
-    squashfs-tools \
-    libgpgme-dev \
-    libgpgme11-dev \
-    libseccomp-dev \
-    libglib2.0-dev \
-    cryptsetup-bin \
-    libjson-perl \
-    uuid-dev \
     vim \
     wget \
     git \
