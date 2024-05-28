@@ -5,9 +5,20 @@ FROM --platform=linux/amd64 ubuntu:22.04
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Install wget, curl, ca-certificates, and build essentials
+# everything before vim was recommended for singularity
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    pkg-config \
+    squashfs-tools \
+    libgpgme-dev \
+    libgpgme11-dev \
+    libseccomp-dev \
+    libglib2.0-dev \
+    cryptsetup-bin \
+    libjson-perl \
+    uuid-dev \
     vim \
     wget \
+    git \
     curl \
     unzip \
     openssh-client \
@@ -43,13 +54,13 @@ RUN source /opt/conda/bashrc && \
 ENV PATH="/opt/conda/envs/find-pauses/bin:$PATH"
 ENV MAMBA_ROOT_PREFIX="/opt/conda"
 
-# Install R packages
-COPY renv.lock .
-
-RUN source /opt/conda/bashrc && \
-    micromamba activate find-pauses && \
-    Rscript -e "install.packages('renv', repos = 'http://cran.rstudio.com')" && \
-    Rscript -e "renv::restore(lockfile = 'renv.lock')"
+# # Install R packages
+# COPY renv.lock .
+# 
+# RUN source /opt/conda/bashrc && \
+#     micromamba activate find-pauses && \
+#     Rscript -e "install.packages('renv', repos = 'http://cran.rstudio.com')" && \
+#     Rscript -e "renv::restore(lockfile = 'renv.lock')"
 
 # Activate the environment in ENTRYPOINT
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/conda/bashrc && micromamba activate find-pauses && exec bash"]
