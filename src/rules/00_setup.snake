@@ -1,6 +1,7 @@
 # ===== Rules to set up pipeline =====================
 
 
+@first
 rule compile_cpp:
     input:
         SRC + "/{script}.cpp"
