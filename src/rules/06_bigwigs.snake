@@ -75,8 +75,6 @@ rule igv_browser:
         memory   = 4,
         url      = URL,
         ssh      = SSH
-    container:
-        None
     log:
         out = RESULTS + "/logs/" + PROJ + "_igv.out",
         err = RESULTS + "/logs/" + PROJ + "_igv.err"
@@ -89,6 +87,11 @@ rule igv_browser:
     shell:
         """
         source {SRC}/funs.sh
+
+        if [ ! -d "$HOME/.ssh" ] && [ ! -L "$HOME/.ssh" ]
+        then
+            ln -s "{SSH_KEY}" "$HOME"
+        fi
 
         create_urls \
             "{input.pos}" \

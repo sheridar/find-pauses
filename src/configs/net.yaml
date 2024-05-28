@@ -3,7 +3,7 @@
 
 # Docker container to use for pipeline
 CONTAINER:
-    "docker://rmsheridan/find-pauses:v5"
+    "docker://rmsheridan/find-pauses:v6"
 
 
 # Directory to store results

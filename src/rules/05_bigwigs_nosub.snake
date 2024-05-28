@@ -71,15 +71,15 @@ rule igv_browser_nosub:
         urls = RESULTS + "/urls/" + PROJ + "_nosub_urls.tsv",
         xml  = RESULTS + "/urls/" + PROJ + "_nosub_igv.xml"
     params:
-        job_name = PROJ + "nosub_igv",
+        job_name = PROJ + "_nosub_igv",
         memory   = 4,
         url      = URL,
         ssh      = SSH
     log:
-        out = RESULTS + "/logs/" + PROJ + "_igv.out",
-        err = RESULTS + "/logs/" + PROJ + "_igv.err"
+        out = RESULTS + "/logs/" + PROJ + "_nosub_igv.out",
+        err = RESULTS + "/logs/" + PROJ + "_nosub_igv.err"
     benchmark:
-        RESULTS + "/benchmarks/" + PROJ + "_igv.tsv"
+        RESULTS + "/benchmarks/" + PROJ + "_nosub_igv.tsv"
     message:
         "Creating " + PROJ + " IGV session without subsampling"
     threads:
@@ -87,6 +87,11 @@ rule igv_browser_nosub:
     shell:
         """
         source {SRC}/funs.sh
+
+        if [ ! -d "$HOME/.ssh" ] && [ ! -L "$HOME/.ssh" ]
+        then
+            ln -s "{SSH_KEY}" "$HOME"
+        fi
 
         create_urls \
             "{input.pos}" \
@@ -176,12 +181,10 @@ rule igv_browser_nofilt:
         urls = RESULTS + "/urls/" + PROJ + "_nofilt_urls.tsv",
         xml  = RESULTS + "/urls/" + PROJ + "_nofilt_igv.xml"
     params:
-        job_name = PROJ + "nofilt_igv",
+        job_name = PROJ + "_nofilt_igv",
         memory   = 4,
         url      = URL,
         ssh      = SSH
-    container:
-        None
     log:
         out = RESULTS + "/logs/" + PROJ + "nofilt_igv.out",
         err = RESULTS + "/logs/" + PROJ + "nofilt_igv.err"
@@ -194,6 +197,11 @@ rule igv_browser_nofilt:
     shell:
         """
         source {SRC}/funs.sh
+
+        if [ ! -d "$HOME/.ssh" ] && [ ! -L "$HOME/.ssh" ]
+        then
+            ln -s "{SSH_KEY}" "$HOME"
+        fi
 
         create_urls \
             "{input.pos}" \

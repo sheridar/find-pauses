@@ -12,6 +12,8 @@ mkdir -p logs
 
 
 # Functions to run snakemake
+sng_args='--bind /beevol/home'
+
 run_snakemake() {
     local snake_file=$1
     local config_file=$2
@@ -26,24 +28,25 @@ run_snakemake() {
     snakemake \
         --snakefile $snake_file \
         --use-singularity \
-        --singularity-args '--bind /beevol/home' \
+        --singularity-args "$sng_args" \
         --drmaa "$args" \
         --jobs 100 \
+        --config SSH_KEY=\'"$HOME/.ssh"\' \
         --configfiles $config_file
 }
 
 run() {
+    config_dir='src/configs'
+
     run_snakemake \
         src/pipelines/net.snake \
-        "SAMPLES.yaml src/configs/net.yaml src/configs/pauses.yaml"
+        "SAMPLES.yaml $config_dir/net.yaml $config_dir/pauses.yaml"
 }
 
 
 # # Run pipeline using singularity
-# singularity exec --bind /beevol/home docker://rmsheridan/find-pauses:v5 run
+# singularity exec "$sng_args" docker://rmsheridan/find-pauses:v5 run
 
-run_snakemake \
-    src/pipelines/net.snake \
-    "SAMPLES.yaml src/configs/net.yaml src/configs/pauses.yaml"
+run
 
 

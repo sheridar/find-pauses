@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-FUNS_DIR=$(dirname $(realpath ${BASH_SOURCE[0]}))
+FUNS_DIR=$(dirname "$(realpath "${BASH_SOURCE[0]}")")
 
 
 # Count reads and normalize
@@ -118,9 +118,9 @@ create_urls() {
             local sffx="$grp"
         fi
         
-        local sam=$(echo "$bw" | grep -oP ".+(?=[_-]""$sffx")
+        local sam=$(echo "$bw" | grep -oP ".+(?=[_-])""$sffx")
 
-        rsync --perms --chmod=ugo+r "$path" "$ssh"
+        rsync -e 'ssh -o StrictHostKeyChecking=no' --perms --chmod=ugo+r "$path" "$ssh"
 
         eval "$cmd" \
             >> "$url_file"
