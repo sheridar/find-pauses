@@ -7,6 +7,7 @@
 rule metaplot_beds_nosub:
     input:
         RESULTS + "/{sample}/{sample}_shift.bed.gz"
+
     output:
         S    = RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S.bed.gz",
         AS   = RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_AS.bed.gz",
@@ -43,3 +44,5 @@ rule metaplot_beds_nosub:
             {output.AS_N} \
             "-wa -c -S"
         """
+
+

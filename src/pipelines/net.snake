@@ -300,7 +300,7 @@ include: "../rules/03_dedup.snake"
 include: "../rules/04_featureCounts.snake"
 
 # Files without subsampling
-include: "../rules/04_metaplots_nosub.snake"
+include: "../rules/05_metaplots_nosub.snake"
 include: "../rules/05_bigwigs_nosub.snake"
 
 # Sample subsampling

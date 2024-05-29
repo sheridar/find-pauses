@@ -4,7 +4,8 @@
 # Create bed files for RNA 3' end
 rule create_beds:
     input:
-        RESULTS + "/{sample}/{sample}_dedup.bam"
+        RESULTS + "/{sample}/{sample}_dedup.bam",
+        expand(SRC + "/{script}", script = SCRIPTS)
     output:
         bed   = temp_fn(RESULTS + "/{sample}/{sample}.bed.gz"),
         shift = RESULTS + "/{sample}/{sample}_shift.bed.gz",
@@ -26,7 +27,7 @@ rule create_beds:
     shell:
        """
        # Create bed file for aligned reads
-       bamToBed -i {input} \
+       bamToBed -i {input[0]} \
            | awk -v OFS="\t" -v sam="{wildcards.sample}" '{{
                if ($1 !~ "^chr") {{
                    $1 = "chr"$1
