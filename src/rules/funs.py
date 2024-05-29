@@ -16,7 +16,7 @@ def _find_fqs(sample, dirs):
     if not fq_paths:
         sys.exit("ERROR: no fastqs found for " + fq_pat + ".")
 
-    return(fq_paths)
+    return fq_paths
 
 
 # Determine the suffix (e.g. fastq.gz) for a list of fastqs matching a single
@@ -41,7 +41,7 @@ def _get_fq_sfx(fqs):
     
     sfx = list(sfx)[0]
 
-    return(sfx)
+    return sfx
 
 
 # For the fastq suffix (e.g. fastq.gz) get the complete suffix for both reads
@@ -105,6 +105,6 @@ def _get_fqs(sample, dirs, link_dir, full_name = False):
         else:
             fastqs.append(fastq)
     
-    return(fastqs)
+    return fastqs
 
 
