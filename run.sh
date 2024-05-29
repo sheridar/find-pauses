@@ -40,7 +40,7 @@ OPTIONS
     """
 }
 
-while getopts ":hds:b:" args
+while getopts ":hds:a:b:" args
 do
     case "$args" in
         h)
@@ -67,11 +67,9 @@ done
 
 # Function to run snakemake
 run_snakemake() {
-    local dry_arg=${dry_arg:-}
-
     if [ "$dry_run" -eq 1 ]
     then
-        local dry_arg='-n'
+        local snake_args="-n $snake_args"
     fi
 
     args='
@@ -81,7 +79,7 @@ run_snakemake() {
         -R "rusage[mem={params.memory}] span[hosts=1]"
         -n {threads} '
 
-    "$snake_exec" $dry_arg $snake_args \
+    "$snake_exec" $snake_args \
         --snakefile 'src/pipelines/net.snake' \
         --use-singularity \
         --singularity-args "--bind $bind_dir" \
@@ -102,10 +100,11 @@ ssh_key_dir="$HOME/.ssh"
 function_def=$(declare -f run_snakemake)
 
 export snake_exec
+export snake_args
+export dry_run
 export bind_dir
 export function_def
 export ssh_key_dir
-export dry_run
 
 module load singularity
 
