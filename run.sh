@@ -8,6 +8,7 @@ mkdir -p logs
 # Script default inputs
 snake_exec='/beevol/home/sheridanr/.local/bin/snakemake'
 bind_dir='/beevol/home'
+snake_args='--keep-going --jobs 100'
 dry_run=0
 
 if [ ! -f "$snake_exec" ] || [ ! -x "$snake_exec" ]
@@ -24,15 +25,17 @@ update the SAMPLES.yaml config file with the correct sample names and
 paths.
 
 USAGE
-$0 [-h] [-d] [-s SNAKE_PATH] [-b BIND_PATH]
+$0 [-h] [-d] [-s SNAKE_PATH] [-a SNAKE_ARGS] [-b BIND_PATH]
 
 OPTIONS
 -h, display this message.
 -d, execute dry-run to test pipeline
--s, snakemake executable to use when running pipeline,
-    default is $snake_exec
--b, home directory path to bind to container, this is required for access
-    to files that are outside of the workflow directory, default is
+-s, snakemake executable to use when running pipeline, default path is
+    $snake_exec
+-a, additional arguments to pass to snakemake, these should be wrapped in
+    quotes, default arguments are '$snake_args' 
+-b, directory path to bind to container, this is required for access to
+    files that are outside of the workflow directory, default path is
     $bind_dir
     """
 }
@@ -46,6 +49,7 @@ do
             ;;
         d) dry_run=1 ;;
         s) snake_exec="$OPTARG" ;;
+        a) snake_args="$OPTARG" ;;
         b) bind_dir="$OPTARG" ;;
         :)
             echo -e "\nERROR: -$OPTARG requires an argument"
@@ -63,11 +67,11 @@ done
 
 # Function to run snakemake
 run_snakemake() {
-    local snake_args=${snake_args:-}
+    local dry_arg=${dry_arg:-}
 
     if [ "$dry_run" -eq 1 ]
     then
-        local snake_args='-n'
+        local dry_arg='-n'
     fi
 
     args='
@@ -77,12 +81,11 @@ run_snakemake() {
         -R "rusage[mem={params.memory}] span[hosts=1]"
         -n {threads} '
 
-    "$snake_exec" --keep-going $snake_args \
+    "$snake_exec" $dry_arg $snake_args \
         --snakefile 'src/pipelines/net.snake' \
         --use-singularity \
         --singularity-args "--bind $bind_dir" \
         --drmaa "$args" \
-        --jobs 100 \
         --config SSH_KEY_DIR="$ssh_key_dir" \
         --configfiles 'SAMPLES.yaml' 'src/configs/net.yaml' 'src/configs/pauses.yaml'
 }
