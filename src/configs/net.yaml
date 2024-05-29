@@ -6,6 +6,11 @@ KEEP_INTERMEDIATE_FILES:
     False
 
 
+# Should metaplot files be kept:
+KEEP_META_FILES:
+    True
+
+
 # Base memory to request for each rule
 # * The acutal amount requested will be higher for rules that generally
 #   require more memory

@@ -6,10 +6,10 @@ rule metaplot_beds:
     input:
         RESULTS + "/{sam_grp}/{sam_grp}.bed.gz"
     output:
-        S    = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S.bed.gz",
-        AS   = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_AS.bed.gz",
-        S_N  = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S_N.bed.gz",
-        AS_N = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_AS_N.bed.gz"
+        S    = meta_temp_fn(RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S.bed.gz"),
+        AS   = meta_temp_fn(RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_AS.bed.gz"),
+        S_N  = meta_temp_fn(RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S_N.bed.gz"),
+        AS_N = meta_temp_fn(RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_AS_N.bed.gz")
     params:
         job_name = "{sam_grp}_{region}_metaplot_beds",
         memory   = MEMORY * 2,

@@ -27,11 +27,14 @@ configfile:
 
 # Include intermediate files
 if config["KEEP_INTERMEDIATE_FILES"]:
-    def temp_fn(file):
-        return(file)
-
+    temp_fn = lambda x: return(x)
 else:
     temp_fn = temp
+
+if config["KEEP_META_FILES"]:
+    meta_temp_fn = lambda x: return(x)
+else:
+    meta_temp_fn = temp
 
 
 # Docker container
@@ -300,7 +303,7 @@ include: "../rules/03_dedup.snake"
 include: "../rules/04_featureCounts.snake"
 
 # Files without subsampling
-include: "../rules/05_metaplots_nosub.snake"
+include: "../rules/04_metaplots_nosub.snake"
 include: "../rules/05_bigwigs_nosub.snake"
 
 # Sample subsampling
