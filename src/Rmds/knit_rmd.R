@@ -1,6 +1,6 @@
 renv::use(
   lockfile = "renv.lock",
-  library = "/opt/conda/envs/find-pauses/lib/R/library"
+  library  = "/opt/conda/envs/find-pauses/lib/R/library"
 )
 
 library(rmarkdown)
@@ -32,4 +32,5 @@ render(
   output_file = output,
   params      = list(title = ttl, genome = genome)
 )
+
 
