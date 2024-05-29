@@ -11,7 +11,7 @@ rule metaplot_beds_nosub:
         S    = meta_temp_fn(RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S.bed.gz"),
         AS   = meta_temp_fn(RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_AS.bed.gz"),
         S_N  = meta_temp_fn(RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S_N.bed.gz"),
-        AS_N = meta_temp_fn(RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_AS_N.bed.gz)"
+        AS_N = meta_temp_fn(RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_AS_N.bed.gz")
     params:
         job_name = "{sample}_{region}_metaplot_beds",
         memory   = MEMORY * 2,
