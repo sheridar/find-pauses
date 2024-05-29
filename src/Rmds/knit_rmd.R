@@ -1,4 +1,7 @@
-renv::use(lockfile = "renv.lock")
+renv::use(
+  lockfile = "renv.lock",
+  library = "/opt/conda/envs/find-pauses/lib/R/library"
+)
 
 library(rmarkdown)
 library(docopt)
