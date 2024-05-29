@@ -20,7 +20,11 @@ fi
 usage() {
     echo """
 This will submit the pipeline to the LSF job manager, before submitting
-update the SAMPLES.yaml config file with the correct sample names/paths.
+update the SAMPLES.yaml config file with the correct sample names and
+paths.
+
+USAGE
+$0 [-h] [-d] [-s SNAKE_PATH] [-b BIND_PATH]
 
 OPTIONS
 -h, display this message.
@@ -28,8 +32,8 @@ OPTIONS
 -s, snakemake executable to use when running pipeline,
     default is $snake_exec
 -b, home directory path to bind to container, this is required for access
-    to files that are outside of the workflow directory,
-    default is $bind_dir
+    to files that are outside of the workflow directory, default is
+    $bind_dir
     """
 }
 
@@ -73,7 +77,7 @@ run_snakemake() {
         -R "rusage[mem={params.memory}] span[hosts=1]"
         -n {threads} '
 
-    "$snake_exec" $snake_args \
+    "$snake_exec" --keep-going $snake_args \
         --snakefile 'src/pipelines/net.snake' \
         --use-singularity \
         --singularity-args "--bind $bind_dir" \
