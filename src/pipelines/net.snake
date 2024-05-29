@@ -26,13 +26,15 @@ configfile:
 
 
 # Include intermediate files
+do_nothing = lambda x: x
+
 if config["KEEP_INTERMEDIATE_FILES"]:
-    temp_fn = lambda x: return x
+    temp_fn = do_nothing
 else:
     temp_fn = temp
 
 if config["KEEP_META_FILES"]:
-    meta_temp_fn = lambda x: return x
+    meta_temp_fn = do_nothing
 else:
     meta_temp_fn = temp
 
