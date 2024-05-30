@@ -70,18 +70,13 @@ if (!dir.exists(here(plot_params$tab_dir))) {
   dir.create(here(plot_params$tab_dir), recursive = TRUE, mode = "0750")
 }
 
-# Set sample and replicate names for plots
+# Set missing sample names
 # set default names if not provided
-# add replicate IDs
 plot_grps$SAMPLES <- plot_grps$SAMPLES %>%
   map(~ {
-    ids <- str_c("_r", seq_along(.x))
-    
     .x %>%
-      map2(ids, ~ {
+      map(~ {
         if (is.null(names(.x))) names(.x) <- str_c("sample-", seq_along(.x))
-        
-        names(.x) <- str_c(names(.x), .y)
         
         as.list(.x)
       })
@@ -101,6 +96,19 @@ plot_grps$COLORS[missing_colors] <- plot_grps$SAMPLES[missing_colors] %>%
       n_distinct()
     
     c("black", theme_colors[seq_len(n_clrs - 1)])
+  })
+
+# Set replicate names for plots
+# set default replicate IDs if not provided
+plot_grps$SAMPLES <- plot_grps$SAMPLES %>%
+  map(~ {
+    ids <- str_c("_r", seq_along(.x))
+    
+    map2(.x, ids, ~ {
+      names(.x) <- str_c(names(.x), .y)
+      
+      as.list(.x)
+    })
   })
 
 # Create data.frame with sample info
