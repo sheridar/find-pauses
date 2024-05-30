@@ -11,11 +11,6 @@ bind_dir='/beevol/home'
 snake_args='--keep-going --jobs 100'
 dry_run=0
 
-if [ ! -f "$snake_exec" ] || [ ! -x "$snake_exec" ]
-then
-    snake_exec=snakemake
-fi
-
 
 # Parse arguments
 usage() {

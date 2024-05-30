@@ -45,6 +45,11 @@ RUN source /opt/conda/bashrc && \
 ENV PATH="/opt/conda/envs/find-pauses/bin:$PATH"
 ENV MAMBA_ROOT_PREFIX="/opt/conda"
 
+# Set up locale
+RUN locale-gen en_US.UTF-8
+ENV LANG=en_US.UTF-8
+ENV LC_ALL=en_US.UTF-8
+
 # Install R packages
 COPY renv.lock .
 
