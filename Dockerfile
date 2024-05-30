@@ -45,13 +45,13 @@ RUN source /opt/conda/bashrc && \
 ENV PATH="/opt/conda/envs/find-pauses/bin:$PATH"
 ENV MAMBA_ROOT_PREFIX="/opt/conda"
 
-# # Install R packages
-# COPY renv.lock .
-# 
-# RUN source /opt/conda/bashrc && \
-#     micromamba activate find-pauses && \
-#     Rscript -e "install.packages('renv', repos = 'http://cran.rstudio.com')" && \
-#     Rscript -e "renv::restore(lockfile = 'renv.lock')"
+# Install R packages
+COPY renv.lock .
+
+RUN source /opt/conda/bashrc && \
+    micromamba activate find-pauses && \
+    Rscript -e "install.packages('renv', repos = 'http://cran.rstudio.com')" && \
+    Rscript -e "renv::restore(lockfile = 'renv.lock')"
 
 # Activate the environment in ENTRYPOINT
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/conda/bashrc && micromamba activate find-pauses && exec bash"]
