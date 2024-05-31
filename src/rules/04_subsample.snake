@@ -17,7 +17,7 @@ rule subsample_dict:
     run:
         from pytools.persistent_dict import PersistentDict
 
-        SUB_DICT = PersistentDict("SUB_DICT", container_dir = DICT_DIR)
+        SUB_DICT = PersistentDict("SUB_DICT", container_dir = SUB_DICT_DIR)
 
         SUB_DICT.clear()
 
@@ -55,7 +55,7 @@ rule subsample_1:
         import gzip
         import os
 
-        SUB_DICT = PersistentDict("SUB_DICT", container_dir = DICT_DIR)
+        SUB_DICT = PersistentDict("SUB_DICT", container_dir = SUB_DICT_DIR)
 
         d = dict()
 
@@ -107,7 +107,7 @@ rule subsample_2:
     run:
         from pytools.persistent_dict import PersistentDict
 
-        SUB_DICT = PersistentDict("SUB_DICT", container_dir = DICT_DIR)
+        SUB_DICT = PersistentDict("SUB_DICT", container_dir = SUB_DICT_DIR)
 
         MIN_READS = SUB_DICT.fetch(wildcards.group)
 
@@ -123,6 +123,7 @@ rule subsample_2:
 
 
 # Create subsampling summary
+# also need to clear persistent dict
 rule sub_summary:
     input:
         expand(
@@ -141,15 +142,23 @@ rule sub_summary:
         "Creating " + PROJ + " subsampling summary"
     threads:
         1
-    shell:
-        """
-        file_arr=({input})
+    run:
+        from pytools.persistent_dict import PersistentDict
 
-        for file in ${{file_arr[@]}}
-        do
-            cat $file \
-                >> {output}
-        done
-        """
+        SUB_DICT = PersistentDict("SUB_DICT", container_dir = SUB_DICT_DIR)
+
+        SUB_DICT.clear()
+
+        shell(
+            """
+            file_arr=({input})
+    
+            for file in ${{file_arr[@]}}
+            do
+                cat $file \
+                    >> {output}
+            done
+            """
+        )
 
 

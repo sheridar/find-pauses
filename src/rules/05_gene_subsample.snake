@@ -1,36 +1,6 @@
 # ===== Rules for intersecting reads with genomic regions ======================
 
 
-# # Create dictionary for each gene region subsampling group
-# rule gene_subsample_dicts:
-#     input:
-#         lambda wildcards: expand(
-#             RESULTS + "/{sample}/metaplot_beds/{sample}_{{sub_region}}_S.bed.gz",
-#             sample = SAMPLES[wildcards.group]
-#         )
-#     output:
-#         DICT_DIR + "/{group}_{sub_region}_dict.txt"
-#     params:
-#         job_name = "{group}_{sub_region}_dict",
-#         memory   = MEMORY * 2
-#     log:
-#         out = RESULTS + "/logs/{group}_{sub_region}_dict.out",
-#         err = RESULTS + "/logs/{group}_{sub_region}_dict.err"
-#     threads:
-#         1
-#     run:
-#         from pytools.persistent_dict import PersistentDict
-# 
-#         dict_name = "GENE_SUB_DICT_" + wildcards.group + "_" + wildcards.sub_region
-#        
-#         GENE_SUB_DICT = PersistentDict(dict_name, container_dir = DICT_DIR)
-# 
-#         GENE_SUB_DICT.clear()
-# 
-#         with open(output[0], "w") as out:
-#             out.write(dict_name)
-
-
 # Identify lowest counts for the gene among all samples in the sampling group
 # for input, need to pull all files for the sampling group, but need each job
 # to only include files for one sampling region
@@ -40,7 +10,6 @@ rule gene_subsample_1:
             RESULTS + "/{sample}/metaplot_beds/{sample}_{{sub_region}}_S.bed.gz",
             sample = SAMPLES[wildcards.group]
         )
-        # DICT_DIR + "/{group}_{sub_region}_dict.txt",
     output:
         RESULTS + "/stats/{group}_{sub_region}_summary.tsv"
     params:
@@ -187,3 +156,28 @@ rule gene_subsample_2:
         )
 
 
+# Clear dictionaries used for gene subsampling
+rule gene_subsample_cleanup:
+    input:
+        lambda wildcards: expand(
+            RESULTS + "/{sample}-{{group}}_{{sub_region}}/{sample}-{{group}}_{{sub_region}}.bed.gz",
+            sample = SAMPLES[wildcards.group]
+        )
+    output:
+        temp(DICT_DIR + "/{group}_{sub_region}_cleanup.txt")
+    params:
+        job_name = "{group}_{sub_region}_cleanup",
+        memory   = MEMORY
+    log:
+        out = RESULTS + "/logs/{group}_{sub_region}_cleanup.out",
+        err = RESULTS + "/logs/{group}_{sub_region}_cleanup.err"
+    threads:
+        1
+    run:
+        GENE_SUB_DICT = _create_gene_sub_dict(wildcards.group, wildcards.sub_region, DICT_DIR)
+
+        GENE_SUB_DICT.clear()
+
+        shell("touch {output[0]}")
+ 
+ 

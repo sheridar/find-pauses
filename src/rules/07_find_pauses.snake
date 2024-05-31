@@ -83,7 +83,7 @@ rule find_pauses:
 
 
 # Identify strong pauses
-rule strong_pauses:
+rule pauses_strong:
     input:
         RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_pauses.bed.gz"
     output:

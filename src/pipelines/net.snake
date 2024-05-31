@@ -70,12 +70,14 @@ META_BEDS     = config["META_BEDS"]
 
 
 # Directories for data and scripts
-FASTQ_DIR = RESULTS + "/fastqs"
-DICT_DIR  = RESULTS + "/dicts"
-SRC = "src"
+FASTQ_DIR    = RESULTS + "/fastqs"
+DICT_DIR     = RESULTS + "/dicts"
+SUB_DICT_DIR = DICT_DIR + "/SUB_DICT"
+SRC          = "src"
 
 os.makedirs(FASTQ_DIR, exist_ok = True)
 os.makedirs(DICT_DIR, exist_ok = True)
+os.makedirs(SUB_DICT_DIR, exist_ok = True)
 
 
 # Files for metaplots
@@ -220,6 +222,11 @@ rule all:
             group = GRPS_UNIQ, sub_region = GENE_SUB_REGS
         ),
 
+        expand(
+            DICT_DIR + "/{group}_{sub_region}_cleanup.txt",
+            group = GRPS_UNIQ, sub_region = GENE_SUB_REGS
+        ),
+
         # Bigwigs without subsampling
         RESULTS + "/urls/" + PROJ + "_nosub_igv.xml",
 
@@ -306,8 +313,8 @@ include: "../rules/03_dedup.snake"
 include: "../rules/04_featureCounts.snake"
 
 # Files without subsampling
-include: "../rules/05_metaplots_nosub.snake"
-include: "../rules/05_bigwigs_nosub.snake"
+include: "../rules/04_metaplots_nosub.snake"
+include: "../rules/04_bigwigs_nosub.snake"
 
 # Sample subsampling
 include: "../rules/04_subsample.snake"

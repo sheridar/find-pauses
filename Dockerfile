@@ -32,14 +32,14 @@ RUN curl -sL https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj && 
     grep -v '[ -z "$PS1" ] && return' /root/.bashrc > /opt/conda/bashrc
 
 # Copy the environment.yml file into the container
-COPY environment.yml .
+COPY env/docker.yml .
 
 # Create micromamba environment with environment.yml
 # this works better when creating a new environment as opposed to updating base
 SHELL ["/bin/bash", "-l" ,"-c"]
 
 RUN source /opt/conda/bashrc && \
-    micromamba create -n find-pauses -f environment.yml && \
+    micromamba create -n find-pauses -f docker.yml && \
     micromamba clean --all --yes
 
 # Set environment variables
