@@ -88,6 +88,6 @@ SAMPLES:
 # * For each section, a color can be provided for each sample name
 # * Colors will be set automatically if they are not provided 
 COLORS:
-    Xrn2: ["black", "#4DB4C2"]
+    Xrn2-1: ["black", "#4DB4C2"]
 
 

@@ -1,6 +1,35 @@
 # ===== Functions for pipeline =====================
 
 
+# Create persistent dictionary to store gene subsampling info
+def _create_gene_sub_dict(group, region, dict_dir):
+    from pytools.persistent_dict import PersistentDict
+
+    dict_name = "GENE_SUB_DICT_" + group + "_" + region
+    dict_dir  = dict_dir + "/" + dict_name
+
+    os.makedirs(dict_dir, exist_ok = True)
+
+    gene_sub_dict = PersistentDict(dict_name, container_dir = dict_dir)
+
+    return(gene_sub_dict)
+
+
+# Delete all files in directory
+def _clear_directory(directory):
+
+    # List all contents of the directory
+    for filename in os.listdir(directory):
+        file_path = os.path.join(directory, filename)
+
+        # Check if file or directory
+        if os.path.isfile(file_path) or os.path.islink(file_path):
+            os.remove(file_path)
+
+        elif os.path.isdir(file_path):
+            shutil.rmtree(file_path)
+
+
 # Find all fastqs matching sample name in provided directories
 def _find_fqs(sample, dirs):
     fq_pat   = ".*" + sample + r".+\.(fastq|fq)\.gz$"

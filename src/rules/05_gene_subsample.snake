@@ -1,6 +1,36 @@
 # ===== Rules for intersecting reads with genomic regions ======================
 
 
+# # Create dictionary for each gene region subsampling group
+# rule gene_subsample_dicts:
+#     input:
+#         lambda wildcards: expand(
+#             RESULTS + "/{sample}/metaplot_beds/{sample}_{{sub_region}}_S.bed.gz",
+#             sample = SAMPLES[wildcards.group]
+#         )
+#     output:
+#         DICT_DIR + "/{group}_{sub_region}_dict.txt"
+#     params:
+#         job_name = "{group}_{sub_region}_dict",
+#         memory   = MEMORY * 2
+#     log:
+#         out = RESULTS + "/logs/{group}_{sub_region}_dict.out",
+#         err = RESULTS + "/logs/{group}_{sub_region}_dict.err"
+#     threads:
+#         1
+#     run:
+#         from pytools.persistent_dict import PersistentDict
+# 
+#         dict_name = "GENE_SUB_DICT_" + wildcards.group + "_" + wildcards.sub_region
+#        
+#         GENE_SUB_DICT = PersistentDict(dict_name, container_dir = DICT_DIR)
+# 
+#         GENE_SUB_DICT.clear()
+# 
+#         with open(output[0], "w") as out:
+#             out.write(dict_name)
+
+
 # Identify lowest counts for the gene among all samples in the sampling group
 # for input, need to pull all files for the sampling group, but need each job
 # to only include files for one sampling region
@@ -8,8 +38,9 @@ rule gene_subsample_1:
     input:
         lambda wildcards: expand(
             RESULTS + "/{sample}/metaplot_beds/{sample}_{{sub_region}}_S.bed.gz",
-            sample = SAMPLES[wildcards.group],
+            sample = SAMPLES[wildcards.group]
         )
+        # DICT_DIR + "/{group}_{sub_region}_dict.txt",
     output:
         RESULTS + "/stats/{group}_{sub_region}_summary.tsv"
     params:
@@ -29,8 +60,9 @@ rule gene_subsample_1:
 
         # Persistent dictionary for storing minimum gene counts for subsampling
         # clear the dictionary to remove results from previous runs
-        GENES_DICT = PersistentDict("GENES_DICT_" + wildcards.group + "_" + wildcards.sub_region)
-        GENES_DICT.clear()
+        GENE_SUB_DICT = _create_gene_sub_dict(wildcards.group, wildcards.sub_region, DICT_DIR)
+
+        GENE_SUB_DICT.clear()
 
         # Get list of genes present in the first input file
         # could use any file in the group
@@ -64,7 +96,7 @@ rule gene_subsample_1:
             # Store minimum count for the group in persistent dict
             min_reads = min(gene_set)
 
-            GENES_DICT.store(gene, min_reads)
+            GENE_SUB_DICT.store(gene, min_reads)
 
             # Save minimum counts in summary file
             with open(output[0], "a") as out:
@@ -75,9 +107,9 @@ rule gene_subsample_1:
 # the subsampling region
 rule gene_subsample_2:
     input:
-        reads = RESULTS + "/{sample}/{sample}_shift.bed.gz",
-        bed   = RESULTS + "/{sample}/metaplot_beds/{sample}_{sub_region}_S.bed.gz",
-        sum   = RESULTS + "/stats/{group}_{sub_region}_summary.tsv"
+        reads = RESULTS  + "/{sample}/{sample}_shift.bed.gz",
+        bed   = RESULTS  + "/{sample}/metaplot_beds/{sample}_{sub_region}_S.bed.gz",
+        sum   = RESULTS  + "/stats/{group}_{sub_region}_summary.tsv"
     output:
         reads =      RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_reads.bed.gz",
         tmp   = temp(RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_tmp.bed"),
@@ -95,14 +127,13 @@ rule gene_subsample_2:
     threads:
         6
     run:
-        from pytools.persistent_dict import PersistentDict
         import random
         import gzip
 
         # Persistent dictionary
         # this contains the minimum number of reads aligning to each gene for
         # the subsampling group
-        GENES_DICT = PersistentDict("GENES_DICT_" + wildcards.group + "_" + wildcards.sub_region)
+        GENE_SUB_DICT = _create_gene_sub_dict(wildcards.group, wildcards.sub_region, DICT_DIR)
  
         # Intersect with subsampling region
         # this produces a bed file that only containing reads to use for
@@ -133,11 +164,11 @@ rule gene_subsample_2:
                 READS_DICT[gene].append(l)
 
         # Subsample reads in READS_DICT and write bed file
-        # pull minimum read count for the gene from GENES_DICT
+        # pull minimum read count for the gene from GENE_SUB_DICT
         with open(output.tmp, "a") as out:
             for gene in READS_DICT.keys():
 
-                MIN_READS = GENES_DICT.fetch(gene)
+                MIN_READS = GENE_SUB_DICT.fetch(gene)
 
                 if len(READS_DICT[gene]) > MIN_READS:
                     READS_DICT[gene] = random.sample(READS_DICT[gene], MIN_READS)

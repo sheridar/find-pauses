@@ -7,8 +7,8 @@ shell.prefix("source ~/.bash_profile; set -o nounset -o pipefail -o errexit -x; 
 
 
 # Python packages
-from pytools.persistent_dict import PersistentDict
 import os
+import shutil
 import glob
 import re
 
@@ -71,7 +71,11 @@ META_BEDS     = config["META_BEDS"]
 
 # Directories for data and scripts
 FASTQ_DIR = RESULTS + "/fastqs"
+DICT_DIR  = RESULTS + "/dicts"
 SRC = "src"
+
+os.makedirs(FASTQ_DIR, exist_ok = True)
+os.makedirs(DICT_DIR, exist_ok = True)
 
 
 # Files for metaplots
@@ -167,9 +171,6 @@ wildcard_constraints:
 
 
 # Create symlinks for fastqs
-if not os.path.exists(FASTQ_DIR):
-    os.makedirs(FASTQ_DIR)
-
 FASTQS = [_get_fqs(x, RAW_DATA, FASTQ_DIR) for x in SAMS_UNIQ]
 FASTQS = sum(FASTQS, [])
 

@@ -1,108 +1,36 @@
 # ====== Rules for subsampling reads ===========================================
 
 
-# Create bed files for RNA 3' end
-rule create_beds:
-    input:
-        RESULTS + "/{sample}/{sample}_dedup.bam",
-        expand(SRC + "/{script}", script = SCRIPTS)
+# Clear persistent dictionary used for subsampling
+# to be safe this will clear any existing dictionary
+rule subsample_dict:
     output:
-        bed   = temp_fn(RESULTS + "/{sample}/{sample}.bed.gz"),
-        shift = RESULTS + "/{sample}/{sample}_shift.bed.gz",
-        stats = RESULTS + "/{sample}/{sample}_filt_stats.tsv"
+        temp(DICT_DIR + "/subsample_dict.txt")
     params:
-        job_name = "{sample}_create_beds",
-        memory   = MEMORY * 3,
-        genes    = GENES,
-        mask     = MASK
+        job_name = "subsample_dict",
+        memory   = MEMORY
     log:
-        out = RESULTS + "/logs/{sample}_beds.out",
-        err = RESULTS + "/logs/{sample}_beds.err"
-    benchmark:
-        RESULTS + "/benchmarks/{sample}_beds.tsv"
-    message:
-        "Creating bed files for {wildcards.sample}"
-    threads:
-        12
-    shell:
-       """
-       # Create bed file for aligned reads
-       bamToBed -i {input[0]} \
-           | awk -v OFS="\t" -v sam="{wildcards.sample}" '{{
-               if ($1 !~ "^chr") {{
-                   $1 = "chr"$1
-               }};
-               count += 1;
-               print $0, $3 - $2
-           }} END {{
-               print sam, "Aligned reads", count \
-                   > "{output.stats}"
-           }}' \
-           | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-           | pigz -p {threads} \
-           > {output.bed}
-
-       # Filter for reads that are within params.gene and not within
-       # params.mask. This filtering is not strand specific. Collapse
-       # read coordinates to the RNA 3' end.
-       zcat {output.bed} \
-           | bedtools intersect -sorted -v  -a - -b {params.mask} \
-           | bedtools intersect -sorted -wa -a - -b {params.genes} \
-           | sort -S1G --parallel={threads} -k1,1 -k2,2n -k4,4 -u \
-           | awk -v OFS="\t" -v sam="{wildcards.sample}" '{{
-               if ($6 == "+") {{
-                   $2 = $3 - 1;
-               }} else {{
-                   $3 = $2 + 1;
-               }};
-               count += 1;
-               print
-           }} END {{
-               print sam, "Filtered reads", count \
-                   >> "{output.stats}";
-           }}' \
-           | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-           | pigz -p {threads} \
-           > {output.shift}
-       """
-
-        
-# Create filtering summary
-rule filt_summary:
-    input:
-        expand(
-            RESULTS + "/{sample}/{sample}_filt_stats.tsv",
-            sample = SAMS_UNIQ
-        )
-    output:
-        RESULTS + "/stats/"+ PROJ + "_filt.tsv"
-    params:
-        job_name = PROJ + "_filt_summary",
-        memory   = 4
-    log:
-        out = RESULTS + "/logs/" + PROJ + "_filt_summary.out",
-        err = RESULTS + "/logs/" + PROJ + "_filt_summary.err"
-    message:
-        "Creating " + PROJ + " read filtering summary"
+        out = RESULTS + "/logs/subsample_dict.out",
+        err = RESULTS + "/logs/subsample_dict.err"
     threads:
         1
-    shell:
-        """
-        file_arr=({input})
+    run:
+        from pytools.persistent_dict import PersistentDict
 
-        for file in ${{file_arr[@]}}
-        do
-            cat $file \
-                >> {output}
-        done
-        """
+        SUB_DICT = PersistentDict("SUB_DICT", container_dir = DICT_DIR)
+
+        SUB_DICT.clear()
+
+        with open(output[0], "w") as out:
+            out.write("SUB_DICT")
 
 
 # Identify number of reads to use for subsampling each group
-READS_DICT = PersistentDict("READS_DICT")
-
+# use uuid to ensure unique dictionary name
 rule subsample_1:
     input:
+        DICT_DIR + "/subsample_dict.txt",
+
         lambda wildcards: expand(
             RESULTS + "/{sample}/{sample}_shift.bed.gz",
             sample = SAMPLES[wildcards.group]
@@ -125,8 +53,14 @@ rule subsample_1:
         # Identify file with smallest number of reads
         from pytools.persistent_dict import PersistentDict
         import gzip
+        import os
+
+        SUB_DICT = PersistentDict("SUB_DICT", container_dir = DICT_DIR)
 
         d = dict()
+
+        # Remove first input which contains dict info
+        del input[0]
 
         for file in input:
             f  = gzip.open(file)
@@ -142,7 +76,7 @@ rule subsample_1:
 
         min_reads = min(d.values())
 
-        READS_DICT.store(wildcards.group, min_reads)
+        SUB_DICT.store(wildcards.group, min_reads)
 
         with open(output[0], "w") as out:
             for k in d.keys():
@@ -153,8 +87,9 @@ rule subsample_1:
 # Subsample libraries to equalize read counts for downstream analysis
 rule subsample_2:
     input:
-        bed = RESULTS + "/{sample}/{sample}_shift.bed.gz",
-        sum = RESULTS + "/stats/{group}_summary.tsv"
+        bed  = RESULTS  + "/{sample}/{sample}_shift.bed.gz",
+        sum  = RESULTS  + "/stats/{group}_summary.tsv",
+        dict = DICT_DIR + "/subsample_dict.txt"
     output:
         RESULTS + "/{sample}-{group}/{sample}-{group}.bed.gz"
     params:
@@ -172,7 +107,9 @@ rule subsample_2:
     run:
         from pytools.persistent_dict import PersistentDict
 
-        MIN_READS = READS_DICT.fetch(wildcards.group)
+        SUB_DICT = PersistentDict("SUB_DICT", container_dir = DICT_DIR)
+
+        MIN_READS = SUB_DICT.fetch(wildcards.group)
 
         shell(
             """
