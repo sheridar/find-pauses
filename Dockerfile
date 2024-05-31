@@ -1,5 +1,5 @@
 # Use a minimal Ubuntu base image
-FROM --platform=linux/amd64 ubuntu:22.04
+FROM rocker/rstudio:latest
 
 # No prompts
 ENV DEBIAN_FRONTEND=noninteractive
@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     git \
     curl \
     unzip \
+    locales \
     openssh-client \
     ca-certificates \
     build-essential \
