@@ -24,6 +24,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     rm -rf /var/lib/apt/lists/* /var/cache/apt/*
 
 # Install micromamba
+# this could be simplified by using their install script
+# yes "" | "${SHELL}" <(curl -L micro.mamba.pm/install.sh)
 RUN curl -sL https://micro.mamba.pm/api/micromamba/linux-64/latest | tar -xj && \
     chmod +x /bin/micromamba && \
     /bin/micromamba shell init -s bash -p /opt/conda && \
