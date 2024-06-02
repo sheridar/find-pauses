@@ -1,9 +1,8 @@
 
 def _gene_subsample_1(input, output, group, sub_region, DICT_DIR):
-    import gzip
-    import sys
-    
+
     from funs import _create_gene_sub_dict
+    import gzip
     
     # Persistent dictionary for storing minimum gene counts for subsampling
     # clear the dictionary to remove results from previous runs
@@ -51,14 +50,11 @@ def _gene_subsample_1(input, output, group, sub_region, DICT_DIR):
 
 
 def _gene_subsample_2(reads, tmp, group, sub_region, DICT_DIR):
+
     from pytools.persistent_dict import PersistentDict
+    from funs import _create_gene_sub_dict
     import random
     import gzip
-    import sys
-    
-    sys.path.insert(0, "src/rules")
-    
-    from funs import _create_gene_sub_dict
     
     # Persistent dictionary
     # this contains the minimum number of reads aligning to each gene for
@@ -88,6 +84,8 @@ def _gene_subsample_2(reads, tmp, group, sub_region, DICT_DIR):
             MIN_READS = GENE_SUB_DICT.fetch(gene)
     
             if len(READS_DICT[gene]) > MIN_READS:
+                random.seed(42)
+
                 READS_DICT[gene] = random.sample(READS_DICT[gene], MIN_READS)
     
             for l in READS_DICT[gene]:

@@ -8,7 +8,7 @@ mkdir -p logs
 # Set default inputs
 install=0
 dry_run=0
-snake_args='--keep-going --jobs 100'
+snake_args='--keep-going --jobs 100 --retries 2'
 bind_dir='/beevol/home'
 
 
@@ -17,14 +17,15 @@ usage() {
     echo """
 This will submit the pipeline to the LSF job manager, before submitting
 update the SAMPLES.yaml config file with the correct sample names and
-paths.
+paths. It is also helpful to first run this script using the '-d' option
+to check for any potential issues with the input files.
 
 USAGE
 $0 [-h] [-d] [-i] [-a SNAKE_ARGS] [-b BIND_PATH]
 
 OPTIONS
 -h, display this help message
--d, execute dry-run to test pipeline
+-d, execute dry-run to test pipeline and print summary of jobs
 -i, install python and snakemake dependencies in micromamba environment
 -a, additional arguments to pass to snakemake, these should be wrapped in
     quotes, default arguments are '$snake_args' 
@@ -73,9 +74,16 @@ run_snakemake() {
     # transferring files to amc-sandbox
     local ssh_key_dir="$7"
 
+    # Add dry run argument
     if [ "$dry_run" -eq 1 ]
     then
-        local snake_args="-n $snake_args"
+        local snake_args="--dry-run --quiet $snake_args"
+    fi
+
+    # Check that --jobs is always provided
+    if [[ ! "$snake_args" == *"--jobs"* ]]
+    then
+        local snake_args="--jobs 100 $snake_args"
     fi
 
     # Install micromamba environment

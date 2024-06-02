@@ -30,7 +30,6 @@ rule gene_subsample_1:
         """
         python - << 'EOF'
 import sys
-
 sys.path.insert(0, "src/rules")
 
 import rules
@@ -82,7 +81,6 @@ rule gene_subsample_2:
 
         python - << 'EOF'
 import sys
-
 sys.path.insert(0, "src/rules")
 
 import rules
@@ -112,7 +110,7 @@ rule gene_subsample_cleanup:
             sample = SAMPLES[wildcards.group]
         )
     output:
-        temp(DICT_DIR + "/{group}_{sub_region}_cleanup.txt")
+        temp(touch(DICT_DIR + "/{group}_{sub_region}_cleanup.txt"))
     params:
         job_name = "{group}_{sub_region}_cleanup",
         memory   = MEMORY
@@ -125,6 +123,11 @@ rule gene_subsample_cleanup:
         """
         python - << 'EOF'
 from pytools.persistent_dict import PersistentDict
+import sys
+
+sys.path.insert(0, "src/rules")
+
+from funs import _create_gene_sub_dict
 
 GENE_SUB_DICT = _create_gene_sub_dict(
     "{wildcards.group}",
@@ -135,8 +138,6 @@ GENE_SUB_DICT = _create_gene_sub_dict(
 GENE_SUB_DICT.clear()
 
 EOF
-
-        touch {output[0]}
         """
 
 
