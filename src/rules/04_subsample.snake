@@ -5,10 +5,10 @@
 # to be safe this will clear any existing dictionary
 rule subsample_dict:
     output:
-        temp(DICT_DIR + "/subsample_dict.txt")
+        temp(touch(DICT_DIR + "/subsample_dict.txt"))
     params:
         job_name = "subsample_dict",
-        memory   = MEMORY
+        memory   = 2
     log:
         out = RESULTS + "/logs/subsample_dict.out",
         err = RESULTS + "/logs/subsample_dict.err"
@@ -22,9 +22,6 @@ from pytools.persistent_dict import PersistentDict
 SUB_DICT = PersistentDict("SUB_DICT", container_dir = "{SUB_DICT_DIR}")
 
 SUB_DICT.clear()
-
-with open("{output[0]}", "w") as out:
-    out.write("SUB_DICT")
 EOF
         """
 
@@ -40,7 +37,7 @@ rule subsample_1:
             sample = SAMPLES[wildcards.group]
         )
     output:
-        RESULTS + "/stats/{group}_summary.tsv"
+        temp(RESULTS + "/stats/{group}_summary.tsv")
     params:
         job_name = "{group}_summary",
         memory   = MEMORY * 3

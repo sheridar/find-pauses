@@ -113,7 +113,7 @@ rule gene_subsample_cleanup:
         temp(touch(DICT_DIR + "/{group}_{sub_region}_cleanup.txt"))
     params:
         job_name = "{group}_{sub_region}_cleanup",
-        memory   = MEMORY
+        memory   = 2
     log:
         out = RESULTS + "/logs/{group}_{sub_region}_cleanup.out",
         err = RESULTS + "/logs/{group}_{sub_region}_cleanup.err"
