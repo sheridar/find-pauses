@@ -109,9 +109,10 @@ run_snakemake() {
     module load singularity
 
     drmaa_args='
+        -J {params.job_name}
+        -q rna
         -oo {log.out} 
         -eo {log.err} 
-        -J {params.job_name}
         -R "rusage[mem={params.memory}] span[hosts=1]"
         -n {threads} '
 
@@ -137,6 +138,7 @@ export function_def
 
 bsub \
     -J 'NET-seq' \
+    -q 'rna' \
     -o 'logs/net_%J.out' \
     -e 'logs/net_%J.err' <<EOF
 #! /usr/bin/env bash
