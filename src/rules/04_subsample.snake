@@ -14,15 +14,19 @@ rule subsample_dict:
         err = RESULTS + "/logs/subsample_dict.err"
     threads:
         1
-    run:
-        from pytools.persistent_dict import PersistentDict
+    shell:
+        """
+        python - << 'EOF'
+from pytools.persistent_dict import PersistentDict
 
-        SUB_DICT = PersistentDict("SUB_DICT", container_dir = SUB_DICT_DIR)
+SUB_DICT = PersistentDict("SUB_DICT", container_dir = "{SUB_DICT_DIR}")
 
-        SUB_DICT.clear()
+SUB_DICT.clear()
 
-        with open(output[0], "w") as out:
-            out.write("SUB_DICT")
+with open("{output[0]}", "w") as out:
+    out.write("SUB_DICT")
+EOF
+        """
 
 
 # Identify number of reads to use for subsampling each group
@@ -49,39 +53,45 @@ rule subsample_1:
         "Subsampling reads for {wildcards.group}"
     threads:
         1
-    run:
-        # Identify file with smallest number of reads
-        from pytools.persistent_dict import PersistentDict
-        import gzip
-        import os
+    shell:
+        """
+        python - << 'EOF'
+# Identify file with smallest number of reads
+from pytools.persistent_dict import PersistentDict
+import gzip
+import os
 
-        SUB_DICT = PersistentDict("SUB_DICT", container_dir = SUB_DICT_DIR)
+SUB_DICT = PersistentDict("SUB_DICT", container_dir = "{SUB_DICT_DIR}")
 
-        d = dict()
+d = dict()
 
-        # Remove first input which contains dict info
-        del input[0]
+# Remove first input which contains dict info
+input = "{input}".split()
 
-        for file in input:
-            f  = gzip.open(file)
-            c  = 0
-            nm = os.path.basename(file)
-            nm = re.sub("_shift.bed.gz", "", nm)
+del input[0]
 
-            for l in f:
-                c += 1
+for file in input:
+    f  = gzip.open(file)
+    c  = 0
+    nm = os.path.basename(file)
+    nm = re.sub("_shift.bed.gz", "", nm)
 
-            if nm not in d:
-                d[nm] = c
+    for l in f:
+        c += 1
 
-        min_reads = min(d.values())
+    if nm not in d:
+        d[nm] = c
 
-        SUB_DICT.store(wildcards.group, min_reads)
+min_reads = min(d.values())
 
-        with open(output[0], "w") as out:
-            for k in d.keys():
-                out.write("%s\t%s\tFiltered reads\t%s\n" % (wildcards.group, k, d[k]))
-                out.write("%s\t%s\tSampled reads\t%s\n" % (wildcards.group, k, min_reads))
+SUB_DICT.store("{wildcards.group}", min_reads)
+
+with open("{output[0]}", "w") as out:
+    for k in d.keys():
+        out.write("%s\t%s\tFiltered reads\t%s\n" % ("{wildcards.group}", k, d[k]))
+        out.write("%s\t%s\tSampled reads\t%s\n" % ("{wildcards.group}", k, min_reads))
+EOF
+        """
 
 
 # Subsample libraries to equalize read counts for downstream analysis
@@ -104,22 +114,24 @@ rule subsample_2:
         "Subsampling reads for {wildcards.sample} {wildcards.group}"
     threads:
         16
-    run:
-        from pytools.persistent_dict import PersistentDict
+    shell:
+        """
+        MIN_READS=$(python - << 'EOF'
+from pytools.persistent_dict import PersistentDict
 
-        SUB_DICT = PersistentDict("SUB_DICT", container_dir = SUB_DICT_DIR)
+SUB_DICT  = PersistentDict("SUB_DICT", container_dir = "{SUB_DICT_DIR}")
+MIN_READS = SUB_DICT.fetch("{wildcards.group}")
 
-        MIN_READS = SUB_DICT.fetch(wildcards.group)
-
-        shell(
-            """
-            zcat {input.bed} \
-                | shuf -n {MIN_READS} \
-                | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-                | pigz -p {threads} \
-                > {output}
-            """
+print(MIN_READS)
+EOF
         )
+
+        zcat {input.bed} \
+            | shuf -n $MIN_READS \
+            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+            | pigz -p {threads} \
+            > {output}
+        """
 
 
 # Create subsampling summary
@@ -142,15 +154,16 @@ rule sub_summary:
         "Creating " + PROJ + " subsampling summary"
     threads:
         1
-    run:
-        from pytools.persistent_dict import PersistentDict
+    shell:
+        """
+        python - << 'EOF'
+from pytools.persistent_dict import PersistentDict
 
-        SUB_DICT = PersistentDict("SUB_DICT", container_dir = SUB_DICT_DIR)
+SUB_DICT = PersistentDict("SUB_DICT", container_dir = "{SUB_DICT_DIR}")
 
-        SUB_DICT.clear()
+SUB_DICT.clear()
+EOF
 
-        shell(
-            """
             file_arr=({input})
     
             for file in ${{file_arr[@]}}
@@ -158,7 +171,6 @@ rule sub_summary:
                 cat $file \
                     >> {output}
             done
-            """
-        )
+        """
 
 

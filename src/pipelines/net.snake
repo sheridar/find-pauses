@@ -40,7 +40,7 @@ else:
 
 
 # Docker container
-container:
+singularity:
     config["CONTAINER"]
 
 

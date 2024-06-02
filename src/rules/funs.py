@@ -3,7 +3,8 @@
 
 # Create persistent dictionary to store gene subsampling info
 def _create_gene_sub_dict(group, region, dict_dir):
-    from pytools.persistent_dict import PersistentDict
+    from pytools.persistent_dict import PersistentDict 
+    import os
 
     dict_name = "GENE_SUB_DICT_" + group + "_" + region
     dict_dir  = dict_dir + "/" + dict_name
@@ -135,5 +136,12 @@ def _get_fqs(sample, dirs, link_dir, full_name = False):
             fastqs.append(fastq)
     
     return fastqs
+
+
+# Function to retrieve fastq paths
+def _get_fq_paths(wildcards):
+    fqs = _get_fqs(wildcards.sample, RAW_DATA, FASTQ_DIR, full_name = True)
+
+    return fqs
 
 
