@@ -144,7 +144,7 @@ GENE_SUB_GRPS = SAM_GRPS + GENE_SUB_GRPS
 
 
 # Print summary of samples and groups
-print("SAMS (%s): %s\n" % (len(SAMS), SAMS))
+print("\nSAMS (%s): %s\n" % (len(SAMS), SAMS))
 print("GRPS (%s): %s\n" % (len(GRPS), GRPS))
 print("SAMS_UNIQ (%s): %s\n" % (len(SAMS_UNIQ), SAMS_UNIQ))
 print("GRPS_UNIQ (%s): %s\n" % (len(GRPS_UNIQ), GRPS_UNIQ))

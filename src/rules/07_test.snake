@@ -14,7 +14,7 @@ rule gene_subsample_test:
             sample = SAMPLES[wildcards.group]
         )
     output:
-        RESULTS + "/stats/{group}_{sub_region}_test.tsv"
+        temp(RESULTS + "/stats/{group}_{sub_region}_test.tsv")
     params:
         job_name = "{group}_{sub_region}_test",
         memory   = 4,
@@ -75,6 +75,34 @@ rule gene_subsample_test:
         """
 
 
+rule gene_subsample_test_summary:
+    input:
+        expand(
+            RESULTS + "/stats/{group}_{sub_region}_test.tsv",
+            group = GRPS_UNIQ, sub_region = GENE_SUB_REGS 
+        )
+    output:
+        RESULTS + "/" + PROJ + "_gene_subsample_test.tsv"
+    params:
+        job_name = "gene_subsample_test_summary",
+        memory   = 4
+    log:
+        out = RESULTS + "/logs/gene_subsample_test_summary.out",
+        err = RESULTS + "/logs/gene_subsample_test_summary.err"
+    threads:
+        1
+    shell:
+        """
+        file_arr=({input})
+
+        for file in ${{file_arr[@]}}
+        do
+            cat $file \
+                >> {output}
+        done
+        """
+
+
 # Check that bedgraphs for subsampling groups have the same number of counts for
 # each sample
 rule subsample_test:
@@ -88,7 +116,7 @@ rule subsample_test:
             sample = SAMPLES[wildcards.group]
         )
     output:
-        RESULTS + "/stats/{group}_test.tsv"
+        temp(RESULTS + "/stats/{group}_test.tsv")
     params:
         job_name = "{group}_test",
         memory   = 4
@@ -139,6 +167,34 @@ rule subsample_test:
 
         echo -e "{wildcards.group}\t$res" \
             > {output}
+        """
+
+
+rule subsample_test_summary:
+    input:
+        expand(
+            RESULTS + "/stats/{group}_test.tsv",
+            group = GRPS_UNIQ
+        )
+    output:
+        RESULTS + "/stats/" + PROJ + "_subsample_test.tsv"
+    params:
+        job_name = "subsample_test_summary",
+        memory   = 4
+    log:
+        out = RESULTS + "/logs/subsample_test_summary.out",
+        err = RESULTS + "/logs/subsample_test_summary.err"
+    threads:
+        1
+    shell:
+        """
+        file_arr=({input})
+
+        for file in ${{file_arr[@]}}
+        do
+            cat $file \
+                >> {output}
+        done
         """
 
 

@@ -1,6 +1,5 @@
 ---
 title: "`r params$title`"
-author: "Ryan Sheridan"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output: 
   html_document:
@@ -27,8 +26,9 @@ params:
 knitr::opts_chunk$set(
   message    = FALSE, 
   warning    = FALSE,
-  comment    = "",
   echo       = FALSE,
+  progress   = FALSE,
+  comment    = "",
   dpi        = 150,
   cache      = FALSE,
   cache.lazy = FALSE

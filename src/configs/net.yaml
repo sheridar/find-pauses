@@ -8,7 +8,7 @@ KEEP_INTERMEDIATE_FILES:
 
 # Should metaplot files be kept:
 KEEP_META_FILES:
-    True
+    False
 
 
 # Base memory to request for each rule
