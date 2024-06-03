@@ -123,8 +123,15 @@ print(MIN_READS)
 EOF
         )
 
+        get_seed() {{
+            local seed="$1"
+
+            openssl enc -aes-256-ctr -pass pass:"$seed" -nosalt \
+                </dev/zero 2>/dev/null
+        }}
+
         zcat {input.bed} \
-            | shuf -n $MIN_READS \
+            | shuf -n $MIN_READS --random-source=<(get_seed 42) \
             | sort -S1G --parallel={threads} -k1,1 -k2,2n \
             | pigz -p {threads} \
             > {output}
