@@ -22,8 +22,8 @@ workdir=$(python -c 'import tempfile; print(tempfile.mkdtemp())')
 mkdir -p -m 700 "${workdir}/run" "${workdir}/tmp" "${workdir}/var/lib/rstudio-server"
 
 cat > "${workdir}/database.conf" <<END
-provider='sqlite'
-directory='/var/lib/rstudio-server'
+provider=sqlite
+directory=/var/lib/rstudio-server
 END
 
 # Set OMP_NUM_THREADS to prevent OpenBLAS (and any other OpenMP-enhanced
