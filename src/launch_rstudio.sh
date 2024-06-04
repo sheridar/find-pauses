@@ -52,7 +52,7 @@ cat 1>&2 <<END
 
    ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@LOGIN-HOST
 
-   and point your web browser to http://localhost:8787
+   and point your web browser to http://localhost:${PORT}
 
 2. log in to RStudio Server using the following credentials:
 
@@ -67,14 +67,20 @@ When done using RStudio Server, terminate the job by:
    bkill ${LSB_JOBID}
 END
 
-singularity exec --cleanenv $singularity_sif_file \
-    rserver --www-port ${PORT} \
-            --server-user ${USER} \
-            --auth-none=0 \
-            --auth-pam-helper-path=pam-helper \
-            --auth-stay-signed-in-days=30 \
-            --auth-timeout-minutes=0 \
-            --rsession-path=/etc/rstudio/rsession.sh
+singularity exec --cleanenv $singularity_sif_file /bin/bash <<END
+source /opt/conda/bashrc
+
+micromamba activate find-pauses
+
+rserver --www-port ${PORT} \
+        --server-user ${USER} \
+        --auth-none=0 \
+        --auth-pam-helper-path=pam-helper \
+        --auth-stay-signed-in-days=30 \
+        --auth-timeout-minutes=0 \
+        --rsession-path=/etc/rstudio/rsession.sh
+END
+
 printf 'rserver exited' 1>&2
 
 

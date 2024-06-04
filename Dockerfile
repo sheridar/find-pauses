@@ -56,12 +56,14 @@ ENV LC_ALL=en_US.UTF-8
 # Install R packages
 COPY renv.lock .
 
+ENV R_LIBS_USER="/opt/conda/envs/find-pauses/lib/R/library"
+
 RUN source /opt/conda/bashrc && \
     micromamba activate find-pauses && \
     Rscript -e "install.packages('renv', repos = 'http://cran.rstudio.com')" && \
     Rscript -e "renv::restore(lockfile = 'renv.lock')"
 
-# Activate the environment in ENTRYPOINT
+# Activate the environment
 ENTRYPOINT ["/bin/bash", "-c", "source /opt/conda/bashrc && micromamba activate find-pauses && exec bash"]
 
 
