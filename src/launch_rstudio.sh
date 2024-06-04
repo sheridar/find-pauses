@@ -52,7 +52,7 @@ cat 1>&2 <<END
 
    ssh -N -L 8787:${HOSTNAME}:${PORT} ${SINGULARITYENV_USER}@LOGIN-HOST
 
-   and point your web browser to http://localhost:${PORT}
+   and point your web browser to http://localhost:8787
 
 2. log in to RStudio Server using the following credentials:
 
