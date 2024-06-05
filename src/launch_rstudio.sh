@@ -81,13 +81,14 @@ source /opt/conda/bashrc
 
 micromamba activate find-pauses
 
-rserver --www-port ${PORT} \
-        --server-user ${USER} \
-        --auth-none=0 \
-        --auth-pam-helper-path=pam-helper \
-        --auth-stay-signed-in-days=30 \
-        --auth-timeout-minutes=0 \
-        --rsession-path=/etc/rstudio/rsession.sh
+rserver \
+    --www-port ${PORT} \
+    --server-user ${USER} \
+    --auth-none=0 \
+    --auth-pam-helper-path=pam-helper \
+    --auth-stay-signed-in-days=30 \
+    --auth-timeout-minutes=0 \
+    --rsession-path=/etc/rstudio/rsession.sh
 END
 
 printf 'rserver exited' 1>&2
