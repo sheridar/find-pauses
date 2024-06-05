@@ -153,6 +153,8 @@ bsub \
     -n 1 <<EOF
 #! /usr/bin/env bash
 
+set -o nounset -o pipefail -o errexit
+
 $function_def
 
 run_snakemake \
