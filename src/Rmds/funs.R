@@ -272,6 +272,15 @@ breaks_limits <- function(x) {
   res
 }
 
+# Extract distance genes are separated using gene list file name
+extract_sep_info <- function(x) {
+  res <- x %>%
+    basename() %>%
+    str_extract("[0-9]+(?=ksep)")
+  
+  res
+}
+
 # Format sample names for plotting
 format_sample_names <- function(df_in, key_vec = sam_lnms, add_grp = FALSE) {
   if (add_grp) {
@@ -645,7 +654,7 @@ load_merge_wins <- function(prfxs, sfxs, paths, group, genes = NULL, file_out = 
   }
   
   # Check for NAs
-  if (nrow(res) != nrow(na.omit(res))) {
+  if (!all(complete.cases(res))) {
     stop("NAs present in merged data.frame.")
   }
   

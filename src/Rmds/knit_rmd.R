@@ -33,9 +33,11 @@ render(
   input       = opts$input,
   output_file = output,
   params      = list(
-    title  = ttl,
-    config = config,
-    genome = genome
+    title   = ttl,
+    proj    = proj,
+    res_dir = res_dir,
+    config  = config,
+    genome  = genome
   )
 )
 

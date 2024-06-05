@@ -2,9 +2,9 @@
 
 #BSUB -n 12
 #BSUB -J rstudio
-#BSUB -o '../logs/rstudio.out'
-#BSUB -e '../logs/rstudio.err'
-#BSUB -R 'rusage[mem=16] span[hosts=1]'
+#BSUB -o 'rstudio.out'
+#BSUB -e 'rstudio.err'
+#BSUB -R 'rusage[mem=32] span[hosts=1]'
 #BSUB -W 23:59
 
 # This will start rstudio-server in a singularity container
@@ -76,7 +76,7 @@ When done using RStudio Server, terminate the job by:
    bkill ${LSB_JOBID}
 END
 
-singularity exec --cleanenv "$singularity_sif_file" /bin/bash <<END
+singularity exec --bind /beevol/home --cleanenv "${singularity_sif_file}" /bin/bash <<END
 source /opt/conda/bashrc
 
 micromamba activate find-pauses

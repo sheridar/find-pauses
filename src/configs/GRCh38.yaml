@@ -115,4 +115,9 @@ genes_pause:       "base_lists/GRCh38_5ksep.bed.gz"                             
 exons:             "/splicing_lists/GRCh38_exons.bed.gz"                                # Bed file containing exon coordinates
 trxn_info:         "/base_lists/base_gene_files/GRCh38_transcripts.bed.gz"              # Bed file containing transcript info to use for filtering exons
 
+pause_regions:
+    TSS:  "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_TSS_+500bp.bed.gz"
+    body: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_4_+500bp_pAS.bed.gz"
+    pAS:  "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_3_pAS_+5kb.bed.gz"
+
 

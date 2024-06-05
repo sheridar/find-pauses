@@ -322,14 +322,7 @@ create_pause_logo_fig <- function(met_df, pause_df, ttl, y_lab, y_lim = NULL) {
 
 # Gene regions
 # named list with data.frames to intersect pauses with
-regs <- c(
-  TSS  = "GRCh38_5_TSS_+500bp.bed.gz",
-  body = "GRCh38_4_+500bp_pAS.bed.gz",
-  pAS  = "GRCh38_3_pAS_+5kb.bed.gz"
-)
-
-regs <- regs %>%
-  map_chr(~ str_c(list_dir, "/gene_regions/", .x)) %>%
+regs <- plot_params$pause_regions %>%
   map(vroom, col_names = bed_cols)
 
 p_dir <- sub_pause_dir$gene
@@ -360,7 +353,8 @@ n_regs <- n_distinct(sep_pauses$region)
 
 The number of pause sites shared between samples and replicates is shown below for the TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions.
 
-* genes >2 kb long and separated by >5 kb
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
+  are shown
 * pauses were identified after downsampling entire gene region
 
 ```{r "{{grp}} pause overlaps"}
@@ -540,9 +534,10 @@ bars
 
 Mean mNET-seq signal is shown below for pause sites identified for TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions. The sequence preference for each group of sites is shown below each plot. The dotted line indicates the 3' end of the nascent RNA.
 
-* genes >2 kb long and separated by >5 kb
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
+  are shown
 * pauses were identified after downsampling entire gene region
-* pauses separated by >30 bp
+* pauses separated by >30 bp are shown
 
 ```{r "{{grp}} pauses mean"}
 
@@ -709,10 +704,11 @@ plot_grid(
 
 ### Relative signal
 
-Mean relative mNET-seq signal is shown below for pause sites identified for TSS (TSS - +500 bp), gene body (+500 bp - pAS), and pAS (pAS - +5 kb) regions. The sequence preference for each group of sites is shown below each plot. The dotted line indicates the 3' end of the nascent RNA.
+Mean relative mNET-seq signal is shown below for pause sites identified for TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions. The sequence preference for each group of sites is shown below each plot. The dotted line indicates the 3' end of the nascent RNA.
 
-* genes >2 kb long and separated by >5 kb
-* pauses separated by >30 bp
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
+  are shown
+* pauses separated by >30 bp are shown
 
 ```{r "{{grp}} pauses rel meta", include = FALSE}
 

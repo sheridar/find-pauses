@@ -23,6 +23,10 @@ library(colorblindr)     # github, to modify color palette
 # Read functions
 source(here::here(plot_params$template_dir, "funs.R"))
 
+# Gene lengths for filtering
+MIN_GENE_LEN <- 2
+MIN_ZONE_GENE_LEN <- 4
+
 ```
 
 ```{r "Theme", cache = FALSE}
@@ -59,7 +63,7 @@ theme_colors <- c(
 
 ```
 
-```{r "sample names", echo = FALSE}
+```{r "Sample names", echo = FALSE}
 
 # Directories
 if (!dir.exists(here(plot_params$obj_dir))) {
@@ -143,6 +147,10 @@ sample_df <- plot_grps$SAMPLES %>%
 sample_df <- sample_df %>%
   separate(sample, into = c("sam", "rep"), sep = "_", remove = FALSE)
 
+```
+
+```{r "Gene lists", echo = FALSE}
+
 # Columns for bed files
 bed_cols <- c(
   "chrom", "start", 
@@ -178,14 +186,14 @@ load_genes <- function(drctry, file, len = 1, rm_cols = TRUE) {
 
 list_dir <- file.path(plot_params$ref_dir, plot_params$list_dir)
 
-genes_5     <- load_genes(list_dir, plot_params$genes_5, 2)
-genes_3     <- load_genes(list_dir, plot_params$genes_3, 2)
-genes_pause <- load_genes(list_dir, plot_params$genes_pause, 2)
+genes_5     <- load_genes(list_dir, plot_params$genes_5, MIN_GENE_LEN)
+genes_3     <- load_genes(list_dir, plot_params$genes_3, MIN_GENE_LEN)
+genes_pause <- load_genes(list_dir, plot_params$genes_pause, MIN_GENE_LEN)
 
 genes_exons <- load_genes(
   drctry  = list_dir,
   file    = plot_params$genes_zone,
-  len     = 4,
+  len     = MIN_ZONE_GENE_LEN,
   rm_cols = FALSE
 )
 

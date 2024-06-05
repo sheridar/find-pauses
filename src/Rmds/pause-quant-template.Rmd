@@ -398,7 +398,8 @@ create_stat_corr <- function(df_in, x, y, ttl = NULL, plt_clrs = c("black", last
 
 The fraction of reads aligning to pauses is shown for windows downstream of the TSS. For TSS windows, libraries were downsampled so genes have the same number of aligned reads for each sample. For the gene body region (+500 - pAS), reads were downsampled so the body region for each gene has the same number of aligned reads for each sample. p-values were calculated using the Wilcoxon rank sum test.
 
-* genes >2 kb long and separated by >5 kb
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
+  are shown (`r basename(plot_params$genes_pause)`)
 * entire gene region downsampled for TSS regions
 * body region downsampled for gene body
 * TSS regions >=`r TSS_LIM` reads
@@ -557,7 +558,8 @@ common_reps %>%
 
 The average number of reads aligning to each pause site is shown for regions described above that have at least one pause detected in the region.
 
-* genes >2 kb long and separated by >5 kb
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
+  are shown (`r basename(plot_params$genes_pause)`)
 * entire gene region downsampled for TSS regions
 * body region downsampled for gene body
 * TSS regions >=`r TSS_LIM` reads
@@ -590,7 +592,8 @@ common_reps %>%
 
 The correlation between the fraction pause reads and total eNET-seq reads is shown for TSS regions described above.
 
-* genes >2 kb long and separated by >5 kb
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
+  are shown (`r basename(plot_params$genes_pause)`)
 * entire gene region downsampled for TSS regions
 * body region downsampled for gene body
 * TSS regions >=`r TSS_LIM` reads
@@ -628,11 +631,12 @@ treats %>%
 
 The fraction pause reads is shown below for exons and introns. For each gene the total number of reads aligning to pause sites were summed for all exons or introns in the gene. The total pause reads were then divided by the total number of exonic or intronic reads for the gene.
 
-* genes >4 kb long and separated by >2 kb
+* genes >`r MIN_ZONE_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_zone)` kb
+  are shown (`r basename(plot_params$genes_zone)`)
 * exon/intron annotations were used for the transcript with the start site matching the start site used for gene lists
 * single exon genes were excluded
 * for transcripts with multiple isoforms that have the same start site, the highest confidence isoform was used
-* if multiple isoforms have the same confidence level, the gene was excluded (this is a small number ~400)
+* if multiple isoforms have the same confidence level, the gene was excluded (this is generally a small number ~400)
 * entire gene region downsampled
 * there must be at least 1 total pause in both exonic and intronic regions
 
@@ -1072,7 +1076,8 @@ df <- c(0, 10, 25, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 1000) %
 
 The fold change in pause strength vs pause density is shown below for the TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions. Reads were downsampled so each region has the same number of aligned reads for each sample.
 
-* genes >2 kb long and separated by >5 kb
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
+  are shown (`r basename(plot_params$genes_pause)`)
 * each region downsampled for the region
 * TSS regions >=`r TSS_LIM` reads
 * body region >=`r BODY_LIM` read/kb
@@ -1202,258 +1207,3 @@ res[[2]]
 
 ```
 
-
-
-
-
-```{r "{{grp}} PAUSE READS TSS BOXES SAME GENES", eval = FALSE}
-
-metric <- c("fraction pause reads" = "p-reads_NET")
-
-NEW_regs <- names(regs)
-NEW_regs <- NEW_regs[!NEW_regs %in% sub_regs]
-NEW_regs <- c(NEW_regs, "body")
-
-x <- pause_stats %>%
-  # dplyr::filter(
-  #   sub_reg == "gene" | (sub_reg == "body" & region == "body")
-  # ) %>%
-  dplyr::select(-len) %>%
-  get_box_data(
-    p_lim       = PAUSE_LIM[1],
-    tss_lim     = TSS_LIM,
-    body_lim    = BODY_LIM,
-    merge_genes = TRUE
-  )
-
-plt_dat <- pause_stats %>%
-
-  dplyr::filter(region %in% NEW_regs) %>%
-
-  # filter based on p_lim
-  pivot_wider(names_from = "type", values_from = "counts") %>%
-  dplyr::filter(
-    pauses >= PAUSE_LIM[1],
-
-    NET    >= ifelse(region == "body", 1, TSS_LIM),
-    NET_kb >= ifelse(region == "body", BODY_LIM, 0),
-
-    sub_reg == "gene" | (sub_reg == "body" & region == "body")
-  ) %>%
-  dplyr::select(-len, -sample, -sub_reg) %>%
-  pivot_longer(all_of(metrics), names_to = "type", values_to = "counts") %>%
-
-  # remove genes that do not have data for all regions
-  pivot_wider(names_from = "region", values_from = "counts") %>%
-  dplyr::filter(if_all(all_of(NEW_regs), ~ !is.na(.x))) %>%
-  pivot_longer(all_of(NEW_regs), names_to = "region", values_to = "counts") %>%
-
-  # remove genes that do not have data for all treats
-  pivot_wider(names_from = "treat", values_from = "counts") %>%
-  dplyr::filter(if_all(all_of(treats), ~ !is.na(.x))) %>%
-  pivot_longer(all_of(treats), names_to = "treat", values_to = "counts")
-
-reps %>%
-  map(~ {
-    plt_dat %>%
-      dplyr::filter(rep == .x) %>%
-      create_stat_boxes(metric, by = c("rep", "type", "region")) +
-      scale_y_continuous(
-        breaks = seq(0, 1, 0.5),
-        expand = expansion(mult = c(0.05, 0.15))
-      ) +
-      labs(subtitle = .x)
-  }) %>%
-  plot_grid(plotlist = .)
-
-```
-
-```{r "{{grp}} tss vs body boxes", fig.width = 3 * n_reps, fig.height = 4, eval = FALSE}
-
-# Format data
-# include the same genes for TSS and body
-plt_regs <- c("tss", "body")
-
-plt_dat <- pause_stats %>%
-  dplyr::filter(sub_reg %in% plt_regs) %>%
-  dplyr::select(-sample, -sub_reg, -len) %>%
-  
-  # filter based on p_lim
-  pivot_wider(names_from = "type", values_from = "counts") %>%
-  dplyr::filter(
-    pauses >= 0,
-    NET    >= NET_LIM
-  ) %>%
-  pivot_longer(all_of(metrics), names_to = "type", values_to = "counts") %>%
-  
-  # remove genes that do not have data for all regions
-  pivot_wider(names_from = "region", values_from = "counts") %>%
-  dplyr::filter(if_all(all_of(plt_regs), ~ !is.na(.x))) %>%
-  pivot_longer(all_of(plt_regs), names_to = "region", values_to = "counts") %>%
-  
-  # remove genes that do not have data for all treats
-  pivot_wider(names_from = "treat", values_from = "counts") %>%
-  dplyr::filter(if_all(all_of(treats), ~ !is.na(.x))) %>%
-  pivot_longer(all_of(treats), names_to = "treat", values_to = "counts") %>%
-  
-  mutate(sub_reg = region)
-
-# Additional theme adustments
-plt_x_scale <- scale_x_discrete(labels = (function(x) str_replace(x, "tss", "TSS")))
-plt_theme   <- theme(axis.text.x = element_text(angle = 0, hjust = 0.5))
-
-# Plot fraction pause reads
-reps %>%
-  map(~ {
-    plt_dat %>%
-      dplyr::filter(rep == .x) %>%
-      create_stat_boxes(c("fraction pause reads" = "p-reads_NET")) +
-      expand_limits(y = 1) +
-      scale_y_continuous(breaks = seq(0, 1, 0.5)) +
-      labs(subtitle = .x) +
-      plt_x_scale +
-      plt_theme
-  }) %>%
-  plot_grid(plotlist = .)
-
-# Plot reads / pause
-reps %>%
-  map(~ {
-    plt_dat %>%
-      dplyr::filter(rep == .x) %>%
-      create_stat_boxes(c("eNET-seq reads / pause" = "p-reads_pauses")) +
-      scale_y_log10() +
-      labs(subtitle = .x) +
-      plt_x_scale +
-      plt_theme
-  }) %>%
-  plot_grid(plotlist = .)
-
-# Plot pauses / kb
-reps %>%
-  map(~ {
-    plt_dat %>%
-      dplyr::filter(rep == .x) %>%
-      create_stat_boxes(c("pauses / kb" = "pauses_kb")) +
-      scale_y_log10(
-        labels = label_number(0.01),
-        expand = expansion(mult = c(0.05, 0.15))
-      ) +
-      labs(subtitle = .x) +
-      plt_x_scale +
-      plt_theme
-  }) %>%
-  plot_grid(plotlist = .)
-
-```
-
-```{r "{{grp}} tss vs body pause reads fc", fig.width = 3 * n_reps, fig.height = 4, eval = FALSE}
-
-fc_dat <- box_dat_0 %>%
-  pivot_wider(names_from = "treat", values_from = "counts") %>%
-  mutate(fc = (!!sym(fc_treats[2]) + 0.01) / (!!sym(fc_treats[1]) + 0.01))
-
-# Fold change fraction pause reads
-reps %>%
-  map(~ {
-    fc_dat %>%
-      dplyr::filter(rep == .x) %>%
-      create_stat_vlns(c("fraction pause reads" = "p-reads_NET")) +
-      labs(subtitle = .x)
-  }) %>%
-  plot_grid(plotlist = .)
-
-```
-
-```{r "{{grp}} tss vs body other fc", fig.width = 8, fig.height = 4, eval = FALSE}
-
-# Fold change pause density vs strength
-typs <- c("pauses_kb" = "pauses / kb", "p-reads_pauses" = "reads / pause")
-
-plt_regs %>%
-  map(~ {
-    fc_dat_2 %>%
-      dplyr::filter(region == .x) %>%
-      create_multistat_vlns(typs) +
-      labs(subtitle = ifelse(.x == "tss", str_to_upper(.x), .x))
-  }) %>%
-  plot_grid(plotlist = .)
-
-
-```
-
-```{r "{{grp}} CHECKING ZEROS", eval = FALSE}
-
-x <- box_dat_0 %>%
-  dplyr::filter(
-    region == "body",
-    type   == "p-reads_NET"
-  ) %>%
-  pivot_wider(names_from = "treat", values_from = "counts") %>%
-  mutate(
-    nonzero = case_when(
-      WT == 0 & TE7  > 0 ~ "te7",
-      WT  > 0 & TE7 == 0 ~ "wt",
-      WT == 0 & TE7 == 0 ~ "none",
-      WT  > 0 & TE7  > 0 ~ "both"
-    )
-  ) %>%
-  group_by(region, nonzero) %>%
-  mutate(
-    n = n_distinct(name),
-    n = str_c("n = ", comma(n))
-  ) %>%
-  ungroup() %>%
-  pivot_longer(
-    all_of(treats),
-    names_to  = "treat",
-    values_to = "counts"
-  )
-
-# Plot nonzero groups
-# >2x more TE7 zeros than WT
-x %>%
-  mutate(treat = fct_relevel(treat, treats)) %>%
-  ggplot(aes(treat, counts, fill = treat)) +
-  geom_boxplot(notch = TRUE) +
-  
-  geom_text(
-    aes(Inf, Inf, label = n),
-    check_overlap = TRUE,
-    hjust = 1.4,
-    vjust = 1.2
-  ) +
-  
-  facet_grid(rep ~ nonzero) +
-  box_theme
-
-# Plot all but 'none' group
-x %>%
-  dplyr::filter(nonzero != "none") %>%
-  
-  pivot_wider(names_from = "treat", values_from = "counts") %>%
-  group_by(rep, nonzero) %>%
-  mutate(
-    p = broom::tidy(wilcox.test(WT, TE7))$p.value,
-    p = scientific(p),
-    n = str_c(n, "\np = ", p)
-  ) %>%
-  ungroup() %>%
-  pivot_longer(all_of(treats), names_to = "treat", values_to = "counts") %>%
-  
-  mutate(treat = fct_relevel(treat, treats)) %>%
-  
-  ggplot(aes(treat, counts, fill = treat)) +
-  geom_boxplot(notch = TRUE) +
-  
-  geom_text(
-    aes(Inf, Inf, label = n),
-    check_overlap = TRUE,
-    hjust = 1.4,
-    vjust = 1.2
-  ) +
-  
-  facet_wrap(~ rep) +
-  box_theme
-
-```

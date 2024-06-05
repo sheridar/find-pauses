@@ -54,14 +54,14 @@ rule create_plots:
         1
     shell:
         """
-        Rmd={SRC}/Rmds/analysis.Rmd
-        script={SRC}/Rmds/knit_rmd.R
+        Rmd='{SRC}/Rmds/analysis.Rmd'
+        script='{SRC}/Rmds/knit_rmd.R'
 
-        Rscript $script \
-            -i $Rmd \
-            -p {PROJ} \
+        Rscript "$script" \
+            -i "$Rmd" \
+            -p '{PROJ}' \
             -c 'src/configs/plots.yaml' \
-            -g {GENOME_CONFIG} \
-            -o {RESULTS}
+            -g '{GENOME_CONFIG}' \
+            -o '{RESULTS}'
         """
 

@@ -14,13 +14,18 @@ tab_prfx <- here(plot_params$tab_dir, str_c(grp, pause_prfx))
 
 find_zones <- !file.exists(out_file) || plot_params$overwrite
 
+# Pause zone parameters
+cutoff     <- 0.15
+ave_mtplyr <- 2
+
 ```
 
 ### Identification of pausing zones
 
-Pausing zones were identified as the window (200 bp) where the fraction of pause reads is >0.15 and the average for the prospective zone is >0.3. Metaplots (200 bp windows) are shown for different pausing metrics. The vertical lines show the mean length of the pausing zone for each sample.
+Pausing zones were identified as the window (200 bp) where the fraction of pause reads is >`r cutoff` and the average for the prospective zone is >`r cutoff * ave_mtplyr`. Metaplots (200 bp windows) are shown for different pausing metrics. The vertical lines show the mean length of the pausing zone for each sample.
 
-* genes >4 kb long and separated by >2 kb
+* genes >`r MIN_ZONE_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_zone)` kb
+  are shown
 * entire gene region was downsampled
 
 ```{r "{{grp}} load data", eval = find_zones}
@@ -57,6 +62,10 @@ zone_wins <- sfxs %>%
       expr_quartiles = FALSE
     )
   })
+
+# Remove file column since this will introduce NAs when pivoting
+zone_wins <- zone_wins %>%
+  dplyr::select(-any_of("file"))
 
 # Genes with no pauses identified for any window are removed when running
 # load_merge_wins(). Must have at least 1 total pause for the gene.
@@ -168,9 +177,6 @@ if (!all(complete.cases(zone_wins))) {
 # Identify pausing zones
 # Find window where p-reads_NET is > cutoff and where average
 # p-reads_NET for the prospective zone is > cutoff * ave_mtplyr
-cutoff     <- 0.15
-ave_mtplyr <- 2
-
 zone_wins <- zone_wins %>%
   group_by(sample, treat, rep, name, gene_len) %>%
   arrange(sample, name, win_dist) %>%
@@ -179,8 +185,8 @@ zone_wins <- zone_wins %>%
     # NET_sum    = cumsum(NET),
     # preads_sum = cumsum(`p-reads`),
     # zone_ave   = preads_sum / NET_sum,
-    zone_ave      = cummean(`p-reads_NET`),
-    zone_cutoff   = `p-reads_NET` > cutoff & zone_ave > cutoff * ave_mtplyr,
+    zone_ave    = cummean(`p-reads_NET`),
+    zone_cutoff = `p-reads_NET` > cutoff & zone_ave > cutoff * ave_mtplyr,
     
     zone = ifelse(                       # return NA if no window meets cutoff
       !is_empty(win_dist[zone_cutoff]),
@@ -331,7 +337,8 @@ meta_dat %>%
 
 The mean fraction of pause reads is shown on the left for all replicates for the region +4 kb downstream of the TSS. The vertical lines show the mean length of the pausing zone for each sample and replicate. Zeros make up `r pct_0`% of data points.
 
-* genes >4 kb long and separated by >2 kb
+* genes >`r MIN_ZONE_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_zone)` kb
+  are shown
 * entire gene region was downsampled
 
 ```{r "{{grp}} fraction pause reads metaplots"}
@@ -553,12 +560,16 @@ sm_zone_wins <- sm_zone_wins %>%
   dplyr::filter(all(types %in% type)) %>%
   ungroup()
 
+# Remove file column since this will introduce NAs when pivoting
+sm_zone_wins <- sm_zone_wins %>%
+  dplyr::select(-any_of("file"))
+
 ```
 
 ```{r "{{grp}} SMALL WINS FORMAT DATA"}
 
 # Data for pause zones
-# Some windows are slightly longer than the gene length since 0.2 kb (win size)
+# Some windows are slightly longer than the gene length since the win size
 # is added to each. For pause_reads_NET a pseudo count is added to the
 # mNET-seq counts to eliminate division by 0
 win_kb <- unique(sm_zone_wins$win_len)
@@ -644,7 +655,8 @@ meta_dat <- meta_dat %>%
 
 The mean fraction of pause reads is shown for 10 bp windows for the region +2 kb downstream of the TSS. Zeros make up `r pct_0`% of data points.
 
-* genes >4 kb long and separated by >2 kb
+* genes >`r MIN_ZONE_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_zone)` kb
+  are shown
 * at least `r p_lim` pauses within 2 kb of TSS
 * entire gene region was downsampled
 
@@ -959,37 +971,6 @@ zone_qrts %>%
 
 ```
 
-```{r "{{grp}} GSEA TEST", eval = FALSE}
-
-gsea_df <- zone_qrts$`+Spt5` %>%
-  arrange(desc(zone_kb)) %>%
-  mutate(symbol = str_extract(name, "(?<=\\|).+$"))
-
-bg <- g_z$name %>%
-  str_extract("(?<=\\|).+$")
-
-res <- str_c("group ", 1:4) %>%
-  map_dfr(~ {
-    res <- gsea_df %>%
-      dplyr::filter(zone_qrt == .x) %>%
-      pull(symbol) %>%
-      gost(
-        organism  = "hsapiens",
-        custom_bg = bg,
-        sources   = c("GO:MF", "GO:BP", "GO:CC", "KEGG")
-      )
-    
-    if (!is_empty(res)) {
-      res <- res$result %>%
-        mutate(key = .x) %>%
-        arrange(p_value)
-    }
-    
-    res
-  })
-
-```
-
 ### Zone length correlation
 
 Scatter plots show the correlation between replicates for pausing zone length. Colors indicate the number of overlapping points.
@@ -1033,7 +1014,7 @@ create_cor_plots <- function(df_in, x, y, clr = "red", pt_size = 1, out_size = 1
     ggplot(aes(!!sym(x), !!sym(y))) +
     geom_abline(slope = 1, intercept = 0) +
     geom_pointdensity(size = pt_size) +
-    geom_smooth(formula = y ~ x, method = "lm", color = "black", linetype = 2, size = 0.5) +
+    geom_smooth(formula = y ~ x, method = "lm", color = "black", linetype = 2, linewidth = 0.5) +
     
     geom_text(
       aes(0.3, Inf, label = corr),
