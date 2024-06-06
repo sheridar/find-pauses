@@ -1,4 +1,75 @@
 
+def _cutadapt_summary(input, output):
+    import os
+    import re
+
+    with open(output, "w") as out:
+        for file in input:
+            name = os.path.basename(file)
+            name = re.sub("_cutadapt_stats.txt", "", name)
+    
+            for line in open(file, "r"):
+                match = re.search("Pairs | pairs |with adapter", line)
+    
+                if match:
+                    num = re.search("(?<=: |[ ]{2})[0-9,]+", line)
+                    num = re.sub(",", "", num.group(0))
+                    met = re.search("[\w\(\) ]+:", line).group(0)
+                    met = re.sub(":", "", met)
+                    met = met.strip()
+    
+                    out.write("%s\t%s\t%s\n" % (name, met, num))
+
+
+def _bowtie_summary(input, output):
+    import os
+    import re
+
+    with open(output, "w") as out:
+        for file in input:
+            name = os.path.basename(file)
+            name = re.sub("_bowtie_stats.txt", "", name)
+    
+            for line in open(file, "r"):
+                line  = re.sub("; of these:", "", line.strip())
+                line  = re.sub(" \([0-9\.%]+\)", "", line)
+                words = line.split(" ")
+                num   = words[0]
+                met   = words[1:]
+                met   = " ".join(met)
+    
+                out.write("%s\t%s\t%s\n" % (name, met, num))
+
+
+def _dedup_summary(input, output):
+    import os
+    import re
+
+    with open(output, "w") as out:
+        metrics = [
+            "Input Reads: [0-9]+",
+            "Number of reads out: [0-9]+",
+            "Total number of positions deduplicated: [0-9]+",
+            "Mean number of unique UMIs per position: [0-9\.]+",
+            "Max. number of unique UMIs per position: [0-9]+"
+        ]
+    
+        for file in input:
+            name  = os.path.basename(file)
+            name  = re.sub("_dedup_stats.txt", "", name)
+    
+            for line in open(file, "r"):
+                for metric in metrics:
+                    met = re.search(metric, line)
+    
+                    if met:
+                        met = met.group(0)
+                        num = re.search("[0-9\.]+$", met).group(0)
+                        met = re.sub(": [0-9\.]+$", "", met)
+    
+                        out.write("%s\t%s\t%s\n" % (name, met, num))
+
+
 def _gene_subsample_1(input, output, group, sub_region, DICT_DIR):
 
     from funs import _create_gene_sub_dict

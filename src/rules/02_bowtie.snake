@@ -64,20 +64,12 @@ rule bowtie_summary:
     shell:
         """
         python - << 'EOF'
-with open("{output[0]}", "w") as out:
-    for file in "{input}".split():
-        name = os.path.basename(file)
-        name = re.sub("_bowtie_stats.txt", "", name)
+import sys
+sys.path.insert(0, "src/rules")
 
-        for line in open(file, "r"):
-            line  = re.sub("; of these:", "", line.strip())
-            line  = re.sub(" \([0-9\.%]+\)", "", line)
-            words = line.split(" ")
-            num   = words[0]
-            met   = words[1:]
-            met   = " ".join(met)
+import rules
 
-            out.write("%s\t%s\t%s\n" % (name, met, num))
+rules._bowtie_summary("{input}".split(), "{output[0]}")
 EOF
         """
 

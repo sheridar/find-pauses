@@ -92,22 +92,12 @@ rule cutadapt_summary:
     shell:
         """
         python - << 'EOF'
-with open("{output[0]}", "w") as out:
-    for file in "{input}".split():
-        name = os.path.basename(file)
-        name = re.sub("_cutadapt_stats.txt", "", name)
+import sys
+sys.path.insert(0, "src/rules")
 
-        for line in open(file, "r"):
-            match = re.search("Pairs | pairs |with adapter", line)
+import rules
 
-            if match:
-                num = re.search("(?<=: |[ ]{2})[0-9,]+", line)
-                num = re.sub(",", "", num.group(0))
-                met = re.search("[\w\(\) ]+:", line).group(0)
-                met = re.sub(":", "", met)
-                met = met.strip()
-
-                out.write("%s\t%s\t%s\n" % (name, met, num))
+rules._cutadapt_summary("{input}".split(), "{output[0]}")
 EOF
         """
 

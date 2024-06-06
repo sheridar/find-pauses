@@ -56,29 +56,12 @@ rule dedup_summary:
     shell:
         """
         python - << 'EOF'
-with open("{output[0]}", "w") as out:
-    metrics = [
-        "Input Reads: [0-9]+",
-        "Number of reads out: [0-9]+",
-        "Total number of positions deduplicated: [0-9]+",
-        "Mean number of unique UMIs per position: [0-9\.]+",
-        "Max. number of unique UMIs per position: [0-9]+"
-    ]
+import sys
+sys.path.insert(0, "src/rules")
 
-    for file in "{input}".split():
-        name  = os.path.basename(file)
-        name  = re.sub("_dedup_stats.txt", "", name)
+import rules
 
-        for line in open(file, "r"):
-            for metric in metrics:
-                met = re.search(metric, line)
-
-                if met:
-                    met = met.group(0)
-                    num = re.search("[0-9\.]+$", met).group(0)
-                    met = re.sub(": [0-9\.]+$", "", met)
-
-                    out.write("%s\t%s\t%s\n" % (name, met, num))
+rules._dedup_summary("{input}".split(), "{output[0]}")
 EOF
         """
 
