@@ -43,8 +43,6 @@ rule create_plots:
     params:
         job_name = PROJ + "_plots",
         memory   = MEMORY * 4
-    retries:
-        1
     log:
         out = RESULTS + "/logs/" + PROJ + "_plots.out",
         err = RESULTS + "/logs/" + PROJ + "_plots.err"

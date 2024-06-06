@@ -8,7 +8,7 @@ mkdir -p logs
 # Set default inputs
 install=0
 dry_run=0
-snake_args='--keep-going --jobs 100 --retries 2'
+snake_args='--keep-going --jobs 100 --retries 1'
 bind_dir='/beevol/home'
 
 

@@ -250,17 +250,10 @@ rule all:
             sam_grp = GENE_SUB_GRPS, region = REGIONS
         ),
 
-        # Gene subsampling test
-        expand(
-            RESULTS + "/stats/{group}_{sub_region}_test.tsv",
-            group = GRPS_UNIQ, sub_region = GENE_SUB_REGS
-        ),
+        # Subsampling tests
+        RESULTS + "/stats/" + PROJ + "_subsample_test.tsv",
 
-        # Library subsampling test
-        expand(
-            RESULTS + "/stats/{group}_test.tsv",
-            group = GRPS_UNIQ
-        ),
+        RESULTS + "/stats/" + PROJ + "_gene_subsample_test.tsv",
 
         # Pauses
         expand(

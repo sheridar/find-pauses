@@ -82,7 +82,7 @@ rule gene_subsample_test_summary:
             group = GRPS_UNIQ, sub_region = GENE_SUB_REGS 
         )
     output:
-        RESULTS + "/" + PROJ + "_gene_subsample_test.tsv"
+        RESULTS + "/stats/" + PROJ + "_gene_subsample_test.tsv"
     params:
         job_name = "gene_subsample_test_summary",
         memory   = 4
