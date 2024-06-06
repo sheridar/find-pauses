@@ -49,7 +49,9 @@ rule cutadapt:
     params:
         job_name = "{sample}_cutadapt",
         memory   = MEMORY * 2,
-        args     = CMD_PARAMS["cutadapt"]
+        args     = CMD_PARAMS["cutadapt"],
+        seq1     = READ_1_ADAPTER,
+        seq2     = READ_2_ADAPTER
     log:
         out = RESULTS + "/logs/{sample}_cutadapt.out",
         err = RESULTS + "/logs/{sample}_cutadapt.err"
@@ -61,6 +63,8 @@ rule cutadapt:
         """
         cutadapt \
             {params.args} \
+            -a {params.seq1} \
+            -A {params.seq2} \
             -j {threads} \
             -o {output.R1} \
             -p {output.R2} \

@@ -6,17 +6,12 @@ PROJ:
     "MY-PROJECT"
 
 
-# Docker container to use for pipeline
-CONTAINER:
-    "docker://rmsheridan/find-pauses:latest"
-
-
 # Directory to save results
 RESULTS:
     "results"
 
 
-# Directories containing FASTQ files, this can be a relative path.
+# Directories containing FASTQ files
 # * Multiple directories can be provided
 # * The sample names must correspond to the begining of the fastq name
 RAW_DATA:
@@ -27,6 +22,15 @@ RAW_DATA:
 # the specified genome must have a config file present in src/configs
 GENOME:
     "GRCh38"
+
+
+# Adapter sequences to trim from the 3' end of each read
+# * These are passed to the -a and -A arguments of cutadapt
+READ_1_ADAPTER:
+    "AACTGTAGGCACCATCAAT"
+
+READ_2_ADAPTER:
+    "GATCGTCGGACTGTAGAACTCT"
 
 
 # Specify base URL and destination to transfer bigwigs
@@ -63,8 +67,8 @@ SSH:
 #
 #     SECTION-2:
 #         SAMPLING-GROUP-1:
-#             - "fastq_1_prefix"  # sampling groups can be included in multiple sections
-#             - "fastq_2_prefix"  # names will be auto-generated
+#             - "fastq_1_prefix"            # sampling groups can be included in multiple sections
+#             - "fastq_2_prefix"            # names will be auto-generated if not provided
 #
 #     SECTION-3:
 #         ...
