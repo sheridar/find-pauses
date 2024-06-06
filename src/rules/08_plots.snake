@@ -41,13 +41,12 @@ rule create_plots:
     output:
         RESULTS + "/" + PROJ + "_analysis.html"
     params:
-        job_name = PROJ + "_plots",
-        memory   = MEMORY * 4
+        job_name = PROJ + "_plots"
+    resources:
+        mem = _get_mem(4)
     log:
         out = RESULTS + "/logs/" + PROJ + "_plots.out",
         err = RESULTS + "/logs/" + PROJ + "_plots.err"
-    message:
-        "Creating plots for " + PROJ + " project"
     threads:
         1
     shell:
@@ -62,4 +61,5 @@ rule create_plots:
             -g '{GENOME_CONFIG}' \
             -o '{RESULTS}'
         """
+
 

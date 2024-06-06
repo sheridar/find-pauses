@@ -12,13 +12,12 @@ rule featureCounts:
         RESULTS + "/" + PROJ + "_featureCounts.tsv"
     params:
         job_name = PROJ + "_featureCounts",
-        memory   = MEMORY,
         args     = CMD_PARAMS["featureCounts"]
+    resources:
+        mem = _get_mem()
     log:
         out = RESULTS + "/logs/" + PROJ + "_featureCounts.out",
         err = RESULTS + "/logs/" + PROJ + "_featureCounts.err"
-    message:
-        "Counting " + PROJ + " reads with featureCounts"
     threads:
         16
     shell:

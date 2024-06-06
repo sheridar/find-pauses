@@ -10,13 +10,12 @@ rule fastqc:
         html = RESULTS + "/fastqc/{fastq}_fastqc.html"
     params:
         job_name = "{fastq}_fastqc",
-        memory   = MEMORY * 2,
         out      = RESULTS + "/fastqc"
+    resources:
+        mem = _get_mem(2)
     log:
         out = RESULTS + "/logs/{fastq}_fastqc.out",
         err = RESULTS + "/logs/{fastq}_fastqc.err"
-    message:
-        "Running FastQC on {wildcards.fastq}"
     threads:
         6
     shell:
@@ -49,12 +48,11 @@ rule fastqc_summary:
         RESULTS + "/stats/" + PROJ + "_fastqc.tsv"
     params:
         job_name = PROJ + "_fastqc_summary",
-        memory   = 4
+    resources:
+        mem = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_fastqc_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_fastqc_summary.err"
-    message:
-        "Creating " + PROJ + " FastQC summary"
     threads:
         1
     shell:
@@ -69,4 +67,5 @@ rule fastqc_summary:
                 >> {output}
         done
         """
+
 

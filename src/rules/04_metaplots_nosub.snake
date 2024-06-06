@@ -14,13 +14,12 @@ rule metaplot_beds_nosub:
         AS_N = meta_temp_fn(RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_AS_N.bed.gz")
     params:
         job_name = "{sample}_{region}_metaplot_beds",
-        memory   = MEMORY * 2,
         bed      = lambda wildcards: META_BEDS[wildcards.region]
+    resources:
+        mem = _get_mem(2)
     log:
         out = RESULTS + "/logs/{sample}_{region}_metaplot_beds.out",
         err = RESULTS + "/logs/{sample}_{region}_metaplot_beds.err"
-    message:
-        "Intersecting reads for {wildcards.sample} {wildcards.region} without subsampling"
     threads:
         6
     shell:

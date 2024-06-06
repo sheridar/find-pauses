@@ -126,7 +126,7 @@ run_snakemake() {
         -q rna
         -oo {log.out} 
         -eo {log.err} 
-        -R "rusage[mem={params.memory}] span[hosts=1]"
+        -R "rusage[mem={resources.mem}] span[hosts=1]"
         -n {threads} '
 
     snakemake $snake_args \

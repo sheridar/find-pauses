@@ -1,9 +1,33 @@
-# ===== Functions for pipeline =====================
+# ===== Functions for pipeline =================================================
+
+
+# Calculate memory specification
+def _get_mem(n = 1, base_mem = MEMORY, min_mem = 2):
+    import math
+
+    mem = math.ceil(base_mem * n)
+    mem = max(mem, min_mem)
+    mem = str(mem) + "GB"
+
+    return mem
 
 
 # Create persistent dictionary to store gene subsampling info
-def _create_gene_sub_dict(group, region, dict_dir):
+def _get_dict(dict_name, dict_dir):
     from pytools.persistent_dict import PersistentDict 
+
+    d = PersistentDict(dict_name, container_dir = dict_dir)
+
+    return d
+
+
+def _clear_dict(dict_name, dict_dir):
+    d = _get_dict(dict_name, dict_dir)
+
+    d.clear()
+
+
+def _get_gene_sub_dict(group, region, dict_dir):
     import os
 
     dict_name = "GENE_SUB_DICT_" + group + "_" + region
@@ -11,24 +35,16 @@ def _create_gene_sub_dict(group, region, dict_dir):
 
     os.makedirs(dict_dir, exist_ok = True)
 
-    gene_sub_dict = PersistentDict(dict_name, container_dir = dict_dir)
+    gene_sub_dict = _get_dict(dict_name, dict_dir)
 
-    return(gene_sub_dict)
+    return gene_sub_dict
 
 
-# Delete all files in directory
-def _clear_directory(directory):
+def _clear_gene_sub_dict(group, region, dict_dir):
+    
+    gene_sub_dict = _get_gene_sub_dict(group, region, dict_dir)
 
-    # List all contents of the directory
-    for filename in os.listdir(directory):
-        file_path = os.path.join(directory, filename)
-
-        # Check if file or directory
-        if os.path.isfile(file_path) or os.path.islink(file_path):
-            os.remove(file_path)
-
-        elif os.path.isdir(file_path):
-            shutil.rmtree(file_path)
+    gene_sub_dict.clear()
 
 
 # Find all fastqs matching sample name in provided directories

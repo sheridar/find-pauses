@@ -44,10 +44,6 @@ singularity:
     config["CONTAINER"]
 
 
-# Functions for pipeline
-include: "../rules/funs.py"
-
-
 # Parameters from config.yaml
 PROJ           = config["PROJ"]
 RAW_DATA       = config["RAW_DATA"]
@@ -69,6 +65,11 @@ TEST_GENES     = config["TEST_GENES"]
 
 GENE_SUB_BEDS = config["GENE_SUBSAMPLE_BEDS"]
 META_BEDS     = config["META_BEDS"]
+
+
+# Functions for pipeline
+include: "../rules/funs.py"
+include: "../rules/rules.py"
 
 
 # Directories for data and scripts

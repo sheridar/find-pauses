@@ -7,8 +7,9 @@ rule subsample_dict:
     output:
         temp(touch(DICT_DIR + "/subsample_dict.txt"))
     params:
-        job_name = "subsample_dict",
-        memory   = 2
+        job_name = "subsample_dict"
+    resources:
+        mem = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/subsample_dict.out",
         err = RESULTS + "/logs/subsample_dict.err"
@@ -17,11 +18,12 @@ rule subsample_dict:
     shell:
         """
         python - << 'EOF'
-from pytools.persistent_dict import PersistentDict
+import sys
+sys.path.insert(0, "{SRC}/rules")
 
-SUB_DICT = PersistentDict("SUB_DICT", container_dir = "{SUB_DICT_DIR}")
+import funs
 
-SUB_DICT.clear()
+funs._clear_dict("SUB_DICT", "{SUB_DICT_DIR}")
 EOF
         """
 
@@ -39,54 +41,34 @@ rule subsample_1:
     output:
         temp(RESULTS + "/stats/{group}_summary.tsv")
     params:
-        job_name = "{group}_summary",
-        memory   = MEMORY * 3
+        job_name = "{group}_summary"
+    resources:
+        mem = _get_mem(3)
     log:
         out = RESULTS + "/logs/{group}_summary.out",
         err = RESULTS + "/logs/{group}_summary.err"
     benchmark:
         RESULTS + "/benchmarks/{group}_summary.tsv"
-    message:
-        "Subsampling reads for {wildcards.group}"
     threads:
         1
     shell:
         """
         python - << 'EOF'
-# Identify file with smallest number of reads
-from pytools.persistent_dict import PersistentDict
-import gzip
-import os
+import sys
+sys.path.insert(0, "{SRC}/rules")
 
-SUB_DICT = PersistentDict("SUB_DICT", container_dir = "{SUB_DICT_DIR}")
+import rules
 
-d = dict()
-
-# Remove first input which contains dict info
 input = "{input}".split()
 
 del input[0]
 
-for file in input:
-    f  = gzip.open(file)
-    c  = 0
-    nm = os.path.basename(file)
-    nm = re.sub("_shift.bed.gz", "", nm)
-
-    for l in f:
-        c += 1
-
-    if nm not in d:
-        d[nm] = c
-
-min_reads = min(d.values())
-
-SUB_DICT.store("{wildcards.group}", min_reads)
-
-with open("{output[0]}", "w") as out:
-    for k in d.keys():
-        out.write("%s\t%s\tFiltered reads\t%s\n" % ("{wildcards.group}", k, d[k]))
-        out.write("%s\t%s\tSampled reads\t%s\n" % ("{wildcards.group}", k, min_reads))
+rules._subsample_1(
+    input,
+    "{output}",
+    "{wildcards.group}",
+    "{SUB_DICT_DIR}"
+)
 EOF
         """
 
@@ -100,26 +82,25 @@ rule subsample_2:
     output:
         RESULTS + "/{sample}-{group}/{sample}-{group}.bed.gz"
     params:
-        job_name = "{sample}_{group}",
-        memory   = MEMORY * 3
+        job_name = "{sample}_{group}"
+    resources:
+        mem = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_{group}.out",
         err = RESULTS + "/logs/{sample}_{group}.err"
     benchmark:
         RESULTS + "/benchmarks/{sample}_{group}.tsv"
-    message:
-        "Subsampling reads for {wildcards.sample} {wildcards.group}"
     threads:
         16
     shell:
         """
         MIN_READS=$(python - << 'EOF'
-from pytools.persistent_dict import PersistentDict
+import sys
+sys.path.insert(0, "{SRC}/rules")
 
-SUB_DICT  = PersistentDict("SUB_DICT", container_dir = "{SUB_DICT_DIR}")
-MIN_READS = SUB_DICT.fetch("{wildcards.group}")
+import rules
 
-print(MIN_READS)
+rules._subsample_2("{wildcards.group}", "{SUB_DICT_DIR}")
 EOF
         )
 
@@ -149,32 +130,32 @@ rule sub_summary:
     output:
         RESULTS + "/stats/" + PROJ + "_subsample.tsv"
     params:
-        job_name = PROJ + "_subsample_summary",
-        memory   = 4
+        job_name = PROJ + "_subsample_summary"
+    resources:
+        mem = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_subsample_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_subsample_summary.err"
-    message:
-        "Creating " + PROJ + " subsampling summary"
     threads:
         1
     shell:
         """
         python - << 'EOF'
-from pytools.persistent_dict import PersistentDict
+import sys
+sys.path.insert(0, "{SRC}/rules")
 
-SUB_DICT = PersistentDict("SUB_DICT", container_dir = "{SUB_DICT_DIR}")
+import funs
 
-SUB_DICT.clear()
+funs._clear_dict("SUB_DICT", "{SUB_DICT_DIR}")
 EOF
 
-            file_arr=({input})
-    
-            for file in ${{file_arr[@]}}
-            do
-                cat $file \
-                    >> {output}
-            done
+        file_arr=({input})
+ 
+        for file in ${{file_arr[@]}}
+        do
+            cat $file \
+                >> {output}
+        done
         """
 
 

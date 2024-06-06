@@ -17,15 +17,14 @@ rule bigwigs_nosub:
         n_bw   = RESULTS + "/{sample}/{sample}_neg.bw"
     params:
         job_name = "{sample}_bigwig",
-        memory   = 8,
         chroms   = CHROMS
+    resources:
+        mem = _get_mem(0.5)
     log:
         out = RESULTS + "/logs/{sample}_bigwig.out",
         err = RESULTS + "/logs/{sample}_bigwig.err"
     benchmark:
         RESULTS + "/benchmarks/{sample}_bigwig.tsv"
-    message:
-        "Creating bigwigs for {wildcards.sample}"
     threads:
         6
     shell:
@@ -72,17 +71,16 @@ rule igv_browser_nosub:
         xml  = RESULTS + "/urls/" + PROJ + "_nosub_igv.xml"
     params:
         job_name    = PROJ + "_nosub_igv",
-        memory      = 4,
         url         = URL,
         ssh         = SSH,
         ssh_key_dir = SSH_KEY_DIR
+    resources:
+        mem = _get_mem(0.25)
     log:
         out = RESULTS + "/logs/" + PROJ + "_nosub_igv.out",
         err = RESULTS + "/logs/" + PROJ + "_nosub_igv.err"
     benchmark:
         RESULTS + "/benchmarks/" + PROJ + "_nosub_igv.tsv"
-    message:
-        "Creating " + PROJ + " IGV session without subsampling"
     threads:
         1
     shell:
@@ -125,15 +123,14 @@ rule bigwigs_nofilt:
         n_bw   = RESULTS + "/{sample}/{sample}_nofilt_neg.bw"
     params:
         job_name = "{sample}_nofilt_bigwig",
-        memory   = 8,
         chroms   = CHROMS
+    resources:
+        mem = _get_mem(0.5)
     log:
         out = RESULTS + "/logs/{sample}_nofilt_bigwig.out",
         err = RESULTS + "/logs/{sample}_nofilt_bigwig.err"
     benchmark:
         RESULTS + "/benchmarks/{sample}_nofilt_bigwig.tsv"
-    message:
-        "Creating nofilt bigwigs for {wildcards.sample}"
     threads:
         6
     shell:
@@ -180,17 +177,16 @@ rule igv_browser_nofilt:
         xml  = RESULTS + "/urls/" + PROJ + "_nofilt_igv.xml"
     params:
         job_name    = PROJ + "_nofilt_igv",
-        memory      = 4,
         url         = URL,
         ssh         = SSH,
         ssh_key_dir = SSH_KEY_DIR
+    resources:
+        mem = _get_mem(0.25)
     log:
         out = RESULTS + "/logs/" + PROJ + "nofilt_igv.out",
         err = RESULTS + "/logs/" + PROJ + "nofilt_igv.err"
     benchmark:
         RESULTS + "/benchmarks/" + PROJ + "nofilt_igv.tsv"
-    message:
-        "Creating " + PROJ + " IGV session without filtering and subsampling"
     threads:
         1
     shell:

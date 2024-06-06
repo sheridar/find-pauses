@@ -12,14 +12,12 @@ rule dedup:
         stats = RESULTS + "/{sample}/{sample}_dedup_stats.txt"
     params:
         job_name = "{sample}_dedup",
-        memory   = MEMORY * 3,
-        args     = CMD_PARAMS["umi_tools"],
-        log      = RESULTS + "/logs/{sample}_dedup.out"
+        args     = CMD_PARAMS["umi_tools"]
+    resources:
+        mem = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_dedup.out",
         err = RESULTS + "/logs/{sample}_dedup.err"
-    message:
-        "Removing duplicates for {wildcards.sample}"
     threads:
         1
     shell:
@@ -44,20 +42,19 @@ rule dedup_summary:
     output:
         RESULTS + "/stats/" + PROJ + "_dedup.tsv"
     params:
-        job_name = PROJ + "_dedup_summary",
-        memory   = 4
+        job_name = PROJ + "_dedup_summary"
+    resources:
+        mem = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_dedup_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_dedup_summary.err"
-    message:
-        "Creating " + PROJ + " dedup summary"
     threads:
         1
     shell:
         """
         python - << 'EOF'
 import sys
-sys.path.insert(0, "src/rules")
+sys.path.insert(0, "{SRC}/rules")
 
 import rules
 
@@ -77,16 +74,15 @@ rule create_beds:
         stats = temp(RESULTS + "/{sample}/{sample}_filt_stats.tsv")
     params:
         job_name = "{sample}_create_beds",
-        memory   = MEMORY * 3,
         genes    = GENES,
         mask     = MASK
+    resources:
+        mem = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_beds.out",
         err = RESULTS + "/logs/{sample}_beds.err"
     benchmark:
         RESULTS + "/benchmarks/{sample}_beds.tsv"
-    message:
-        "Creating bed files for {wildcards.sample}"
     threads:
         12
     shell:
@@ -142,13 +138,12 @@ rule filt_summary:
     output:
         RESULTS + "/stats/"+ PROJ + "_filt.tsv"
     params:
-        job_name = PROJ + "_filt_summary",
-        memory   = 4
+        job_name = PROJ + "_filt_summary"
+    resources:
+        mem = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_filt_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_filt_summary.err"
-    message:
-        "Creating " + PROJ + " read filtering summary"
     threads:
         1
     shell:

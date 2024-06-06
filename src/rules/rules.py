@@ -1,3 +1,5 @@
+# ===== Functions to execute python rules ======================================
+
 
 def _cutadapt_summary(input, output):
     import os
@@ -70,16 +72,54 @@ def _dedup_summary(input, output):
                         out.write("%s\t%s\t%s\n" % (name, met, num))
 
 
-def _gene_subsample_1(input, output, group, sub_region, DICT_DIR):
+def _subsample_1(input, output, group, SUB_DICT_DIR):
+    from funs import _get_dict
+    import gzip
+    import os
 
-    from funs import _create_gene_sub_dict
+    SUB_DICT = _get_dict("SUB_DICT", SUB_DICT_DIR)
+    
+    d = dict()
+    
+    # Identify file with smallest number of reads
+    for file in input:
+        f  = gzip.open(file)
+        c  = 0
+        nm = os.path.basename(file)
+        nm = re.sub("_shift.bed.gz", "", nm)
+    
+        for l in f:
+            c += 1
+    
+        if nm not in d:
+            d[nm] = c
+    
+    min_reads = min(d.values())
+    
+    SUB_DICT.store(group, min_reads)
+    
+    with open(output, "w") as out:
+        for k in d.keys():
+            out.write("%s\t%s\tFiltered reads\t%s\n" % (group, k, d[k]))
+            out.write("%s\t%s\tSampled reads\t%s\n" % (group, k, min_reads))
+
+
+def _subsample_2(group, SUB_DICT_DIR):
+    from funs import _get_dict
+
+    SUB_DICT  = _get_dict("SUB_DICT", SUB_DICT_DIR)
+    MIN_READS = SUB_DICT.fetch(group)
+    
+    print(MIN_READS)
+
+
+def _gene_subsample_1(input, output, group, sub_region, DICT_DIR):
+    from funs import _clear_gene_sub_dict
     import gzip
     
     # Persistent dictionary for storing minimum gene counts for subsampling
     # clear the dictionary to remove results from previous runs
-    GENE_SUB_DICT = _create_gene_sub_dict(group, sub_region, DICT_DIR)
-    
-    GENE_SUB_DICT.clear()
+    GENE_SUB_DICT = _clear_gene_sub_dict(group, sub_region, DICT_DIR)
     
     # Get list of genes present in the first input file
     # could use any file in the group
@@ -121,16 +161,14 @@ def _gene_subsample_1(input, output, group, sub_region, DICT_DIR):
 
 
 def _gene_subsample_2(reads, tmp, group, sub_region, DICT_DIR):
-
-    from pytools.persistent_dict import PersistentDict
-    from funs import _create_gene_sub_dict
+    from funs import _get_gene_sub_dict
     import random
     import gzip
     
     # Persistent dictionary
     # this contains the minimum number of reads aligning to each gene for
     # the subsampling group
-    GENE_SUB_DICT = _create_gene_sub_dict(group, sub_region, DICT_DIR)
+    GENE_SUB_DICT = _get_gene_sub_dict(group, sub_region, DICT_DIR)
     
     # Create dictionary containing reads to use for subsampling
     reads = gzip.open(reads, "rt")

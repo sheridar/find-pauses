@@ -15,22 +15,21 @@ rule gene_subsample_1:
     output:
         RESULTS + "/stats/{group}_{sub_region}_summary.tsv"
     params:
-        job_name = "{group}_{sub_region}_summary",
-        memory   = MEMORY * 2
+        job_name = "{group}_{sub_region}_summary"
+    resources:
+        mem = _get_mem(2)
     log:
         out = RESULTS + "/logs/{group}_{sub_region}_summary.out",
         err = RESULTS + "/logs/{group}_{sub_region}_summary.err"
     benchmark:
         RESULTS + "/benchmarks/{group}_{sub_region}_genes_summary.tsv"
-    message:
-        "Subsampling reads for {wildcards.group} {wildcards.sub_region}"
     threads:
         1
     shell:
         """
         python - << 'EOF'
 import sys
-sys.path.insert(0, "src/rules")
+sys.path.insert(0, "{SRC}/rules")
 
 import rules
 
@@ -57,15 +56,14 @@ rule gene_subsample_2:
         tmp   = temp(RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_tmp.bed"),
         sub   =      RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}.bed.gz"
     params:
-        job_name = "{sample}_{group}_{sub_region}",
-        memory   = MEMORY * 2
+        job_name = "{sample}_{group}_{sub_region}"
+    resources:
+        mem = _get_mem(2)
     log:
         out = RESULTS + "/logs/{sample}_{group}_{sub_region}.out",
         err = RESULTS + "/logs/{sample}_{group}_{sub_region}.err"
     benchmark:
         RESULTS + "/benchmarks/{sample}_{group}_{sub_region}.tsv"
-    message:
-        "Subsampling reads for {wildcards.sample} {wildcards.group} {wildcards.sub_region}"
     threads:
         6
     shell:
@@ -81,7 +79,7 @@ rule gene_subsample_2:
 
         python - << 'EOF'
 import sys
-sys.path.insert(0, "src/rules")
+sys.path.insert(0, "{SRC}/rules")
 
 import rules
 
@@ -112,8 +110,9 @@ rule gene_subsample_cleanup:
     output:
         temp(touch(DICT_DIR + "/{group}_{sub_region}_cleanup.txt"))
     params:
-        job_name = "{group}_{sub_region}_cleanup",
-        memory   = 2
+        job_name = "{group}_{sub_region}_cleanup"
+    resources:
+        mem = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/{group}_{sub_region}_cleanup.out",
         err = RESULTS + "/logs/{group}_{sub_region}_cleanup.err"
@@ -122,14 +121,12 @@ rule gene_subsample_cleanup:
     shell:
         """
         python - << 'EOF'
-from pytools.persistent_dict import PersistentDict
 import sys
+sys.path.insert(0, "{SRC}/rules")
 
-sys.path.insert(0, "src/rules")
+import funs
 
-from funs import _create_gene_sub_dict
-
-GENE_SUB_DICT = _create_gene_sub_dict(
+GENE_SUB_DICT = funs._get_gene_sub_dict(
     "{wildcards.group}",
     "{wildcards.sub_region}",
     "{DICT_DIR}"

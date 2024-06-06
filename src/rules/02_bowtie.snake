@@ -12,14 +12,13 @@ rule bowtie:
         stats = RESULTS      + "/{sample}/{sample}_bowtie_stats.txt"
     params:
         job_name = "{sample}_bowtie",
-        memory   = MEMORY * 3,
         idx      = INDEX,
         mapq     = 10
+    resources:
+        mem = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_bowtie.out",
         err = RESULTS + "/logs/{sample}_bowtie.err"
-    message:
-        "Aligning reads with Bowtie2 for {wildcards.sample}"
     threads: 
         12
     shell:
@@ -53,19 +52,18 @@ rule bowtie_summary:
         RESULTS + "/stats/" + PROJ + "_bowtie.tsv"
     params:
         job_name = PROJ + "_bowtie_summary",
-        memory   = 4
+    resources:
+        mem = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_bowtie_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_bowtie_summary.err"
-    message:
-        "Creating " + PROJ + " bowtie2 summary"
     threads:
         1
     shell:
         """
         python - << 'EOF'
 import sys
-sys.path.insert(0, "src/rules")
+sys.path.insert(0, "{SRC}/rules")
 
 import rules
 

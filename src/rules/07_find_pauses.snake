@@ -15,17 +15,16 @@ rule find_pauses:
         sep    = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_sep_pauses.bed.gz"
     params:
         job_name = "{sam_grp}_{win}_find_pauses",
-        memory   = MEMORY * 4,
         genes    = PAUSE_GENES,
         mask     = PAUSE_MASK,
         chroms   = CHROMS
+    resources:
+        mem = _get_mem(4)
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}_pauses.out",
         err = RESULTS + "/logs/{sam_grp}_{win}_pauses.err"
     benchmark:
         RESULTS + "/benchmarks/{sam_grp}_{win}_pauses.tsv"
-    message:
-        "Finding pauses for {wildcards.sam_grp} using {wildcards.win}bp window"
     threads:
         4
     shell:
@@ -91,17 +90,16 @@ rule pauses_strong:
         sep    = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_sep{stren}pauses.bed.gz"
     params:
         job_name = "{sam_grp}_{win}{stren}pauses",
-        memory   = MEMORY,
         r        = lambda wildcards: PAUSE_ROUND[wildcards.stren]
+    resources:
+        mem = _get_mem()
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}{stren}pauses.out",
         err = RESULTS + "/logs/{sam_grp}_{win}{stren}pauses.err"
     benchmark:
         RESULTS + "/benchmarks/{sam_grp}_{win}{stren}pauses.tsv"
-    message:
-        "Filtering {wildcards.stren} pauses ({wildcards.win}bp window) for {wildcards.sam_grp}"
     threads:
-        1
+        6
     shell:
         """
         # Identify strong pauses
@@ -144,13 +142,12 @@ rule pause_reads:
     output:
         RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pause_reads.bed.gz"
     params:
-        job_name = "{sam_grp}_{win}{grp}pause_reads",
-        memory   = MEMORY
+        job_name = "{sam_grp}_{win}{grp}pause_reads"
+    resources:
+        mem = _get_mem()
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}{grp}pause_reads.out",
         err = RESULTS + "/logs/{sam_grp}_{win}{grp}pause_reads.err"
-    message:
-        "Intersecting reads with {wildcards.grp} pauses ({wildcards.win}bp window) for {wildcards.sam_grp}"
     threads:
         6
     shell:
@@ -174,13 +171,12 @@ rule pausing_summary:
     output:
         RESULTS + "/stats/" + PROJ + "_{win}{grp}pausing.tsv"
     params:
-        job_name = PROJ + "_{win}{grp}pausing_summary",
-        memory   = MEMORY
+        job_name = PROJ + "_{win}{grp}pausing_summary"
+    resources:
+        mem = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_{win}{grp}pausing_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_{win}{grp}pausing_summary.err"
-    message:
-        "Creating " + PROJ + " {wildcards.grp} pausing summary ({wildcards.win}bp window)"
     threads:
         1
     shell:
@@ -218,13 +214,12 @@ rule pause_density:
         reads  = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pause_reads_{pause_region}.bed.gz"
     params:
         job_name = "{sam_grp}_{pause_region}_{win}{grp}pause_density",
-        memory   = MEMORY,
         bed      = lambda wildcards: PAUSE_META_BEDS[wildcards.pause_region]
+    resources:
+        mem = _get_mem()
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}{grp}{pause_region}_density.out",
         err = RESULTS + "/logs/{sam_grp}_{win}{grp}{pause_region}_density.err"
-    message:
-        "Intersecting {wildcards.grp} pauses ({wildcards.win}bp window) for {wildcards.sam_grp} {wildcards.pause_region}"
     threads:
         6
     shell:
@@ -258,13 +253,12 @@ rule pause_metaplots:
         counts_N = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses_meta_N.bed.gz"
     params:
         job_name = "{sam_grp}_{win}{grp}pause_metaplots",
-        memory   = MEMORY,
         chroms   = CHROMS
+    resources:
+        mem = _get_mem()
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}{grp}pause_metaplots.out",
         err = RESULTS + "/logs/{sam_grp}_{win}{grp}pause_metaplots.err"
-    message:
-        "Creating {wildcards.grp} pause ({wildcards.win}bp window) metaplot files for {wildcards.sam_grp}"
     threads:
         6
     shell:
