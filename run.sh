@@ -93,20 +93,25 @@ run_snakemake() {
         if ! command -v micromamba &> /dev/null
         then
             yes "" | bash <(curl -L micro.mamba.pm/install.sh) > /dev/null &&
-                echo "" > /dev/null
+                sleep
         fi
 
         # initialize shell for micromamba
         eval "$(micromamba shell hook --shell bash)"
+
+        export MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:=$HOME/micromamba}"
 
         micromamba create -y -n "$env_name" -f "$env_file"
     fi
 
     # need to initialize here also in case user runs pipeline multiple
     # times after install but before starting new shell
+    # MAMBA_ROOT_PREFIX is still unset after initializing
     if command -v micromamba &> /dev/null
     then
         eval "$(micromamba shell hook --shell bash)"
+
+        export MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:=$HOME/micromamba}"
     
         if [ -d "$MAMBA_ROOT_PREFIX/envs/$env_name" ]
         then
