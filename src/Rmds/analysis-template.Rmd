@@ -1,10 +1,15 @@
 
-```{r "{{.x}} sample names", cache = FALSE}
+```{r "{{.x}} setup"}
 
-# Strings to match samples and create labels
 grp     <- "{{.x}}"
 stren   <- "{{stren}}"
 win     <- {{win}}
+
+```
+
+```{r "{{.x}} sample names", cache = FALSE}
+
+# Strings to match samples and create labels
 samples <- plot_grps$SAMPLES[[grp]]
 clrs    <- plot_grps$COLORS[[grp]]
 

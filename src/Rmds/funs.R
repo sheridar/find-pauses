@@ -859,7 +859,7 @@ create_meta <- function(df_in, x, y, color = NULL, alpha = NULL, plot_clrs = NUL
   res <- res +
     guides(
       color = guide_legend(override.aes = list(size = 3), ncol = 1),
-      alpha = FALSE
+      alpha = "none"
     ) +
     
     theme_info +
@@ -1700,7 +1700,7 @@ create_bubbles <- function(go_df, plot_colors = NULL, n_terms = 15, txt_size = 6
       segment.size = NA
     ) +
     
-    guides(color = FALSE) +
+    guides(color = "none") +
     xlim(1, 8) +
     labs(y = "-log10(p-value)") +
     

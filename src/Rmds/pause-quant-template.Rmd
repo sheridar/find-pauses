@@ -79,7 +79,10 @@ get_box_data <- function(df_in, p_lim, tss_lim, body_lim, only_shared = FALSE) {
 }
 
 create_stat_boxes <- function(df_in, metric, by = c("rep", "type", "region"),
-                              plt_clrs = clrs, y_trans = "identity") {
+                              plt_clrs = clrs, y_trans = "identity",
+                              reg_labels = regs) {
+  
+  reg_labels <- reg_labels[names(reg_labels) %in% df_in$region]
   
   n_trts <- n_distinct(df_in$treat)
 
@@ -141,8 +144,8 @@ create_stat_boxes <- function(df_in, metric, by = c("rep", "type", "region"),
     ) %>%
     mutate(
       treat  = fct_relevel(treat, treats),
-      region = regs[region],
-      region = fct_relevel(region, unname(regs))
+      region = reg_labels[region],
+      region = fct_relevel(region, unname(reg_labels))
     )
   
   # Create boxplots
@@ -225,7 +228,9 @@ create_stat_boxes <- function(df_in, metric, by = c("rep", "type", "region"),
   res
 }
 
-create_stat_vlns <- function(df_in, metric) {
+create_stat_vlns <- function(df_in, metric, reg_labels = regs) {
+  
+  reg_labels <- reg_labels[names(reg_labels) %in% df_in$region]
   
   # Format plot data
   dat <- df_in %>%
@@ -238,8 +243,8 @@ create_stat_vlns <- function(df_in, metric) {
     ) %>%
     ungroup() %>%
     mutate(
-      region = regs[region],
-      region = fct_relevel(region, unname(regs))
+      region = reg_labels[region],
+      region = fct_relevel(region, unname(reg_labels))
     )
   
   # Create violins
@@ -270,7 +275,9 @@ create_stat_vlns <- function(df_in, metric) {
   res
 }
 
-create_multistat_vlns <- function(df_in, metrics) {
+create_multistat_vlns <- function(df_in, metrics, reg_labels = regs) {
+  
+  reg_labels <- reg_labels[names(reg_labels) %in% df_in$region]
   
   dat <- df_in %>%
     dplyr::filter(type %in% names(metrics)) %>%
@@ -283,8 +290,8 @@ create_multistat_vlns <- function(df_in, metrics) {
     ) %>%
     ungroup() %>%
     mutate(
-      region = regs[region],
-      region = fct_relevel(region, unname(regs)),
+      region = reg_labels[region],
+      region = fct_relevel(region, unname(reg_labels)),
       type   = fct_relevel(type, names(metrics))
     )
   
@@ -324,7 +331,11 @@ create_multistat_vlns <- function(df_in, metrics) {
   res
 }
 
-create_stat_corr <- function(df_in, x, y, ttl = NULL, plt_clrs = c("black", last(clrs))) {
+create_stat_corr <- function(df_in, x, y, ttl = NULL,
+                             plt_clrs = c("black", last(clrs)),
+                             reg_labels = regs) {
+  
+  reg_labels <- reg_labels[names(reg_labels) %in% df_in$region]
   
   if (all(plt_clrs %in% c("black", "#000000"))) {
     plt_clrs[2] <- lighten(plt_clrs[2], 0.7)
@@ -354,8 +365,8 @@ create_stat_corr <- function(df_in, x, y, ttl = NULL, plt_clrs = c("black", last
     ungroup() %>%
     mutate(
       treat  = fct_relevel(treat, treats),
-      region = regs[region],
-      region = fct_relevel(region, unname(regs))
+      region = reg_labels[region],
+      region = fct_relevel(region, unname(reg_labels))
     )
   
   # Create scatter plots
@@ -387,6 +398,147 @@ create_stat_corr <- function(df_in, x, y, ttl = NULL, plt_clrs = c("black", last
       legend.text  = element_text(size = txt_pt),
       axis.line    = element_blank(),
       panel.border = element_rect(fill = NA, color = "black")
+    )
+  
+  res
+}
+
+# Identify genes that have >1 pause in both exonic and intronic regions
+get_ex_int_genes <- function(df_in, data_type, samples = unname(sam_nms), min_counts = 1,
+                             len_norm = TRUE) {
+
+  reg_filt <- unique(df_in$region)
+  
+  res <- df_in %>%
+    dplyr::filter(type == data_type) %>%
+    group_by(sample, region, gene_name) %>%
+    summarize(
+      len     = sum((end - start) / 1000),
+      counts  = sum(counts),
+      .groups = "drop"
+    )
+
+  if (len_norm) {
+    res <- res %>%
+      mutate(counts = counts / len)
+  }
+    
+  res <- res %>%
+    group_by(sample, gene_name) %>%
+    dplyr::filter(
+      all(counts > min_counts),
+      all(reg_filt %in% region)
+    ) %>%
+    group_by(gene_name, region) %>%
+    dplyr::filter(all(samples %in% sample)) %>%
+    ungroup()
+  
+  stopifnot(n_distinct(table(res$region)) == 1)
+  
+  res <- unique(res$gene_name)
+  
+  res
+}
+
+# Sum intron and exon counts
+sum_ex_int_counts <- function(df_in, sum_grps, n_grps, gene_list = NULL) {
+  
+  # Sum counts for all exon and intron regions for each gene
+  # group_by(sample, treat, rep, type, gene_name, txn_id, region) %>%
+  res <- df_in %>%
+    group_by(!!!syms(sum_grps)) %>%
+    summarize(
+      counts  = sum(counts),
+      len     = sum((end - start) / 1000),
+      .groups = "drop"
+    )
+  
+  # Calculate stats to plot
+  # filter exons/introns based on NET-seq signal and only keep genes with counts
+  # for both exons and introns
+  stats     <- c("NET", "p-reads", "pauses")
+  log_stats <- str_c(stats, "_kb")
+  
+  res <- res %>%
+    pivot_wider(names_from = type, values_from = counts)
+  
+  if (!is.null(gene_list)) {
+    res <- res %>%
+      dplyr::filter(gene_name %in% gene_list)
+  }
+  
+  res <- res %>%
+    calc_pause_stats() %>%
+    group_by(!!!syms(n_grps)) %>%
+    mutate(
+      n = n_distinct(gene_name),
+      n = str_c("n = ", comma(n))
+    ) %>%
+    ungroup()
+  
+  res
+}
+
+# Plot pause stats for exons and introns
+plot_ex_int_pauses <- function(df_in, y = "p-reads_NET", y_ttl = "fraction pause reads",
+                               violin = TRUE, plot_clrs = clrs, p_lab = FALSE,
+                               p_grps = "sample", ...) {
+  
+  dat <- df_in %>%
+    dplyr::filter(type == y)
+  
+  # Add p-value labels
+  if (p_lab) {
+    lab_dat <- dat %>%
+      dplyr::select(-len) %>%
+      pivot_wider(names_from = "region", values_from = "counts") %>%
+      group_by(!!!syms(c(p_grps, "n"))) %>%
+      summarize(
+        p = (wilcox.test(exons, introns))$p.value,
+        p = ifelse(p == 0, "0", scientific(p, 2)),
+        p = str_c(n, "\np = ", p),
+        .groups = "drop"
+      ) %>%
+      distinct()
+    
+    dat <- dat %>%
+      left_join(lab_dat, by = c(p_grps, "n")) %>%
+      mutate(n = p)
+  }
+  
+  # Create ggplot
+  res <- dat %>%
+    ggplot(aes(region, counts, alpha = region, fill = treat))
+  
+  if (violin) {
+    res <- res +
+      geom_violin(draw_quantiles = c(0.25, 0.75), ...) +
+      stat_summary(geom = "point", fun = median, alpha = 1)
+    
+  } else {
+    res <- res +
+      geom_boxplot(notch = TRUE, outlier.size = 0.3, ...)
+  }
+  
+  res <- res +    
+    geom_text(
+      aes(2.5, Inf, label = n),
+      hjust = 1.1,
+      vjust = 1.3,
+      color = "black",
+      alpha = 1,
+      size  = txt_pt / .pt,
+      check_overlap = TRUE
+    ) +
+    scale_alpha_manual(values = c(0.3, 0.6)) +
+    scale_fill_manual(values = plot_clrs) +
+    labs(y = y_ttl) +
+    theme_info +
+    theme(
+      aspect.ratio    = 1.5,
+      legend.position = "none",
+      axis.title.x    = element_blank(),
+      axis.text.x     = element_text(size = ttl_pt)
     )
   
   res
@@ -531,10 +683,6 @@ box_dat_sctr <- pause_stats %>%
 # Regions to exclude from boxplots
 boxes_exclude_regs <- "tss"
 
-if (grp == "Spt5-pTMP-DRB") {
-  boxes_exclude_regs <- c(boxes_exclude_regs, "5-500bp-1kb")
-}
-
 metric <- c("fraction pause reads" = "p-reads_NET")
 
 # Only use reps that are present for all samples
@@ -545,7 +693,7 @@ common_reps %>%
         !region %in% boxes_exclude_regs,
         rep == .x
       ) %>%
-      create_stat_boxes(metric) +
+      create_stat_boxes(metric, reg_labels = regs) +
       scale_y_continuous(
         breaks = seq(0, 1, 0.5),
         expand = expansion(mult = c(0.05, 0.2))
@@ -579,7 +727,7 @@ common_reps %>%
         !region %in% boxes_exclude_regs,
         rep == .x
       ) %>%
-      create_stat_boxes(metric, y_trans = "log10") +
+      create_stat_boxes(metric, y_trans = "log10", reg_labels = regs) +
       labs(title = .x)
   }) %>%
   plot_grid(plotlist = ., nrow = 1)
@@ -611,9 +759,10 @@ treats %>%
         !region %in% c("tss", "body", "5-500bp-1kb")  # do not show all regions
       ) %>%
       create_stat_corr(
-        x   = c("eNET-seq counts" = "NET"),
-        y   = c("fraction pause reads" = "p-reads_NET"),
-        ttl = .x
+        x          = c("eNET-seq counts" = "NET"),
+        y          = c("fraction pause reads" = "p-reads_NET"),
+        ttl        = .x,
+        reg_labels = regs
       )
   }) %>%
   plot_grid(
@@ -676,42 +825,6 @@ ex_int_beds <- ex_int_beds %>%
   mutate(region_class = ifelse(score == 1, "first", "body"))
 
 # Identify genes that have >1 pause in both exonic and intronic regions
-get_ex_int_genes <- function(df_in, data_type, samples = unname(sam_nms), min_counts = 1,
-                             len_norm = TRUE) {
-
-  reg_filt <- unique(df_in$region)
-  
-  res <- df_in %>%
-    dplyr::filter(type == data_type) %>%
-    group_by(sample, region, gene_name) %>%
-    summarize(
-      len     = sum((end - start) / 1000),
-      counts  = sum(counts),
-      .groups = "drop"
-    )
-
-  if (len_norm) {
-    res <- res %>%
-      mutate(counts = counts / len)
-  }
-    
-  res <- res %>%
-    group_by(sample, gene_name) %>%
-    dplyr::filter(
-      all(counts > min_counts),
-      all(reg_filt %in% region)
-    ) %>%
-    group_by(gene_name, region) %>%
-    dplyr::filter(all(samples %in% sample)) %>%
-    ungroup()
-  
-  stopifnot(n_distinct(table(res$region)) == 1)
-  
-  res <- unique(res$gene_name)
-  
-  res
-}
-
 all_ex_int_genes <- ex_int_beds %>%
   get_ex_int_genes(
     data_type  = "pauses",
@@ -748,44 +861,7 @@ body_genes <- ex_int_beds %>%
 
 ```{r "{{grp}} SUM EXON INTRON COUNTS"}
 
-sum_ex_int_counts <- function(df_in, sum_grps, n_grps, gene_list = NULL) {
-  
-  # Sum counts for all exon and intron regions for each gene
-  # group_by(sample, treat, rep, type, gene_name, txn_id, region) %>%
-  res <- df_in %>%
-    group_by(!!!syms(sum_grps)) %>%
-    summarize(
-      counts  = sum(counts),
-      len     = sum((end - start) / 1000),
-      .groups = "drop"
-    )
-  
-  # Calculate stats to plot
-  # filter exons/introns based on NET-seq signal and only keep genes with counts
-  # for both exons and introns
-  stats     <- c("NET", "p-reads", "pauses")
-  log_stats <- str_c(stats, "_kb")
-  
-  res <- res %>%
-    pivot_wider(names_from = type, values_from = counts)
-  
-  if (!is.null(gene_list)) {
-    res <- res %>%
-      dplyr::filter(gene_name %in% gene_list)
-  }
-  
-  res <- res %>%
-    calc_pause_stats() %>%
-    group_by(!!!syms(n_grps)) %>%
-    mutate(
-      n = n_distinct(gene_name),
-      n = str_c("n = ", comma(n))
-    ) %>%
-    ungroup()
-  
-  res
-}
-
+# Sum intron and exon counts
 sum_grps <- c(
   "sample", "treat",     "rep",
   "type",   "gene_name", "txn_id",
@@ -828,70 +904,7 @@ first_dat <- bind_rows(first_dat, body_dat)
 
 ```{r "{{grp}} EXON INTRON PLOTS 1", fig.width = 8, fig.height = 1 + (2.5 * n_reps)}
 
-plot_ex_int_pauses <- function(df_in, y = "p-reads_NET", y_ttl = "fraction pause reads",
-                               violin = TRUE, plot_clrs = clrs, p_lab = FALSE,
-                               p_grps = "sample", ...) {
-  
-  dat <- df_in %>%
-    dplyr::filter(type == y)
-  
-  # Add p-value labels
-  if (p_lab) {
-    lab_dat <- dat %>%
-      dplyr::select(-len) %>%
-      pivot_wider(names_from = "region", values_from = "counts") %>%
-      group_by(!!!syms(c(p_grps, "n"))) %>%
-      summarize(
-        p = (wilcox.test(exons, introns))$p.value,
-        p = ifelse(p == 0, "0", scientific(p, 2)),
-        p = str_c(n, "\np = ", p),
-        .groups = "drop"
-      ) %>%
-      distinct()
-    
-    dat <- dat %>%
-      left_join(lab_dat, by = c(p_grps, "n")) %>%
-      mutate(n = p)
-  }
-  
-  # Create ggplot
-  res <- dat %>%
-    ggplot(aes(region, counts, alpha = region, fill = treat))
-  
-  if (violin) {
-    res <- res +
-      geom_violin(draw_quantiles = c(0.25, 0.75), ...) +
-      stat_summary(geom = "point", fun = median, alpha = 1)
-    
-  } else {
-    res <- res +
-      geom_boxplot(notch = TRUE, outlier.size = 0.3, ...)
-  }
-  
-  res <- res +    
-    geom_text(
-      aes(2.5, Inf, label = n),
-      hjust = 1.1,
-      vjust = 1.3,
-      color = "black",
-      alpha = 1,
-      size  = txt_pt / .pt,
-      check_overlap = TRUE
-    ) +
-    scale_alpha_manual(values = c(0.3, 0.6)) +
-    scale_fill_manual(values = plot_clrs) +
-    labs(y = y_ttl) +
-    theme_info +
-    theme(
-      aspect.ratio    = 1.5,
-      legend.position = "none",
-      axis.title.x    = element_blank(),
-      axis.text.x     = element_text(size = ttl_pt)
-    )
-  
-  res
-}
-
+# Plot pause stats for exons and introns
 all_dat %>%
   plot_ex_int_pauses(p_lab = TRUE) +
   facet_wrap(~ sample, nrow = n_reps)
