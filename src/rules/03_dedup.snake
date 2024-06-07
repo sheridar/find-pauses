@@ -14,7 +14,7 @@ rule dedup:
         job_name = "{sample}_dedup",
         args     = CMD_PARAMS["umi_tools"]
     resources:
-        mem = _get_mem(3)
+        mem_gb = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_dedup.out",
         err = RESULTS + "/logs/{sample}_dedup.err"
@@ -24,11 +24,11 @@ rule dedup:
         """
         umi_tools dedup \
             {params.args} \
-            -I {input.bam} \
-            -S {output.bam} \
-            -L {output.stats}
+            -I '{input.bam}' \
+            -S '{output.bam}' \
+            -L '{output.stats}'
 
-        samtools index {output.bam}
+        samtools index '{output.bam}'
         """
 
 
@@ -44,7 +44,7 @@ rule dedup_summary:
     params:
         job_name = PROJ + "_dedup_summary"
     resources:
-        mem = _get_mem(0.125)
+        mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_dedup_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_dedup_summary.err"
@@ -77,7 +77,7 @@ rule create_beds:
         genes    = GENES,
         mask     = MASK
     resources:
-        mem = _get_mem(3)
+        mem_gb = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_beds.out",
         err = RESULTS + "/logs/{sample}_beds.err"
@@ -89,7 +89,7 @@ rule create_beds:
        """
        # Create bed file for aligned reads
        bamToBed -i {input[0]} \
-           | awk -v OFS="\t" -v sam="{wildcards.sample}" '{{
+           | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
                if ($1 !~ "^chr") {{
                    $1 = "chr"$1
                }};
@@ -101,16 +101,16 @@ rule create_beds:
            }}' \
            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
            | pigz -p {threads} \
-           > {output.bed}
+           > '{output.bed}'
 
        # Filter for reads that are within params.gene and not within
        # params.mask. This filtering is not strand specific. Collapse
        # read coordinates to the RNA 3' end.
-       zcat {output.bed} \
+       zcat '{output.bed}' \
            | bedtools intersect -sorted -v  -a - -b {params.mask} \
            | bedtools intersect -sorted -wa -a - -b {params.genes} \
            | sort -S1G --parallel={threads} -k1,1 -k2,2n -k4,4 -u \
-           | awk -v OFS="\t" -v sam="{wildcards.sample}" '{{
+           | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
                if ($6 == "+") {{
                    $2 = $3 - 1;
                }} else {{
@@ -124,7 +124,7 @@ rule create_beds:
            }}' \
            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
            | pigz -p {threads} \
-           > {output.shift}
+           > '{output.shift}'
        """
 
         
@@ -140,7 +140,7 @@ rule filt_summary:
     params:
         job_name = PROJ + "_filt_summary"
     resources:
-        mem = _get_mem(0.125)
+        mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_filt_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_filt_summary.err"
@@ -152,8 +152,8 @@ rule filt_summary:
 
         for file in ${{file_arr[@]}}
         do
-            cat $file \
-                >> {output}
+            cat "$file" \
+                >> '{output}'
         done
         """
 

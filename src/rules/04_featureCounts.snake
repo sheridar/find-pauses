@@ -13,8 +13,9 @@ rule featureCounts:
     params:
         job_name = PROJ + "_featureCounts",
         args     = CMD_PARAMS["featureCounts"]
+        gtf      = GTF
     resources:
-        mem = _get_mem()
+        mem_gb = _get_mem()
     log:
         out = RESULTS + "/logs/" + PROJ + "_featureCounts.out",
         err = RESULTS + "/logs/" + PROJ + "_featureCounts.err"
@@ -25,8 +26,8 @@ rule featureCounts:
         featureCounts \
             {params.args} \
             -F GTF \
-            -a {GTF} \
-            -o {output} \
+            -a '{params.gtf}' \
+            -o '{output}' \
             -T {threads} \
             {input}
         """

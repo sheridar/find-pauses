@@ -9,13 +9,13 @@ rule bowtie:
         sam   = temp_fn(RESULTS + "/{sample}/{sample}.sam"),
         bam   = temp_fn(RESULTS + "/{sample}/{sample}.bam"),
         bai   = temp_fn(RESULTS + "/{sample}/{sample}.bam.bai"),
-        stats = RESULTS      + "/{sample}/{sample}_bowtie_stats.txt"
+        stats = RESULTS + "/{sample}/{sample}_bowtie_stats.txt"
     params:
         job_name = "{sample}_bowtie",
         idx      = INDEX,
         mapq     = 10
     resources:
-        mem = _get_mem(3)
+        mem_gb = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_bowtie.out",
         err = RESULTS + "/logs/{sample}_bowtie.err"
@@ -27,17 +27,17 @@ rule bowtie:
         # By default bowtie2 searches for multiple alignments and reports the best one
         bowtie2 \
             -p {threads} \
-            -x {params.idx} \
-            -U {input.R1} \
-            -S {output.sam} \
-            2> {output.stats}
+            -x '{params.idx}' \
+            -U '{input.R1}' \
+            -S '{output.sam}' \
+            2> '{output.stats}'
 
-        cat {output.sam} \
+        cat '{output.sam}' \
             | samtools view -q {params.mapq} -b - \
             | samtools sort -O bam - \
-            > {output.bam}
+            > '{output.bam}'
 
-        samtools index {output.bam}
+        samtools index '{output.bam}'
         """
 
 
@@ -53,7 +53,7 @@ rule bowtie_summary:
     params:
         job_name = PROJ + "_bowtie_summary",
     resources:
-        mem = _get_mem(0.125)
+        mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_bowtie_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_bowtie_summary.err"

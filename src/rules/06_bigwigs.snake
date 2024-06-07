@@ -19,7 +19,7 @@ rule bigwigs:
         job_name = "{sam_grp}_bigwig",
         chroms   = CHROMS
     resources:
-        mem = _get_mem()
+        mem_gb = _get_mem()
     log:
         out = RESULTS + "/logs/{sam_grp}_bigwig.out",
         err = RESULTS + "/logs/{sam_grp}_bigwig.err"
@@ -29,28 +29,28 @@ rule bigwigs:
         6
     shell:
         """
-        source {SRC}/funs.sh
+        source '{SRC}/funs.sh'
         
         # Create bigwigs for each strand
         # Normalized by the number of reads in the starting bed file (RPM)
         create_bigwig \
-            {input} \
-            "-strand +" \
+            '{input}' \
+            '-strand +' \
             1 \
-            {output.p_bg} \
-            {output.p_bg_N} \
-            {output.p_bw} \
-            {params.chroms} \
+            '{output.p_bg}' \
+            '{output.p_bg_N}' \
+            '{output.p_bw}' \
+            '{params.chroms}' \
             {threads}
 
         create_bigwig \
-            {input} \
-            "-strand -" \
+            '{input}' \
+            '-strand -' \
             -1 \
-            {output.n_bg} \
-            {output.n_bg_N} \
-            {output.n_bw} \
-            {params.chroms} \
+            '{output.n_bg}' \
+            '{output.n_bg_N}' \
+            '{output.n_bw}' \
+            '{params.chroms}' \
             {threads}
         """
 
@@ -75,7 +75,7 @@ rule igv_browser:
         ssh         = SSH,
         ssh_key_dir = SSH_KEY_DIR
     resources:
-        mem = _get_mem(0.25)
+        mem_gb = _get_mem(0.25)
     log:
         out = RESULTS + "/logs/" + PROJ + "_igv.out",
         err = RESULTS + "/logs/" + PROJ + "_igv.err"
@@ -85,28 +85,28 @@ rule igv_browser:
         1
     shell:
         """
-        source {SRC}/funs.sh
+        source '{SRC}/funs.sh'
 
         create_urls \
-            "{input.pos}" \
-            {params.ssh} \
-            {params.ssh_key_dir} \
-            {params.url} \
-            {output.urls} \
-            {GRP_REGEX}
+            '{input.pos}' \
+            '{params.ssh}' \
+            '{params.ssh_key_dir}' \
+            '{params.url}' \
+            '{output.urls}' \
+            '{GRP_REGEX}'
 
         create_urls \
-            "{input.neg}" \
-            {params.ssh} \
-            {params.ssh_key_dir} \
-            {params.url} \
-            {output.urls} \
-            {GRP_REGEX}
+            '{input.neg}' \
+            '{params.ssh}' \
+            '{params.ssh_key_dir}' \
+            '{params.url}' \
+            '{output.urls}' \
+            '{GRP_REGEX}'
 
         # Create IGV session
-        {SRC}/write_igv_xml.py \
-            {output.urls} \
-            {output.xml}
+        '{SRC}/write_igv_xml.py' \
+            '{output.urls}' \
+            '{output.xml}'
         """
 
  

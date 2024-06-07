@@ -1,7 +1,8 @@
 # ===== Sample config file ============================================
 
 
-# Project name to use for naming summary files
+# Project name
+# * This is used for naming various outputs
 PROJ:
     "MY-PROJECT"
 
@@ -19,7 +20,7 @@ RAW_DATA:
 
 
 # Genome to use for analysis
-# the specified genome must have a config file present in src/configs
+# * The specified genome must have a config file present in src/configs
 GENOME:
     "GRCh38"
 
@@ -30,7 +31,7 @@ READ_1_ADAPTER:
     "AACTGTAGGCACCATCAAT"
 
 READ_2_ADAPTER:
-    "GATCGTCGGACTGTAGAACTCT"
+    "AGATCGGAAGAGCGTCGTGTAG"
 
 
 # Specify base URL and destination to transfer bigwigs

@@ -193,101 +193,101 @@ rule all:
             script = SCRIPTS
         ),
 
-        # FastQC
-        RESULTS + "/stats/" + PROJ + "_fastqc.tsv",
+#         # FastQC
+#         RESULTS + "/stats/" + PROJ + "_fastqc.tsv",
 
         # Cutadapt
-        RESULTS + "/stats/" + PROJ + "_cutadapt.tsv",
+        RESULTS + "/stats/" + PROJ + "_cutadapt.tsv"
 
-        # Bowtie2
-        RESULTS + "/stats/" + PROJ + "_bowtie.tsv",
-        
-        # De-duplication
-        RESULTS + "/stats/" + PROJ + "_dedup.tsv",
-        
-        # FeatureCounts
-        RESULTS + "/" + PROJ + "_featureCounts.tsv",
-
-        # Filtering summary
-        RESULTS + "/stats/" + PROJ + "_filt.tsv",
-
-        # Sample subsampling
-        expand(
-            RESULTS + "/{sample}-{group}/{sample}-{group}.bed.gz",
-            zip, sample = SAMS, group = GRPS
-        ),
-
-        RESULTS + "/stats/" + PROJ + "_subsample.tsv",
-        
-        # Gene subsampling
-        expand(
-            RESULTS + "/stats/{group}_{sub_region}_summary.tsv",
-            group = GRPS_UNIQ, sub_region = GENE_SUB_REGS
-        ),
-
-        expand(
-            DICT_DIR + "/{group}_{sub_region}_cleanup.txt",
-            group = GRPS_UNIQ, sub_region = GENE_SUB_REGS
-        ),
-
-        # Bigwigs without subsampling
-        RESULTS + "/urls/" + PROJ + "_nosub_igv.xml",
-
-        # Bigwigs with subsampling
-        expand(
-            RESULTS + "/{sam_grp}/{sam_grp}_neg.bw",
-            sam_grp = GENE_SUB_GRPS
-        ),
-
-        RESULTS + "/urls/" + PROJ + "_igv.xml",
-
-        # Metaplots without subsampling
-        expand(
-            RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S_N.bed.gz",
-            sample = SAMS, region = REGIONS
-        ),
-
-        # Metaplots with subsampling
-        expand(
-            RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S_N.bed.gz",
-            sam_grp = GENE_SUB_GRPS, region = REGIONS
-        ),
-
-        # Subsampling tests
-        RESULTS + "/stats/" + PROJ + "_subsample_test.tsv",
-
-        RESULTS + "/stats/" + PROJ + "_gene_subsample_test.tsv",
-
-        # Pauses
-        expand(
-            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_pauses.bed.gz",
-            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE
-        ),
-
-        expand(
-            RESULTS + "/stats/" + PROJ + "_{win}{stren_grp}pausing.tsv",
-            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
-        ),
-
-        expand(
-            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pause_reads.bed.gz",
-            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
-        ),
-
-        # Pause density metaplot bed files
-        expand(
-            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_{pause_region}.bed.gz",
-            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS, pause_region = PAUSE_REGIONS
-        ),
-
-        # Signal around pauses
-        expand(
-            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_meta_N.bed.gz",
-            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
-        ),
-
-        # Plots
-        RESULTS + "/" + PROJ + "_analysis.html"
+#         # Bowtie2
+#         RESULTS + "/stats/" + PROJ + "_bowtie.tsv",
+#         
+#         # De-duplication
+#         RESULTS + "/stats/" + PROJ + "_dedup.tsv",
+#         
+#         # FeatureCounts
+#         RESULTS + "/" + PROJ + "_featureCounts.tsv",
+# 
+#         # Filtering summary
+#         RESULTS + "/stats/" + PROJ + "_filt.tsv",
+# 
+#         # Sample subsampling
+#         expand(
+#             RESULTS + "/{sample}-{group}/{sample}-{group}.bed.gz",
+#             zip, sample = SAMS, group = GRPS
+#         ),
+# 
+#         RESULTS + "/stats/" + PROJ + "_subsample.tsv",
+#         
+#         # Gene subsampling
+#         expand(
+#             RESULTS + "/stats/{group}_{sub_region}_summary.tsv",
+#             group = GRPS_UNIQ, sub_region = GENE_SUB_REGS
+#         ),
+# 
+#         expand(
+#             DICT_DIR + "/{group}_{sub_region}_cleanup.txt",
+#             group = GRPS_UNIQ, sub_region = GENE_SUB_REGS
+#         ),
+# 
+#         # Bigwigs without subsampling
+#         RESULTS + "/urls/" + PROJ + "_nosub_igv.xml",
+# 
+#         # Bigwigs with subsampling
+#         expand(
+#             RESULTS + "/{sam_grp}/{sam_grp}_neg.bw",
+#             sam_grp = GENE_SUB_GRPS
+#         ),
+# 
+#         RESULTS + "/urls/" + PROJ + "_igv.xml",
+# 
+#         # Metaplots without subsampling
+#         expand(
+#             RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S_N.bed.gz",
+#             sample = SAMS, region = REGIONS
+#         ),
+# 
+#         # Metaplots with subsampling
+#         expand(
+#             RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S_N.bed.gz",
+#             sam_grp = GENE_SUB_GRPS, region = REGIONS
+#         ),
+# 
+#         # Subsampling tests
+#         RESULTS + "/stats/" + PROJ + "_subsample_test.tsv",
+# 
+#         RESULTS + "/stats/" + PROJ + "_gene_subsample_test.tsv",
+# 
+#         # Pauses
+#         expand(
+#             RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_pauses.bed.gz",
+#             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE
+#         ),
+# 
+#         expand(
+#             RESULTS + "/stats/" + PROJ + "_{win}{stren_grp}pausing.tsv",
+#             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
+#         ),
+# 
+#         expand(
+#             RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pause_reads.bed.gz",
+#             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
+#         ),
+# 
+#         # Pause density metaplot bed files
+#         expand(
+#             RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_{pause_region}.bed.gz",
+#             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS, pause_region = PAUSE_REGIONS
+#         ),
+# 
+#         # Signal around pauses
+#         expand(
+#             RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_meta_N.bed.gz",
+#             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
+#         ),
+# 
+#         # Plots
+#         RESULTS + "/" + PROJ + "_analysis.html"
 
 
 # Setup code for pipeline

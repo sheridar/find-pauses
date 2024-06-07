@@ -43,7 +43,7 @@ rule create_plots:
     params:
         job_name = PROJ + "_plots"
     resources:
-        mem = _get_mem(4)
+        mem_gb = _get_mem(4)
     log:
         out = RESULTS + "/logs/" + PROJ + "_plots.out",
         err = RESULTS + "/logs/" + PROJ + "_plots.err"

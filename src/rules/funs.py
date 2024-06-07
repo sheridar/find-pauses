@@ -7,7 +7,7 @@ def _get_mem(n = 1, base_mem = MEMORY, min_mem = 2):
 
     mem = math.ceil(base_mem * n)
     mem = max(mem, min_mem)
-    mem = str(mem) + "GB"
+    mem = str(mem)
 
     return mem
 

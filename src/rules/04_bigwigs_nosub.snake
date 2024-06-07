@@ -19,7 +19,7 @@ rule bigwigs_nosub:
         job_name = "{sample}_bigwig",
         chroms   = CHROMS
     resources:
-        mem = _get_mem(0.5)
+        mem_gb = _get_mem(0.5)
     log:
         out = RESULTS + "/logs/{sample}_bigwig.out",
         err = RESULTS + "/logs/{sample}_bigwig.err"
@@ -29,28 +29,28 @@ rule bigwigs_nosub:
         6
     shell:
         """
-        source {SRC}/funs.sh
+        source '{SRC}/funs.sh'
         
         # Create bigwigs for each strand
         # Normalized by the number of reads in the starting bed file (RPM)
         create_bigwig \
-            {input} \
-            "-strand +" \
+            '{input}' \
+            '-strand +' \
             1 \
-            {output.p_bg} \
-            {output.p_bg_N} \
-            {output.p_bw} \
-            {params.chroms} \
+            '{output.p_bg}' \
+            '{output.p_bg_N}' \
+            '{output.p_bw}' \
+            '{params.chroms}' \
             {threads}
 
         create_bigwig \
-            {input} \
-            "-strand -" \
+            '{input}' \
+            '-strand -' \
             -1 \
-            {output.n_bg} \
-            {output.n_bg_N} \
-            {output.n_bw} \
-            {params.chroms} \
+            '{output.n_bg}' \
+            '{output.n_bg_N}' \
+            '{output.n_bw}' \
+            '{params.chroms}' \
             {threads}
         """
 
@@ -75,7 +75,7 @@ rule igv_browser_nosub:
         ssh         = SSH,
         ssh_key_dir = SSH_KEY_DIR
     resources:
-        mem = _get_mem(0.25)
+        mem_gb = _get_mem(0.25)
     log:
         out = RESULTS + "/logs/" + PROJ + "_nosub_igv.out",
         err = RESULTS + "/logs/" + PROJ + "_nosub_igv.err"
@@ -85,26 +85,26 @@ rule igv_browser_nosub:
         1
     shell:
         """
-        source {SRC}/funs.sh
+        source '{SRC}/funs.sh'
 
         create_urls \
-            "{input.pos}" \
-            {params.ssh} \
-            {params.ssh_key_dir} \
-            {params.url} \
-            {output.urls}
+            '{input.pos}' \
+            '{params.ssh}' \
+            '{params.ssh_key_dir}' \
+            '{params.url}' \
+            '{output.urls}'
 
         create_urls \
-            "{input.neg}" \
-            {params.ssh} \
-            {params.ssh_key_dir} \
-            {params.url} \
-            {output.urls}
+            '{input.neg}' \
+            '{params.ssh}' \
+            '{params.ssh_key_dir}' \
+            '{params.url}' \
+            '{output.urls}'
 
         # Create IGV session
-        {SRC}/write_igv_xml.py \
-            {output.urls} \
-            {output.xml}
+        '{SRC}/write_igv_xml.py' \
+            '{output.urls}' \
+            '{output.xml}'
         """
 
  
@@ -125,7 +125,7 @@ rule bigwigs_nofilt:
         job_name = "{sample}_nofilt_bigwig",
         chroms   = CHROMS
     resources:
-        mem = _get_mem(0.5)
+        mem_gb = _get_mem(0.5)
     log:
         out = RESULTS + "/logs/{sample}_nofilt_bigwig.out",
         err = RESULTS + "/logs/{sample}_nofilt_bigwig.err"
@@ -135,28 +135,28 @@ rule bigwigs_nofilt:
         6
     shell:
         """
-        source {SRC}/funs.sh
+        source '{SRC}/funs.sh'
 
         # Create bigwigs for each strand
         # Normalized by the number of reads in the starting bed file (RPM)
         create_bigwig \
-            {input} \
-            "-strand +" \
+            '{input}' \
+            '-strand +' \
             1 \
-            {output.p_bg} \
-            {output.p_bg_N} \
-            {output.p_bw} \
-            {params.chroms} \
+            '{output.p_bg}' \
+            '{output.p_bg_N}' \
+            '{output.p_bw}' \
+            '{params.chroms}' \
             {threads}
 
         create_bigwig \
-            {input} \
-            "-strand -" \
+            '{input}' \
+            '-strand -' \
             -1 \
-            {output.n_bg} \
-            {output.n_bg_N} \
-            {output.n_bw} \
-            {params.chroms} \
+            '{output.n_bg}' \
+            '{output.n_bg_N}' \
+            '{output.n_bw}' \
+            '{params.chroms}' \
             {threads}
         """
 
@@ -181,7 +181,7 @@ rule igv_browser_nofilt:
         ssh         = SSH,
         ssh_key_dir = SSH_KEY_DIR
     resources:
-        mem = _get_mem(0.25)
+        mem_gb = _get_mem(0.25)
     log:
         out = RESULTS + "/logs/" + PROJ + "nofilt_igv.out",
         err = RESULTS + "/logs/" + PROJ + "nofilt_igv.err"
@@ -191,26 +191,26 @@ rule igv_browser_nofilt:
         1
     shell:
         """
-        source {SRC}/funs.sh
+        source '{SRC}/funs.sh'
 
         create_urls \
-            "{input.pos}" \
-            {params.ssh} \
-            {params.ssh_key_dir} \
-            {params.url} \
-            {output.urls}
+            '{input.pos}' \
+            '{params.ssh}' \
+            '{params.ssh_key_dir}' \
+            '{params.url}' \
+            '{output.urls}'
 
         create_urls \
-            "{input.neg}" \
-            {params.ssh} \
-            {params.ssh_key_dir} \
-            {params.url} \
-            {output.urls}
+            '{input.neg}' \
+            '{params.ssh}' \
+            '{params.ssh_key_dir}' \
+            '{params.url}' \
+            '{output.urls}'
 
         # Create IGV session
-        {SRC}/write_igv_xml.py \
-            {output.urls} \
-            {output.xml}
+        '{SRC}/write_igv_xml.py' \
+            '{output.urls}' \
+            '{output.xml}'
         """
 
 

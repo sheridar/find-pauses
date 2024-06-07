@@ -9,7 +9,7 @@ rule subsample_dict:
     params:
         job_name = "subsample_dict"
     resources:
-        mem = _get_mem(0.125)
+        mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/subsample_dict.out",
         err = RESULTS + "/logs/subsample_dict.err"
@@ -43,7 +43,7 @@ rule subsample_1:
     params:
         job_name = "{group}_summary"
     resources:
-        mem = _get_mem(3)
+        mem_gb = _get_mem(3)
     log:
         out = RESULTS + "/logs/{group}_summary.out",
         err = RESULTS + "/logs/{group}_summary.err"
@@ -84,7 +84,7 @@ rule subsample_2:
     params:
         job_name = "{sample}_{group}"
     resources:
-        mem = _get_mem(3)
+        mem_gb = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_{group}.out",
         err = RESULTS + "/logs/{sample}_{group}.err"
@@ -111,11 +111,11 @@ EOF
                 </dev/zero 2>/dev/null
         }}
 
-        zcat {input.bed} \
-            | shuf -n $MIN_READS --random-source=<(get_seed 42) \
+        zcat '{input.bed}' \
+            | shuf -n "$MIN_READS" --random-source=<(get_seed 42) \
             | sort -S1G --parallel={threads} -k1,1 -k2,2n \
             | pigz -p {threads} \
-            > {output}
+            > '{output}'
         """
 
 
@@ -132,7 +132,7 @@ rule sub_summary:
     params:
         job_name = PROJ + "_subsample_summary"
     resources:
-        mem = _get_mem(0.125)
+        mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_subsample_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_subsample_summary.err"
@@ -153,8 +153,8 @@ EOF
  
         for file in ${{file_arr[@]}}
         do
-            cat $file \
-                >> {output}
+            cat "$file" \
+                >> '{output}'
         done
         """
 

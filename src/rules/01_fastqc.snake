@@ -12,7 +12,7 @@ rule fastqc:
         job_name = "{fastq}_fastqc",
         out      = RESULTS + "/fastqc"
     resources:
-        mem = _get_mem(2)
+        mem_gb = _get_mem(2)
     log:
         out = RESULTS + "/logs/{fastq}_fastqc.out",
         err = RESULTS + "/logs/{fastq}_fastqc.err"
@@ -20,20 +20,20 @@ rule fastqc:
         6
     shell:
         """
-        mkdir -p {params.out}
+        mkdir -p '{params.out}'
 
         fastqc \
             -t {threads} \
             -f fastq \
-            -o {params.out} \
-            {input}
+            -o '{params.out}' \
+            '{input}'
 
-        nm={wildcards.fastq}
-        nm=${{nm%.*}}
-        nm=${{nm%.*}}
+        nm='{wildcards.fastq}'
+        nm="${{nm%.*}}"
+        nm="${{nm%.*}}"
 
-        mv {params.out}/${{nm}}_fastqc.zip  {output.zip}
-        mv {params.out}/${{nm}}_fastqc.html {output.html}
+        mv "{params.out}/${{nm}}_fastqc.zip"  '{output.zip}'
+        mv "{params.out}/${{nm}}_fastqc.html" '{output.html}'
         """
 
 
@@ -49,7 +49,7 @@ rule fastqc_summary:
     params:
         job_name = PROJ + "_fastqc_summary",
     resources:
-        mem = _get_mem(0.125)
+        mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_fastqc_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_fastqc_summary.err"
@@ -59,12 +59,12 @@ rule fastqc_summary:
         """
         for dir in {input};
         do
-            nm=$(basename -s .zip $dir)
-            nm=${{nm%.*}}
-            nm=${{nm%.*}}_fastqc
+            nm=$(basename -s .zip "$dir")
+            nm="${{nm%.*}}"
+            nm="${{nm%.*}}_fastqc"
 
-            unzip -p $dir $nm/summary.txt \
-                >> {output}
+            unzip -p "$dir" "$nm/summary.txt" \
+                >> '{output}'
         done
         """
 

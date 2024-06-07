@@ -17,15 +17,14 @@ rule gene_subsample_test:
         temp(RESULTS + "/stats/{group}_{sub_region}_test.tsv")
     params:
         job_name = "{group}_{sub_region}_test",
-        memory   = 4,
         genes    = TEST_GENES
+    resources:
+        mem_gb = _get_mem(0.25)
     log:
         out = RESULTS + "/logs/{group}_{sub_region}_test.out",
         err = RESULTS + "/logs/{group}_{sub_region}_test.err"
     benchmark:
         RESULTS + "/benchmarks/{group}_{sub_region}_test.tsv"
-    message:
-        "Testing subsampling for {wildcards.group} {wildcards.sub_region}"
     threads:
         1
     shell:
@@ -39,10 +38,10 @@ rule gene_subsample_test:
         
             for bed in ${{bgs[@]}}
             do
-                local res="$bed.TEST"
+                local res="${bed}.TEST"
         
                 zcat "$bed" \
-                    | awk -v OFS="\t" '{{
+                    | awk -v OFS='\t' '{{
                         $4 = $4 * ($3 - $2);
                         print
                     }}' \
@@ -70,8 +69,8 @@ rule gene_subsample_test:
             done
         }}
 
-        check_sampling "{input.pos}" {params.genes} {output}
-        check_sampling "{input.neg}" {params.genes} {output}
+        check_sampling '{input.pos}' '{params.genes}' '{output}'
+        check_sampling '{input.neg}' '{params.genes}' '{output}'
         """
 
 
@@ -84,8 +83,9 @@ rule gene_subsample_test_summary:
     output:
         RESULTS + "/stats/" + PROJ + "_gene_subsample_test.tsv"
     params:
-        job_name = "gene_subsample_test_summary",
-        memory   = 4
+        job_name = "gene_subsample_test_summary"
+    resources:
+        mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/gene_subsample_test_summary.out",
         err = RESULTS + "/logs/gene_subsample_test_summary.err"
@@ -97,8 +97,8 @@ rule gene_subsample_test_summary:
 
         for file in ${{file_arr[@]}}
         do
-            cat $file \
-                >> {output}
+            cat "$file" \
+                >> '{output}'
         done
         """
 
@@ -118,15 +118,14 @@ rule subsample_test:
     output:
         temp(RESULTS + "/stats/{group}_test.tsv")
     params:
-        job_name = "{group}_test",
-        memory   = 4
+        job_name = "{group}_test"
+    resources:
+        mem_gb = _get_mem(0.25)
     log:
         out = RESULTS + "/logs/{group}_test.out",
         err = RESULTS + "/logs/{group}_test.err"
     benchmark:
         RESULTS + "/benchmarks/{group}_test.tsv"
-    message:
-        "Testing subsampling for {wildcards.group}"
     threads:
         1
     shell:
@@ -134,7 +133,7 @@ rule subsample_test:
         count_reads() {{
             local bg_in="$1"
 
-            zcat $bg_in \
+            zcat "$bg_in" \
                 | awk '{{count += $4 * ($3 - $2)}} END {{print count}}'
         }}
 
@@ -153,20 +152,20 @@ rule subsample_test:
             done
         }}
 
-        tots=$(check_sampling "{input.pos}" "{input.neg}")
+        tots=$(check_sampling '{input.pos}' '{input.neg}')
 
         n=$(echo "$tots" | sort -u | wc -l)
 
-        if [[ $n == 1 ]]
+        if [[ "$n" == 1 ]]
         then
             res='PASS'
         else
-            echo "ERROR: sample subsampling test failed for {input.pos} {input.neg}." >&2
+            echo 'ERROR: sample subsampling test failed for {input.pos} {input.neg}.' >&2
             exit 1
         fi
 
         echo -e "{wildcards.group}\t$res" \
-            > {output}
+            > '{output}'
         """
 
 
@@ -179,8 +178,9 @@ rule subsample_test_summary:
     output:
         RESULTS + "/stats/" + PROJ + "_subsample_test.tsv"
     params:
-        job_name = "subsample_test_summary",
-        memory   = 4
+        job_name = "subsample_test_summary"
+    resources:
+        mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/subsample_test_summary.out",
         err = RESULTS + "/logs/subsample_test_summary.err"
@@ -192,8 +192,8 @@ rule subsample_test_summary:
 
         for file in ${{file_arr[@]}}
         do
-            cat $file \
-                >> {output}
+            cat "$file" \
+                >> '{output}'
         done
         """
 
