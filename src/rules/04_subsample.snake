@@ -19,7 +19,7 @@ rule subsample_dict:
         """
         python - << 'EOF'
 import sys
-sys.path.insert(0, "{SRC}/rules")
+sys.path.insert(0, "{SRC}")
 
 import funs
 
@@ -55,7 +55,7 @@ rule subsample_1:
         """
         python - << 'EOF'
 import sys
-sys.path.insert(0, "{SRC}/rules")
+sys.path.insert(0, "{SRC}")
 
 import rules
 
@@ -96,7 +96,7 @@ rule subsample_2:
         """
         MIN_READS=$(python - << 'EOF'
 import sys
-sys.path.insert(0, "{SRC}/rules")
+sys.path.insert(0, "{SRC}")
 
 import rules
 
@@ -142,7 +142,7 @@ rule sub_summary:
         """
         python - << 'EOF'
 import sys
-sys.path.insert(0, "{SRC}/rules")
+sys.path.insert(0, "{SRC}")
 
 import funs
 

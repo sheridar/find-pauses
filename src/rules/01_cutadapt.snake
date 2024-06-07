@@ -94,7 +94,7 @@ rule cutadapt_summary:
         """
         python - << 'EOF'
 import sys
-sys.path.insert(0, "{SRC}/rules")
+sys.path.insert(0, "{SRC}")
 
 import rules
 

@@ -1,10 +1,18 @@
 # ===== Functions to execute python rules ======================================
 
+# Rules using the 'run' directive will not get executed in the provided
+# docker container. As a workaround, these rules are written as functions
+# that get passed to python using the 'shell' directive.
+
+
+import funs
+import gzip
+import re
+import os
+import random
+
 
 def _cutadapt_summary(input, output):
-    import os
-    import re
-
     with open(output, "w") as out:
         for file in input:
             name = os.path.basename(file)
@@ -24,9 +32,6 @@ def _cutadapt_summary(input, output):
 
 
 def _bowtie_summary(input, output):
-    import os
-    import re
-
     with open(output, "w") as out:
         for file in input:
             name = os.path.basename(file)
@@ -44,9 +49,6 @@ def _bowtie_summary(input, output):
 
 
 def _dedup_summary(input, output):
-    import os
-    import re
-
     with open(output, "w") as out:
         metrics = [
             "Input Reads: [0-9]+",
@@ -73,11 +75,7 @@ def _dedup_summary(input, output):
 
 
 def _subsample_1(input, output, group, SUB_DICT_DIR):
-    from funs import _get_dict
-    import gzip
-    import os
-
-    SUB_DICT = _get_dict("SUB_DICT", SUB_DICT_DIR)
+    SUB_DICT = funs._get_dict("SUB_DICT", SUB_DICT_DIR)
     
     d = dict()
     
@@ -105,21 +103,16 @@ def _subsample_1(input, output, group, SUB_DICT_DIR):
 
 
 def _subsample_2(group, SUB_DICT_DIR):
-    from funs import _get_dict
-
-    SUB_DICT  = _get_dict("SUB_DICT", SUB_DICT_DIR)
+    SUB_DICT  = funs._get_dict("SUB_DICT", SUB_DICT_DIR)
     MIN_READS = SUB_DICT.fetch(group)
     
     print(MIN_READS)
 
 
 def _gene_subsample_1(input, output, group, sub_region, DICT_DIR):
-    from funs import _clear_gene_sub_dict
-    import gzip
-    
     # Persistent dictionary for storing minimum gene counts for subsampling
     # clear the dictionary to remove results from previous runs
-    GENE_SUB_DICT = _clear_gene_sub_dict(group, sub_region, DICT_DIR)
+    GENE_SUB_DICT = funs._clear_gene_sub_dict(group, sub_region, DICT_DIR)
     
     # Get list of genes present in the first input file
     # could use any file in the group
@@ -161,14 +154,10 @@ def _gene_subsample_1(input, output, group, sub_region, DICT_DIR):
 
 
 def _gene_subsample_2(reads, tmp, group, sub_region, DICT_DIR):
-    from funs import _get_gene_sub_dict
-    import random
-    import gzip
-    
     # Persistent dictionary
     # this contains the minimum number of reads aligning to each gene for
     # the subsampling group
-    GENE_SUB_DICT = _get_gene_sub_dict(group, sub_region, DICT_DIR)
+    GENE_SUB_DICT = funs._get_gene_sub_dict(group, sub_region, DICT_DIR)
     
     # Create dictionary containing reads to use for subsampling
     reads = gzip.open(reads, "rt")

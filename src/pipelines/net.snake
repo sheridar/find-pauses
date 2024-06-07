@@ -68,8 +68,21 @@ META_BEDS     = config["META_BEDS"]
 
 
 # Functions for pipeline
-include: "../rules/funs.py"
-include: "../rules/rules.py"
+include: "../rules.py"
+include: "../funs.py"
+
+
+# Function to return memory specification for rule
+# define this in the Snakefile since the function needs access
+# to the MEMORY variable
+def _get_mem(n = 1, base_mem = MEMORY, min_mem = 2):
+    import math
+
+    mem = math.ceil(base_mem * n)
+    mem = max(mem, min_mem)
+    mem = str(mem)
+
+    return mem
 
 
 # Directories for data and scripts
@@ -124,17 +137,6 @@ for _, d in ALL_SAMPLES.items():
 SAMS = [[y, x] for y in SAMPLES for x in SAMPLES[y]]
 GRPS = [x[0] for x in SAMS]
 SAMS = [x[1] for x in SAMS]
-
-def _get_uniq_list(list_in):
-    seen = set()
-    out = []
-    
-    for item in list_in:
-        if item not in seen:
-            seen.add(item)
-            out.append(item)
-
-    return(out)
 
 GRPS_UNIQ = _get_uniq_list(GRPS)
 SAMS_UNIQ = _get_uniq_list(SAMS)

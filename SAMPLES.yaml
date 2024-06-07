@@ -49,8 +49,7 @@ SSH:
 # * The sample must match the beginning of a fastq file in one of the
 #   RAW_DATA directories.
 # * All samples listed for a section will be plotted together.
-# * Each sample can be given a name to use when creating plots, if this
-#   is excluded, names will be auto-generated.
+# * Each sample should be given a name to use for labeling plots
 # * Sampling groups can be included in multiple sections. This allows the samples
 #   to be plotted in different combinations.
 # 
@@ -68,8 +67,8 @@ SSH:
 #
 #     SECTION-2:
 #         SAMPLING-GROUP-1:
-#             - "fastq_1_prefix"            # sampling groups can be included in multiple sections
-#             - "fastq_2_prefix"            # names will be auto-generated if not provided
+#             sample-1: "fastq_1_prefix"    # sampling groups can be included
+#             sample-2: "fastq_2_prefix"    # in multiple sections
 #
 #     SECTION-3:
 #         ...
@@ -86,7 +85,7 @@ SAMPLES:
 
     Xrn2-2:
         xrn2-r2:
-            "293flpin_Xrn2_WT_R4"
+            wild-type: "293flpin_Xrn2_WT_R4"
 
 
 # Sample colors

@@ -38,7 +38,7 @@ rule gene_subsample_test:
         
             for bed in ${{bgs[@]}}
             do
-                local res="${bed}.TEST"
+                local res="${{bed}}.TEST"
         
                 zcat "$bed" \
                     | awk -v OFS='\t' '{{

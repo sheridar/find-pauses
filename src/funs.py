@@ -1,18 +1,26 @@
 # ===== Functions for pipeline =================================================
 
 
-# Calculate memory specification
-def _get_mem(n = 1, base_mem = MEMORY, min_mem = 2):
-    import math
-
-    mem = math.ceil(base_mem * n)
-    mem = max(mem, min_mem)
-    mem = str(mem)
-
-    return mem
+import os
+import re
 
 
-# Create persistent dictionary to store gene subsampling info
+# Remove duplicated items from list while maintaining order of list
+def _get_uniq_list(list_in):
+    seen = set()
+    out = []
+    
+    for item in list_in:
+        if item not in seen:
+            seen.add(item)
+            out.append(item)
+
+    return(out)
+
+
+# Define persistent dict for subsampling
+# load pytools within the function since the container will have this
+# module but not the user
 def _get_dict(dict_name, dict_dir):
     from pytools.persistent_dict import PersistentDict 
 
@@ -21,15 +29,17 @@ def _get_dict(dict_name, dict_dir):
     return d
 
 
+# Clear persistent dict
 def _clear_dict(dict_name, dict_dir):
     d = _get_dict(dict_name, dict_dir)
 
     d.clear()
 
+    return d
 
+
+# Define persistent dict for per gene subsampling
 def _get_gene_sub_dict(group, region, dict_dir):
-    import os
-
     dict_name = "GENE_SUB_DICT_" + group + "_" + region
     dict_dir  = dict_dir + "/" + dict_name
 
@@ -40,11 +50,13 @@ def _get_gene_sub_dict(group, region, dict_dir):
     return gene_sub_dict
 
 
+# Clear persistent dict for per gene subsampling
 def _clear_gene_sub_dict(group, region, dict_dir):
-    
     gene_sub_dict = _get_gene_sub_dict(group, region, dict_dir)
 
     gene_sub_dict.clear()
+
+    return gene_sub_dict
 
 
 # Find all fastqs matching sample name in provided directories

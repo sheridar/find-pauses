@@ -29,7 +29,7 @@ rule gene_subsample_1:
         """
         python - << 'EOF'
 import sys
-sys.path.insert(0, "{SRC}/rules")
+sys.path.insert(0, "{SRC}")
 
 import rules
 
@@ -79,7 +79,7 @@ rule gene_subsample_2:
 
         python - << 'EOF'
 import sys
-sys.path.insert(0, "{SRC}/rules")
+sys.path.insert(0, "{SRC}")
 
 import rules
 
@@ -122,7 +122,7 @@ rule gene_subsample_cleanup:
         """
         python - << 'EOF'
 import sys
-sys.path.insert(0, "{SRC}/rules")
+sys.path.insert(0, "{SRC}")
 
 import funs
 

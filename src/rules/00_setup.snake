@@ -7,8 +7,9 @@ rule compile_cpp:
     output:
         SRC + "/{script}"
     params:
-        job_name = "{script}_compile",
-        memory   = MEMORY
+        job_name = "{script}_compile"
+    resources:
+        mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/{script}.out",
         err = RESULTS + "/logs/{script}.err"

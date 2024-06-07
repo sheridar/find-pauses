@@ -234,7 +234,7 @@ rule pause_density:
 
         # Intersect pause reads with bed regions
         bedtools intersect -sorted -s -wa -c \
-            -a '{params.bed'} \
+            -a '{params.bed}' \
             -b '{input.reads}' \
             | sort -S1G --parallel={threads} -k1,1 -k2,2n \
             | pigz -p {threads} \
