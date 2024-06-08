@@ -1,9 +1,6 @@
 # NET-seq analysis workflow
 
-This workflow is composed of two separate snakemake pipelines, one
-to perform the initial processing steps and another to identify pause
-sites. Workflow settings can be modified with the NETseq.yaml and
-pauses.yaml config files.
+This pipeline will process NET-seq data identify pause sites.
 
 <br>
 
@@ -11,10 +8,10 @@ pauses.yaml config files.
 
 1. Create a new repository using this template
 2. Clone and navigate to the project directory
-3. Specify sample names, groups, and directory paths using the SAMPLES.yaml config file
-5. Run the pipeline by submitting the run.sh script
-6. Check the subsampling test results by running `cat results/stats/*_test.tsv`.
-   This double checks that the per-gene subsampling was performed correctly, each file should be marked with 'PASS' 
+3. Specify sample names and modify pipeline parameters using the SAMPLES.yaml
+   config file
+5. Run the pipeline using the run.sh script, run `./run.sh -h` to view
+   various options for running the pipeline
 
 <br>
 
@@ -29,8 +26,8 @@ pauses.yaml config files.
 4. Summarize read mapping with featureCounts
 4. Subsample reads so samples within the same group have the same total
    number of aligned reads
-5. Subsample reads so libraries within the same group have the same number
-   of aligned reads for each provided subsampling region
+5. Subsample reads so libraries within the same group have the same
+   per-gene number of aligned reads for each provided subsampling region
 6. Generate bigwigs
 6. Generate bed files for metaplots
 7. Check subsampling output files

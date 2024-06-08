@@ -573,7 +573,7 @@ zone_genes <- zones %>%
 
 ```
 
-```{r "{{grp}} metaplots", fig.width = 10, fig.height = 1 + (n_reps * 2.5)}
+```{r "{{grp}} zone metaplots", fig.width = 10, fig.height = 1 + (n_reps * 2.5)}
 
 # Names for type columns
 stat_cols <- c(

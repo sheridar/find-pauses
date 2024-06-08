@@ -8,7 +8,7 @@ mkdir -p logs
 # Set default inputs
 install=0
 dry_run=0
-snake_args='--keep-going --jobs 100 --retries 1'
+snake_args='--jobs 100 --keep-going --retries 1'
 bind_dir='/beevol/home'
 
 
@@ -26,12 +26,16 @@ $0 [-h] [-d] [-i] [-a SNAKE_ARGS] [-b BIND_PATH]
 OPTIONS
 -h, display this help message
 -d, execute dry-run to test pipeline and print summary of jobs
--i, install python and snakemake dependencies in micromamba environment
+-i, install python and snakemake dependencies in micromamba environment,
+    this will result in the creation of a 'micromamba' folder in your
+    home directory, this option only needs to be included for the first
+    run
 -a, additional arguments to pass to snakemake, these should be wrapped in
-    quotes, default arguments are '$snake_args' 
+    quotes, default arguments are:
+    '$snake_args' 
 -b, directory path to bind to container, this is required for access to
-    files that are outside of the workflow directory, default path is
-    $bind_dir
+    files that are outside of the workflow directory, default path is:
+    '$bind_dir'
     """
 }
 
