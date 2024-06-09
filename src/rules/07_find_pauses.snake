@@ -138,16 +138,16 @@ rule pauses_strong:
 rule pause_reads:
     input:
         reads  = RESULTS + "/{sam_grp}/{sam_grp}.bed.gz",
-        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses.bed.gz"
+        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses.bed.gz"
     output:
-        RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pause_reads.bed.gz"
+        RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pause_reads.bed.gz"
     params:
-        job_name = "{sam_grp}_{win}{grp}pause_reads"
+        job_name = "{sam_grp}_{win}{stren_grp}pause_reads"
     resources:
         mem_gb = _get_mem()
     log:
-        out = RESULTS + "/logs/{sam_grp}_{win}{grp}pause_reads.out",
-        err = RESULTS + "/logs/{sam_grp}_{win}{grp}pause_reads.err"
+        out = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_reads.out",
+        err = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_reads.err"
     threads:
         6
     shell:
@@ -165,18 +165,18 @@ rule pause_reads:
 rule pausing_summary:
     input:
         expand(
-            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{{win}}{{grp}}pauses.bed.gz",
+            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{{win}}{{stren_grp}}pauses.bed.gz",
             sam_grp = GENE_SUB_GRPS
         )
     output:
-        RESULTS + "/stats/" + PROJ + "_{win}{grp}pausing.tsv"
+        RESULTS + "/stats/" + PROJ + "_{win}{stren_grp}pausing.tsv"
     params:
-        job_name = PROJ + "_{win}{grp}pausing_summary"
+        job_name = PROJ + "_{win}{stren_grp}pausing_summary"
     resources:
         mem_gb = _get_mem(0.125)
     log:
-        out = RESULTS + "/logs/" + PROJ + "_{win}{grp}pausing_summary.out",
-        err = RESULTS + "/logs/" + PROJ + "_{win}{grp}pausing_summary.err"
+        out = RESULTS + "/logs/" + PROJ + "_{win}{stren_grp}pausing_summary.out",
+        err = RESULTS + "/logs/" + PROJ + "_{win}{stren_grp}pausing_summary.err"
     threads:
         1
     shell:
@@ -207,19 +207,19 @@ rule pausing_summary:
 # Create files to plot pause density
 rule pause_density:
     input:
-        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses.bed.gz",
-        reads  = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pause_reads.bed.gz"
+        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses.bed.gz",
+        reads  = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pause_reads.bed.gz"
     output:
-        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses_{pause_region}.bed.gz",
-        reads  = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pause_reads_{pause_region}.bed.gz"
+        pauses = meta_temp_fn(RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_{pause_region}.bed.gz"),
+        reads  = meta_temp_fn(RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pause_reads_{pause_region}.bed.gz")
     params:
-        job_name = "{sam_grp}_{pause_region}_{win}{grp}pause_density",
+        job_name = "{sam_grp}_{pause_region}_{win}{stren_grp}pause_density",
         bed      = lambda wildcards: PAUSE_META_BEDS[wildcards.pause_region]
     resources:
         mem_gb = _get_mem()
     log:
-        out = RESULTS + "/logs/{sam_grp}_{win}{grp}{pause_region}_density.out",
-        err = RESULTS + "/logs/{sam_grp}_{win}{grp}{pause_region}_density.err"
+        out = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}{pause_region}_density.out",
+        err = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}{pause_region}_density.err"
     threads:
         6
     shell:
@@ -246,19 +246,19 @@ rule pause_density:
 rule pause_metaplots:
     input:
         reads  = RESULTS + "/{sam_grp}/{sam_grp}.bed.gz",
-        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_sep{grp}pauses.bed.gz"
+        pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_sep{stren_grp}pauses.bed.gz"
     output:
-        wins     = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses_wins.bed.gz",
-        counts   = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses_meta.bed.gz",
-        counts_N = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{grp}pauses_meta_N.bed.gz"
+        wins     = meta_temp_fn(RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_wins.bed.gz"),
+        counts   = meta_temp_fn(RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_meta.bed.gz"),
+        counts_N = meta_temp_fn(RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_meta_N.bed.gz")
     params:
-        job_name = "{sam_grp}_{win}{grp}pause_metaplots",
+        job_name = "{sam_grp}_{win}{stren_grp}pause_metaplots",
         chroms   = CHROMS
     resources:
         mem_gb = _get_mem()
     log:
-        out = RESULTS + "/logs/{sam_grp}_{win}{grp}pause_metaplots.out",
-        err = RESULTS + "/logs/{sam_grp}_{win}{grp}pause_metaplots.err"
+        out = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_metaplots.out",
+        err = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_metaplots.err"
     threads:
         6
     shell:
