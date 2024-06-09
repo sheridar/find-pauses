@@ -126,14 +126,11 @@ sys.path.insert(0, "{SRC}")
 
 import funs
 
-GENE_SUB_DICT = funs._get_gene_sub_dict(
+funs._clear_gene_sub_dict(
     "{wildcards.group}",
     "{wildcards.sub_region}",
     "{DICT_DIR}"
 )
-
-GENE_SUB_DICT.clear()
-
 EOF
         """
 
