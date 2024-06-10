@@ -1,0 +1,51 @@
+#===== Config file for filtering and aligning mNET-seq reads ===================
+
+
+# Should intermediate file be kept
+KEEP_INTERMEDIATE_FILES:
+    False
+
+
+# Should metaplot files be kept:
+KEEP_META_FILES:
+    False
+
+
+# Base memory to request for each rule
+# * The acutal amount requested will be higher for rules that generally
+#   require more memory
+# * A value of 8 will result in rules requesting between 8Gb - 32Gb of
+#   memory
+MEMORY:
+    16
+
+
+# Docker container to use for pipeline
+CONTAINER:
+    "docker://rmsheridan/find-pauses:latest"
+
+
+## Additional parameters for various processing steps
+# Cutadapt
+# --pair-filter=first - read filtering decisions are made based solely on R1
+# --dicard-untrimmed  - remove reads that do not contain an adapter
+# --minimum-length    - remove reads that are shorter than given value
+# -O                  - minimum overlap to trim adapter
+# -a                  - adapter sequence for R1
+# -A                  - adapter sequence for R2
+#
+# umi tools
+# --method unique     - only remove read if the UMI sequence is an exact match
+# --read-length       - use read length when removing duplicates
+#
+# featureCounts
+# -s 0                - strandedness for read assignment; 0, unstranded
+# -t gene             - feature type for counting
+# -O                  - count if aligned to multiple features
+CMD_PARAMS:
+    cutadapt:      " --pair-filter=first --discard-untrimmed --minimum-length 15 --overlap 10 "
+    umi_pattern:   "NNNNNNNNNNNN"
+    umi_tools:     " --method unique --read-length "
+    featureCounts: " --extraAttributes 'gene_name,gene_biotype' -s 0 -t gene -O "
+
+

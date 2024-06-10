@@ -272,6 +272,15 @@ breaks_limits <- function(x) {
   res
 }
 
+# Extract distance genes are separated using gene list file name
+extract_sep_info <- function(x) {
+  res <- x %>%
+    basename() %>%
+    str_extract("[0-9]+(?=ksep)")
+  
+  res
+}
+
 # Format sample names for plotting
 format_sample_names <- function(df_in, key_vec = sam_lnms, add_grp = FALSE) {
   if (add_grp) {
@@ -645,7 +654,7 @@ load_merge_wins <- function(prfxs, sfxs, paths, group, genes = NULL, file_out = 
   }
   
   # Check for NAs
-  if (nrow(res) != nrow(na.omit(res))) {
+  if (!all(complete.cases(res))) {
     stop("NAs present in merged data.frame.")
   }
   
@@ -850,7 +859,7 @@ create_meta <- function(df_in, x, y, color = NULL, alpha = NULL, plot_clrs = NUL
   res <- res +
     guides(
       color = guide_legend(override.aes = list(size = 3), ncol = 1),
-      alpha = FALSE
+      alpha = "none"
     ) +
     
     theme_info +
@@ -1691,7 +1700,7 @@ create_bubbles <- function(go_df, plot_colors = NULL, n_terms = 15, txt_size = 6
       segment.size = NA
     ) +
     
-    guides(color = FALSE) +
+    guides(color = "none") +
     xlim(1, 8) +
     labs(y = "-log10(p-value)") +
     

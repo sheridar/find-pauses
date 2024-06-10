@@ -8,85 +8,50 @@ rule bigwigs:
     input:
         RESULTS + "/{sam_grp}/{sam_grp}.bed.gz"
     output:
-        p_bg   = RESULTS + "/{sam_grp}/{sam_grp}_pos.bedgraph.gz",
-        p_bg_N = RESULTS + "/{sam_grp}/{sam_grp}_pos_N.bedgraph.gz",
+        p_bg   = temp_fn(RESULTS + "/{sam_grp}/{sam_grp}_pos.bedgraph.gz"),
+        p_bg_N = temp_fn(RESULTS + "/{sam_grp}/{sam_grp}_pos_N.bedgraph.gz"),
+        n_bg   = temp_fn(RESULTS + "/{sam_grp}/{sam_grp}_neg.bedgraph.gz"),
+        n_bg_N = temp_fn(RESULTS + "/{sam_grp}/{sam_grp}_neg_N.bedgraph.gz"),
+
         p_bw   = RESULTS + "/{sam_grp}/{sam_grp}_pos.bw",
-        n_bg   = RESULTS + "/{sam_grp}/{sam_grp}_neg.bedgraph.gz",
-        n_bg_N = RESULTS + "/{sam_grp}/{sam_grp}_neg_N.bedgraph.gz",
         n_bw   = RESULTS + "/{sam_grp}/{sam_grp}_neg.bw"
     params:
         job_name = "{sam_grp}_bigwig",
-        memory   = MEMORY,
         chroms   = CHROMS
+    resources:
+        mem_gb = _get_mem()
     log:
         out = RESULTS + "/logs/{sam_grp}_bigwig.out",
         err = RESULTS + "/logs/{sam_grp}_bigwig.err"
     benchmark:
         RESULTS + "/benchmarks/{sam_grp}_bigwig.tsv"
-    message:
-        "Creating bigwigs for {wildcards.sam_grp}"
     threads:
         6
     shell:
         """
-        create_bigwig() {{
-            local reads=$1
-            local strand=$2
-            local mtplyr=$3
-            local bg=$4
-            local bg_N=$5
-            local bw=$6
-
-            tmp_1=$(mktemp tmp.XXXXX)
-            tmp_2=$(mktemp tmp.XXXXX)
-            tmp_3=$(mktemp tmp.XXXXX)
-
-            zcat -f $reads \
-                > $tmp_1
-
-            cat $tmp_1 \
-                | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-                | bedtools genomecov -bg $strand -i - -g {params.chroms} \
-                > $tmp_2
-
-            {SRC}/norm_bed $tmp_1 $tmp_2 4 \
-                | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-                | awk -v mtplyr=$mtplyr -v OFS="\t" '{{$4 = $4 * mtplyr; print}}' \
-                > $tmp_3
-            
-            bedGraphToBigWig \
-                $tmp_3 \
-                {params.chroms} \
-                $bw
-
-            cat $tmp_2 \
-                | pigz -p {threads} \
-                > $bg
-
-            cat $tmp_3 \
-                | pigz -p {threads} \
-                > $bg_N
-
-            rm $tmp_1 $tmp_2 $tmp_3
-        }}
+        source '{SRC}/funs.sh'
         
         # Create bigwigs for each strand
         # Normalized by the number of reads in the starting bed file (RPM)
         create_bigwig \
-            {input} \
-            "-strand +" \
+            '{input}' \
+            '-strand +' \
             1 \
-            {output.p_bg} \
-            {output.p_bg_N} \
-            {output.p_bw}
+            '{output.p_bg}' \
+            '{output.p_bg_N}' \
+            '{output.p_bw}' \
+            '{params.chroms}' \
+            {threads}
 
         create_bigwig \
-            {input} \
-            "-strand -" \
+            '{input}' \
+            '-strand -' \
             -1 \
-            {output.n_bg} \
-            {output.n_bg_N} \
-            {output.n_bw}
+            '{output.n_bg}' \
+            '{output.n_bg_N}' \
+            '{output.n_bw}' \
+            '{params.chroms}' \
+            {threads}
         """
 
 
@@ -105,61 +70,43 @@ rule igv_browser:
         urls = RESULTS + "/urls/" + PROJ + "_urls.tsv",
         xml  = RESULTS + "/urls/" + PROJ + "_igv.xml"
     params:
-        job_name = PROJ + "_igv",
-        memory   = 4,
-        url      = URL,
-        ssh      = SSH
+        job_name    = PROJ + "_igv",
+        url         = URL,
+        ssh         = SSH,
+        ssh_key_dir = SSH_KEY_DIR
+    resources:
+        mem_gb = _get_mem(0.25)
     log:
         out = RESULTS + "/logs/" + PROJ + "_igv.out",
         err = RESULTS + "/logs/" + PROJ + "_igv.err"
     benchmark:
         RESULTS + "/benchmarks/" + PROJ + "_igv.tsv"
-    message:
-        "Creating " + PROJ + " IGV session"
     threads:
         1
     shell:
         """
-        # Create files with URLs
-        create_urls() {{
-            local paths=$1
-            local strand=$2
-            local urls=$3
-
-            if [ ! -s $urls ]
-            then
-                echo -e "URL\tSAMPLE\tGROUP\tSTRAND" \
-                    > $urls
-            fi
-
-            for path in $paths
-            do
-                bw=$(basename $path)
-                url={params.url}/$bw
-                grp=$(echo $bw | grep -oP "(?<=-){GRP_REGEX}(?=_"$strand".bw$)")
-                sam=$(echo $bw | grep -oP ".+(?=-$grp)")
-
-                rsync --perms --chmod=ugo+r $path {params.ssh}
-
-                echo -e "$url\t$sam\t$grp\t$strand" \
-                    >> $urls
-            done
-        }}
+        source '{SRC}/funs.sh'
 
         create_urls \
-            "{input.pos}" \
-            pos \
-            {output.urls}
+            '{input.pos}' \
+            '{params.ssh}' \
+            '{params.ssh_key_dir}' \
+            '{params.url}' \
+            '{output.urls}' \
+            '{GRP_REGEX}'
 
         create_urls \
-            "{input.neg}" \
-            neg \
-            {output.urls}
+            '{input.neg}' \
+            '{params.ssh}' \
+            '{params.ssh_key_dir}' \
+            '{params.url}' \
+            '{output.urls}' \
+            '{GRP_REGEX}'
 
         # Create IGV session
-        {SRC}/write_igv_xml.py \
-            {output.urls} \
-            {output.xml}
+        '{SRC}/write_igv_xml.py' \
+            '{output.urls}' \
+            '{output.xml}'
         """
 
  

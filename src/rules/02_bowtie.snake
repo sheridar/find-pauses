@@ -6,20 +6,19 @@ rule bowtie:
     input:
         R1 = RESULTS + "/{sample}/{sample}_R1_trim.fastq.gz"
     output:
-        sam   = temp(RESULTS + "/{sample}/{sample}.sam"),
-        bam   = RESULTS      + "/{sample}/{sample}.bam",
-        bai   = RESULTS      + "/{sample}/{sample}.bam.bai",
-        stats = RESULTS      + "/{sample}/{sample}_bowtie_stats.txt"
+        sam   = temp_fn(RESULTS + "/{sample}/{sample}.sam"),
+        bam   = temp_fn(RESULTS + "/{sample}/{sample}.bam"),
+        bai   = temp_fn(RESULTS + "/{sample}/{sample}.bam.bai"),
+        stats = RESULTS + "/{sample}/{sample}_bowtie_stats.txt"
     params:
         job_name = "{sample}_bowtie",
-        memory   = MEMORY * 3,
         idx      = INDEX,
         mapq     = 10
+    resources:
+        mem_gb = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_bowtie.out",
         err = RESULTS + "/logs/{sample}_bowtie.err"
-    message:
-        "Aligning reads with Bowtie2 for {wildcards.sample}"
     threads: 
         12
     shell:
@@ -28,17 +27,17 @@ rule bowtie:
         # By default bowtie2 searches for multiple alignments and reports the best one
         bowtie2 \
             -p {threads} \
-            -x {params.idx} \
-            -U {input.R1} \
-            -S {output.sam} \
-            2> {output.stats}
+            -x '{params.idx}' \
+            -U '{input.R1}' \
+            -S '{output.sam}' \
+            2> '{output.stats}'
 
-        cat {output.sam} \
+        cat '{output.sam}' \
             | samtools view -q {params.mapq} -b - \
             | samtools sort -O bam - \
-            > {output.bam}
+            > '{output.bam}'
 
-        samtools index {output.bam}
+        samtools index '{output.bam}'
         """
 
 
@@ -53,28 +52,23 @@ rule bowtie_summary:
         RESULTS + "/stats/" + PROJ + "_bowtie.tsv"
     params:
         job_name = PROJ + "_bowtie_summary",
-        memory   = 4
+    resources:
+        mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_bowtie_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_bowtie_summary.err"
-    message:
-        "Creating " + PROJ + " bowtie2 summary"
     threads:
         1
-    run:
-        with open(output[0], "w") as out:
-            for file in input:
-                name = os.path.basename(file)
-                name = re.sub("_bowtie_stats.txt", "", name)
+    shell:
+        """
+        python - << 'EOF'
+import sys
+sys.path.insert(0, "{SRC}")
 
-                for line in open(file, "r"):
-                    line  = re.sub("; of these:", "", line.strip())
-                    line  = re.sub(" \([0-9\.%]+\)", "", line)
-                    words = line.split(" ")
-                    num   = words[0]
-                    met   = words[1:]
-                    met   = " ".join(met)
+import rules
 
-                    out.write("%s\t%s\t%s\n" % (name, met, num))
+rules._bowtie_summary("{input}".split(), "{output[0]}")
+EOF
+        """
 
 

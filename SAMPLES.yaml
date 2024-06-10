@@ -1,26 +1,37 @@
-#===== Sample config file ============================================
+# ===== Sample config file ============================================
 
-# Project name to use for naming summary files
+
+# Project name
+# * This is used for naming various outputs
 PROJ:
     "MY-PROJECT"
 
 
-# Directories containing FASTQ files, this can be a relative path.
+# Directory to save results
+RESULTS:
+    "results"
+
+
+# Directories containing FASTQ files
 # * Multiple directories can be provided
 # * The sample names must correspond to the begining of the fastq name
 RAW_DATA:
     - "/beevol/home/erickson/fastqs/220218_A00405_0531_BH352HDRX2"
 
 
-# FASTQ file suffix, can be either '.fastq.gz' or '.fq.gz'
-# this is used to pull fastq files
-FASTQ_SFX:
-   ".fastq.gz"
+# Genome to use for analysis
+# * The specified genome must have a config file present in src/configs
+GENOME:
+    "GRCh38"
 
 
-# Directory to store results
-RESULTS:
-    "results"
+# Adapter sequences to trim from the 3' end of each read
+# * These are passed to the -a and -A arguments of cutadapt
+READ_1_ADAPTER:
+    "AACTGTAGGCACCATCAAT"
+
+READ_2_ADAPTER:
+    "AGATCGGAAGAGCGTCGTGTAG"
 
 
 # Specify base URL and destination to transfer bigwigs
@@ -28,16 +39,7 @@ URL:
     "http://amc-sandbox.ucdenver.edu/User25/MY-PROJECT"
 
 SSH:
-    "sheridanr@amc-sandbox:~/public_html/MY-PROJECT"
-
-
-# Base memory to request for each rule
-# * The acutal amount requested will be higher for rules that generally
-#   require more memory
-# * A value of 8 will result in rules requesting between 8Gb - 32Gb of
-#   memory
-MEMORY:
-    16
+    "amc-sandbox:~/public_html/MY-PROJECT"
 
 
 # Sample groups for subsampling, use the following format:
@@ -47,8 +49,7 @@ MEMORY:
 # * The sample must match the beginning of a fastq file in one of the
 #   RAW_DATA directories.
 # * All samples listed for a section will be plotted together.
-# * Each sample can be given a name to use when creating plots, if this
-#   is excluded, names will be auto-generated.
+# * Each sample should be given a name to use for labeling plots
 # * Sampling groups can be included in multiple sections. This allows the samples
 #   to be plotted in different combinations.
 # 
@@ -66,8 +67,8 @@ MEMORY:
 #
 #     SECTION-2:
 #         SAMPLING-GROUP-1:
-#             - "fastq_1_prefix"  # sampling groups can be included in multiple sections
-#             - "fastq_2_prefix"  # names will be auto-generated
+#             sample-1: "fastq_1_prefix"    # sampling groups can be included
+#             sample-2: "fastq_2_prefix"    # in multiple sections
 #
 #     SECTION-3:
 #         ...
@@ -84,12 +85,13 @@ SAMPLES:
 
     Xrn2-2:
         xrn2-r2:
-            "293flpin_Xrn2_WT_R4"
+            wild-type: "293flpin_Xrn2_WT_R4"
 
 
 # Sample colors
 # * For each section, a color can be provided for each sample name
 # * Colors will be set automatically if they are not provided 
 COLORS:
-    Xrn2: ["black", "#4DB4C2"]
+    Xrn2-1: ["black", "#4DB4C2"]
+
 

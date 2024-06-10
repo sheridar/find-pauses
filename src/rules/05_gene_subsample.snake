@@ -4,149 +4,134 @@
 # Identify lowest counts for the gene among all samples in the sampling group
 # for input, need to pull all files for the sampling group, but need each job
 # to only include files for one sampling region
+# snakemake does not support the use of singularity with the 'run' directive
+# as a work around call python using the 'shell' directive
 rule gene_subsample_1:
     input:
         lambda wildcards: expand(
             RESULTS + "/{sample}/metaplot_beds/{sample}_{{sub_region}}_S.bed.gz",
-            sample = SAMPLES[wildcards.group],
+            sample = SAMPLES[wildcards.group]
         )
     output:
         RESULTS + "/stats/{group}_{sub_region}_summary.tsv"
     params:
-        job_name = "{group}_{sub_region}_summary",
-        memory   = MEMORY * 2
+        job_name = "{group}_{sub_region}_summary"
+    resources:
+        mem_gb = _get_mem(2)
     log:
         out = RESULTS + "/logs/{group}_{sub_region}_summary.out",
         err = RESULTS + "/logs/{group}_{sub_region}_summary.err"
     benchmark:
         RESULTS + "/benchmarks/{group}_{sub_region}_genes_summary.tsv"
-    message:
-        "Subsampling reads for {wildcards.group} {wildcards.sub_region}"
     threads:
         1
-    run:
-        # Persistent dictionary for storing minimum gene counts for subsampling
-        # clear the dictionary to remove results from previous runs
-        GENES_DICT = PersistentDict("GENES_DICT_" + wildcards.group + "_" + wildcards.sub_region)
-        GENES_DICT.clear()
+    shell:
+        """
+        python - << 'EOF'
+import sys
+sys.path.insert(0, "{SRC}")
 
-        # Get list of genes present in the first input file
-        # could use any file in the group
-        with gzip.open(input[0], "rt") as f:
-            genes = [l.strip().split("\t")[3] for l in f]
+import rules
 
-        # Create set with counts for each gene and sample file
-        for gene in genes:
-            gene_set = set()
-
-            for file in input:
-                f = gzip.open(file, "rt")
-
-                found = False
-
-                for l in f:
-                    l = l.strip().split("\t")
-                    g = l[3]
-                    c = int(l[6])
-
-                    if g == gene:
-                        gene_set.add(c)
-
-                        found = True
-
-                        break
-
-                if not found:
-                    gene_set.add(0)  # report 0 counts if gene not found
-
-            # Store minimum count for the group in persistent dict
-            min_reads = min(gene_set)
-
-            GENES_DICT.store(gene, min_reads)
-
-            # Save minimum counts in summary file
-            with open(output[0], "a") as out:
-                out.write("%s\t%s\tSampled reads\t%s\n" % (wildcards.group, gene, min_reads))
+rules._gene_subsample_1(
+    "{input}".split(),
+    "{output[0]}",
+    "{wildcards.group}",
+    "{wildcards.sub_region}",
+    "{DICT_DIR}"
+)
+EOF
+        """
 
 
 # Subsample reads so each gene for each sample has the same total counts for
 # the subsampling region
 rule gene_subsample_2:
     input:
-        reads = RESULTS + "/{sample}/{sample}_shift.bed.gz",
-        bed   = RESULTS + "/{sample}/metaplot_beds/{sample}_{sub_region}_S.bed.gz",
-        sum   = RESULTS + "/stats/{group}_{sub_region}_summary.tsv"
+        reads = RESULTS  + "/{sample}/{sample}_shift.bed.gz",
+        bed   = RESULTS  + "/{sample}/metaplot_beds/{sample}_{sub_region}_S.bed.gz",
+        sum   = RESULTS  + "/stats/{group}_{sub_region}_summary.tsv"
     output:
-        reads = RESULTS      + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_reads.bed.gz",
+        reads =      RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_reads.bed.gz",
         tmp   = temp(RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}_tmp.bed"),
-        sub   = RESULTS      + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}.bed.gz"
+        sub   =      RESULTS + "/{sample}-{group}_{sub_region}/{sample}-{group}_{sub_region}.bed.gz"
     params:
-        job_name = "{sample}_{group}_{sub_region}",
-        memory   = MEMORY * 2
+        job_name = "{sample}_{group}_{sub_region}"
+    resources:
+        mem_gb = _get_mem(2)
     log:
         out = RESULTS + "/logs/{sample}_{group}_{sub_region}.out",
         err = RESULTS + "/logs/{sample}_{group}_{sub_region}.err"
     benchmark:
         RESULTS + "/benchmarks/{sample}_{group}_{sub_region}.tsv"
-    message:
-        "Subsampling reads for {wildcards.sample} {wildcards.group} {wildcards.sub_region}"
     threads:
         6
-    run:
-        # Persistent dictionary
-        # this contains the minimum number of reads aligning to each gene for
-        # the subsampling group
-        GENES_DICT = PersistentDict("GENES_DICT_" + wildcards.group + "_" + wildcards.sub_region)
- 
+    shell:
+        """
         # Intersect with subsampling region
         # this produces a bed file that only containing reads to use for
         # subsampling
-        shell(
-            """
-            zcat {input.reads} \
-                | bedtools intersect -sorted -s -a {input.bed} -b - \
-                | sort -S1G --parallel={threads} -k1,1 -k4,4 -k2,2n \
-                | pigz -p {threads} \
-                > {output.reads}
-            """
-        )
+        zcat '{input.reads}' \
+            | bedtools intersect -sorted -s -a '{input.bed}' -b - \
+            | sort -S1G --parallel={threads} -k1,1 -k4,4 -k2,2n \
+            | pigz -p {threads} \
+            > '{output.reads}'
 
-        # Create dictionary containing reads to use for subsampling
-        reads = gzip.open(output.reads, "rt")
+        python - << 'EOF'
+import sys
+sys.path.insert(0, "{SRC}")
 
-        READS_DICT = dict()
- 
-        for l in reads:
-            l    = l.strip()
-            gene = l.split("\t")[3]
+import rules
 
-            if gene not in READS_DICT:
-                READS_DICT[gene] = [l]
- 
-            else:
-                READS_DICT[gene].append(l)
-
-        # Subsample reads in READS_DICT and write bed file
-        # pull minimum read count for the gene from GENES_DICT
-        with open(output.tmp, "a") as out:
-            for gene in READS_DICT.keys():
-
-                MIN_READS = GENES_DICT.fetch(gene)
-
-                if len(READS_DICT[gene]) > MIN_READS:
-                    READS_DICT[gene] = random.sample(READS_DICT[gene], MIN_READS)
- 
-                for l in READS_DICT[gene]:
-                    out.write("%s\n" % l)
+rules._gene_subsample_2(
+    "{output.reads}",
+    "{output.tmp}",
+    "{wildcards.group}",
+    "{wildcards.sub_region}",
+    "{DICT_DIR}"
+)
+EOF
 
         # Sort and zip bed file
-        shell(
-            """
-            cat {output.tmp} \
-                | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-                | pigz -p {threads} \
-                > {output.sub}
-            """
+        cat '{output.tmp}' \
+            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+            | pigz -p {threads} \
+            > '{output.sub}'
+        """
+
+
+# Clear dictionaries used for gene subsampling
+rule gene_subsample_cleanup:
+    input:
+        lambda wildcards: expand(
+            RESULTS + "/{sample}-{{group}}_{{sub_region}}/{sample}-{{group}}_{{sub_region}}.bed.gz",
+            sample = SAMPLES[wildcards.group]
         )
+    output:
+        temp(touch(DICT_DIR + "/{group}_{sub_region}_cleanup.txt"))
+    params:
+        job_name = "{group}_{sub_region}_cleanup"
+    resources:
+        mem_gb = _get_mem(0.125)
+    log:
+        out = RESULTS + "/logs/{group}_{sub_region}_cleanup.out",
+        err = RESULTS + "/logs/{group}_{sub_region}_cleanup.err"
+    threads:
+        1
+    shell:
+        """
+        python - << 'EOF'
+import sys
+sys.path.insert(0, "{SRC}")
+
+import funs
+
+funs._clear_gene_sub_dict(
+    "{wildcards.group}",
+    "{wildcards.sub_region}",
+    "{DICT_DIR}"
+)
+EOF
+        """
 
 

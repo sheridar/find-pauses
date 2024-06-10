@@ -8,43 +8,51 @@ shell.prefix("set -o nounset -o pipefail -o errexit -x; ")
 
 # Parameters from config.yaml
 PROJ    = config["PROJ"]
-SAMPLES = config["SAMPLES"]
 RESULTS = config["RESULTS"]
 MEMORY  = config["MEMORY"]
 CHROMS  = config["CHROMS"]
-GENES   = config["GENES"]
-MASK    = config["MASK"]
-MASK    = ",".join(MASK)
 
+PAUSE_GENES     = config["PAUSE_GENES"]
+PAUSE_MASK      = config["PAUSE_MASK"]
+PAUSE_MASK      = ",".join(PAUSE_MASK)
 WIN_SIZE        = config["WIN_SIZE"]
 STRENGTH_GROUPS = config["STRENGTH_GROUPS"]
 PAUSE_ROUND     = config["PAUSE_ROUND"]
 
+GENE_SUB_BEDS   = config["GENE_SUBSAMPLE_BEDS"]
+PAUSE_META_BEDS = config["PAUSE_META_BEDS"]
+
 
 # Files for metaplots
 # need gene subsampling parameters so these results are included in pipeline
-META_BEDS = config["META_BEDS"]
+if list(GENE_SUB_BEDS.keys()) & PAUSE_META_BEDS.keys():
+    sys.exit("ERROR: PAUSE_META_BEDS and GENE_SUBSAMPLE_BEDS must have different labels. Files provided by GENE_SUBSAMPLE_BEDS will get added to PAUSE_META_BEDS.")
 
-GENE_SUB_BEDS = config["GENE_SUBSAMPLE_BEDS"]
-GENE_SUB_REGS = list(GENE_SUB_BEDS.keys())
+PAUSE_META_BEDS.update(dict(GENE_SUB_BEDS))
 
-if GENE_SUB_REGS & META_BEDS.keys():
-    sys.exit("ERROR: META_BEDS and GENE_SUBSAMPLE_BEDS must have different labels. Files provided by GENE_SUBSAMPLE_BEDS will get added to META_BEDS.")
-
-META_BEDS.update(dict(GENE_SUB_BEDS))
-
-REGIONS = list(META_BEDS.keys())
+PAUSE_REGIONS = list(PAUSE_META_BEDS.keys())
 
 
 # Directory with required scripts
-SRC = "src"
+try:
+    SRC
 
+except NameError:
+    SRC = "src"
+ 
 
 # Sample and group lists
-SAMPLES = [x + "-" + y for y in SAMPLES for x in SAMPLES[y]]
+# only set these variables if they were not already set by master
+# pipeline
+try:
+    GENE_SUB_GRPS
 
-GENE_SUB_GRPS = [x + "_" + y for x in SAMPLES for y in GENE_SUB_REGS]
-SAMPLES       = SAMPLES + GENE_SUB_GRPS
+except NameError:
+    SAMPLES       = config["SAMPLES"]
+    GENE_SUB_REGS = list(GENE_SUB_BEDS.keys())
+    GENE_SUB_GRPS = [x + "-" + y for y in SAMPLES for x in SAMPLES[y]]
+    GENE_SUB_GRPS = [x + "_" + y for x in GENE_SUB_GRPS for y in GENE_SUB_REGS]
+    GENE_SUB_GRPS = SAMPLES + GENE_SUB_GRPS
 
 
 # Pausing strength parameters
@@ -63,62 +71,57 @@ PAUSE_ROUND = _create_dict(STRENGTH_GROUPS, PAUSE_ROUND)
 
 
 # Add label for unfiltered pauses ("_")
-ALL_GROUPS = STRENGTH_GROUPS.copy()
-ALL_GROUPS.append("_")
+ALL_STREN_GRPS = STRENGTH_GROUPS.copy()
+ALL_STREN_GRPS.append("_")
 
 
-# Wildcard constraints
-# for stren exclude "_sep_" but allow "_"
-wildcard_constraints:
-    region = "[a-zA-Z0-9\-]+",
-    reads  = "[a-zA-Z]+",
-    win    = "[0-9]+",
-    stren  = "(_(?!sep).*_)",
-    grp    = "(_(?!sep).*_|_)"
+# # Wildcard constraints
+# # for stren exclude "_sep_" but allow "_"
+# wildcard_constraints:
+#     win          = "[0-9]+",
+#     stren        = "(_(?!sep).*_)",
+#     stren_grp    = "(_(?!sep).*_|_)",
+#     pause_region = "[a-zA-Z0-9\-]+"
 
 
-# Final output files
-rule all:
-    input:
-        # Identify pauses
-        expand(
-            RESULTS + "/{sample}/pauses/{sample}_{win}_pauses.bed.gz",
-            sample = SAMPLES, win = WIN_SIZE
-        ),
-
-        expand(
-            RESULTS + "/{sample}/pauses/{sample}_{win}{stren}pauses.bed.gz",
-            sample = SAMPLES, win = WIN_SIZE, stren = STRENGTH_GROUPS
-        ),
-
-        expand(
-            RESULTS + "/stats/" + PROJ + "_{win}{grp}pausing.tsv",
-            sample = SAMPLES, win = WIN_SIZE, grp = ALL_GROUPS
-        ),
-
-        expand(
-            RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pause_reads.bed.gz",
-            sample = SAMPLES, win = WIN_SIZE, grp = ALL_GROUPS
-        ),
-
-        # Pause density metaplot bed files
-        expand(
-            RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pauses_{region}.bed.gz",
-            sample = SAMPLES, win = WIN_SIZE, grp = ALL_GROUPS, region = REGIONS
-        ),
-
-        # Signal around pauses
-        expand(
-            RESULTS + "/{sample}/pauses/{sample}_{win}{grp}pauses_meta_N.bed.gz",
-            sample = SAMPLES, win = WIN_SIZE, grp = ALL_GROUPS
-        ),
-
-        # Plots
-        RESULTS + "/" + PROJ + "_analysis.html"
+# # Final output files
+# rule all:
+#     input:
+#         # Identify pauses
+#         expand(
+#             RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_pauses.bed.gz",
+#             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE
+#         ),
+# 
+#         expand(
+#             RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren}pauses.bed.gz",
+#             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren = STRENGTH_GROUPS
+#         ),
+# 
+#         expand(
+#             RESULTS + "/stats/" + PROJ + "_{win}{stren_grp}pausing.tsv",
+#             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
+#         ),
+# 
+#         expand(
+#             RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pause_reads.bed.gz",
+#             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
+#         ),
+# 
+#         # Pause density metaplot bed files
+#         expand(
+#             RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_{pause_region}.bed.gz",
+#             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS, pause_region = PAUSE_REGIONS
+#         ),
+# 
+#         # Signal around pauses
+#         expand(
+#             RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_meta_N.bed.gz",
+#             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
+#         )
 
 
 # Identify pause sites
-include: "../rules/08_find_pauses.snake"
-include: "../rules/09_plots.snake"
+include: "../rules/07_find_pauses.snake"
 
 

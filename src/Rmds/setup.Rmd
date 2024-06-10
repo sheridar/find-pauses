@@ -23,6 +23,10 @@ library(colorblindr)     # github, to modify color palette
 # Read functions
 source(here::here(plot_params$template_dir, "funs.R"))
 
+# Gene lengths for filtering
+MIN_GENE_LEN <- 2
+MIN_ZONE_GENE_LEN <- 4
+
 ```
 
 ```{r "Theme", cache = FALSE}
@@ -59,7 +63,7 @@ theme_colors <- c(
 
 ```
 
-```{r "sample names", echo = FALSE}
+```{r "Sample names", echo = FALSE}
 
 # Directories
 if (!dir.exists(here(plot_params$obj_dir))) {
@@ -70,18 +74,13 @@ if (!dir.exists(here(plot_params$tab_dir))) {
   dir.create(here(plot_params$tab_dir), recursive = TRUE, mode = "0750")
 }
 
-# Set sample and replicate names for plots
+# Set missing sample names
 # set default names if not provided
-# add replicate IDs
 plot_grps$SAMPLES <- plot_grps$SAMPLES %>%
   map(~ {
-    ids <- str_c("_r", seq_along(.x))
-    
     .x %>%
-      map2(ids, ~ {
+      map(~ {
         if (is.null(names(.x))) names(.x) <- str_c("sample-", seq_along(.x))
-        
-        names(.x) <- str_c(names(.x), .y)
         
         as.list(.x)
       })
@@ -101,6 +100,19 @@ plot_grps$COLORS[missing_colors] <- plot_grps$SAMPLES[missing_colors] %>%
       n_distinct()
     
     c("black", theme_colors[seq_len(n_clrs - 1)])
+  })
+
+# Set replicate names for plots
+# set default replicate IDs if not provided
+plot_grps$SAMPLES <- plot_grps$SAMPLES %>%
+  map(~ {
+    ids <- str_c("_r", seq_along(.x))
+    
+    map2(.x, ids, ~ {
+      names(.x) <- str_c(names(.x), .y)
+      
+      as.list(.x)
+    })
   })
 
 # Create data.frame with sample info
@@ -134,6 +146,10 @@ sample_df <- plot_grps$SAMPLES %>%
 
 sample_df <- sample_df %>%
   separate(sample, into = c("sam", "rep"), sep = "_", remove = FALSE)
+
+```
+
+```{r "Gene lists", echo = FALSE}
 
 # Columns for bed files
 bed_cols <- c(
@@ -170,14 +186,14 @@ load_genes <- function(drctry, file, len = 1, rm_cols = TRUE) {
 
 list_dir <- file.path(plot_params$ref_dir, plot_params$list_dir)
 
-genes_5     <- load_genes(list_dir, plot_params$genes_5, 2)
-genes_3     <- load_genes(list_dir, plot_params$genes_3, 2)
-genes_pause <- load_genes(list_dir, plot_params$genes_pause, 2)
+genes_5     <- load_genes(list_dir, plot_params$genes_5, MIN_GENE_LEN)
+genes_3     <- load_genes(list_dir, plot_params$genes_3, MIN_GENE_LEN)
+genes_pause <- load_genes(list_dir, plot_params$genes_pause, MIN_GENE_LEN)
 
 genes_exons <- load_genes(
   drctry  = list_dir,
   file    = plot_params$genes_zone,
-  len     = 4,
+  len     = MIN_ZONE_GENE_LEN,
   rm_cols = FALSE
 )
 

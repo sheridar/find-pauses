@@ -1,6 +1,5 @@
 ---
 title: "`r params$title`"
-author: "Ryan Sheridan"
 date: "`r format(Sys.Date(), '%B %d, %Y')`"
 output: 
   html_document:
@@ -14,8 +13,11 @@ output:
     highlight:      "tango"
 params:
   title:   "<p style=font-size:45px;>NET-seq analysis</p>"
+  proj:    "NET-seq"
+  res_dir: "results"
+  genome:  "src/configs/GRCh38.yaml"
   samples: "SAMPLES.yaml"
-  config:  "plots.yaml"
+  config:  "src/configs/plots.yaml"
 ---
 
 ---
@@ -26,8 +28,9 @@ params:
 knitr::opts_chunk$set(
   message    = FALSE, 
   warning    = FALSE,
-  comment    = "",
   echo       = FALSE,
+  progress   = FALSE,
+  comment    = "",
   dpi        = 150,
   cache      = FALSE,
   cache.lazy = FALSE
@@ -41,12 +44,20 @@ knitr::opts_chunk$set(
 plot_grps <- yaml::read_yaml(here::here(params$samples))
 
 # Plotting parameters
-plot_params <- yaml::read_yaml(here::here(params$config))
+proj          <- params$proj
+res_dir       <- params$res_dir
+plot_params   <- yaml::read_yaml(here::here(params$config))
+genome_params <- yaml::read_yaml(here::here(params$genome))
+plot_params   <- append(plot_params, genome_params)
 
 plot_params$obj_dir <- file.path(res_dir, plot_params$obj_dir)
 plot_params$tab_dir <- file.path(res_dir, plot_params$tab_dir)
 
 knitr::knit(here::here(plot_params$template_dir, "setup.Rmd"), "")
+
+# Pause parameters
+win   <- plot_params$pause_win
+stren <- plot_params$pause_strength
 
 ```
 

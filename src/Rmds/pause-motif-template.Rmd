@@ -1,5 +1,5 @@
 
-```{r "{{grp}} pause stats setup"}
+```{r "{{grp}} pause motif setup"}
 
 grp   <- "{{grp}}"
 stren <- "{{stren}}"
@@ -10,7 +10,7 @@ pause_prfx <- str_c("_", win, stren)
 
 ```
 
-```{r "{{grp}} pause funs"}
+```{r "{{grp}} pause motif functions"}
 
 # Helper to load pause bed files
 load_pause_beds <- function(prfxs, sfxs, paths, genes = NULL, regions = NULL) {
@@ -203,7 +203,7 @@ create_pause_meta <- function(df_in, x, y, color = NULL, plot_clrs = NULL, size 
     geom_ribbon(
       aes(ymin = 0, ymax = !!sym(y)),
       alpha        = 0.2,
-      size         = 0.5,
+      linewidth    = 0.5,
       outline.type = "upper",
       key_glyph    = draw_key_point,
       ...
@@ -322,14 +322,7 @@ create_pause_logo_fig <- function(met_df, pause_df, ttl, y_lab, y_lim = NULL) {
 
 # Gene regions
 # named list with data.frames to intersect pauses with
-regs <- c(
-  TSS  = "GRCh38_5_TSS_+500bp.bed.gz",
-  body = "GRCh38_4_+500bp_pAS.bed.gz",
-  pAS  = "GRCh38_3_pAS_+5kb.bed.gz"
-)
-
-regs <- regs %>%
-  map_chr(~ str_c(list_dir, "/gene_regions/", .x)) %>%
+regs <- plot_params$pause_regions %>%
   map(vroom, col_names = bed_cols)
 
 p_dir <- sub_pause_dir$gene
@@ -360,7 +353,8 @@ n_regs <- n_distinct(sep_pauses$region)
 
 The number of pause sites shared between samples and replicates is shown below for the TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions.
 
-* genes >2 kb long and separated by >5 kb
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
+  are shown
 * pauses were identified after downsampling entire gene region
 
 ```{r "{{grp}} pause overlaps"}
@@ -415,120 +409,133 @@ pause_overlap <- nms %>%
     res
   })
 
-n_comps <- n_distinct(pause_overlap$comp)
-
-# Print pause stats
-pause_overlap %>%
-  dplyr::filter(class == "unique") %>%
-  distinct(sample, region, n_genes, n_pauses) %>%
-  group_by(sample) %>%
-  mutate(total_pauses = sum(n_pauses)) %>%
-  ungroup()
+if (is_empty(pause_overlap)) {
+  PLOT_OVERLAP <- FALSE
+  n_comps <- 1
+  
+} else {
+  PLOT_OVERLAP <- TRUE
+  
+  n_comps <- n_distinct(pause_overlap$comp)
+  
+  # Print pause stats
+  pause_overlap %>%
+    dplyr::filter(class == "unique") %>%
+    distinct(sample, region, n_genes, n_pauses) %>%
+    group_by(sample) %>%
+    mutate(total_pauses = sum(n_pauses)) %>%
+    ungroup()
+}
 
 ```
 
 ```{r "{{grp}} pause overlap bars", fig.width = n_comps * 3, fig.height = 4}
 
-# Bar graph colors
-clr_df <- sam_df %>%
-  separate(sample, sep = "_", into = c("treat", "rep"), remove = FALSE) %>%
-  mutate(
-    rep_i = as.numeric(str_extract(rep, "[0-9]+$")),
-    clr   = clrs[treat],
-    clr   = lighten(clr, 0.3 * (rep_i - 1))
-  )
+bars <- ggplot() +
+  geom_blank()
 
-bar_clrs <- set_names(clr_df$clr, clr_df$sample)
-bar_clrs <- c(shared = "grey85", bar_clrs)
-
-# Bar graph data
-plt_dat <- pause_overlap %>%
-  mutate(
-    sample = ifelse(class == "shared", class, sample),
-    sample = fct_relevel(sample, names(bar_clrs)),
-    comp   = fct_inorder(comp),
-    region = fct_relevel(region, names(regs))
-  ) %>%
-  group_by(comp, region) %>%
-  mutate(
-    comp_reg = str_c(comp, "_", region),
-    x_lab    = str_c(comma(sum(n)), "\npauses")
-  ) %>%
-  ungroup()
-
-# Fill labels for legend
-plt_dat <- plt_dat %>%
-  group_by(comp) %>%
-  mutate(
-    fill_lab = case_when(
-      n_distinct(treat, na.rm = TRUE) == 1 ~ rep,
-      n_distinct(rep,   na.rm = TRUE) == 1 ~ treat
-    ),
-    fill_lab = if_else(
-      is.na(fill_lab),
-      as.character(sample),
-      fill_lab
+if (PLOT_OVERLAP) {
+  # Bar graph colors
+  clr_df <- sam_df %>%
+    separate(sample, sep = "_", into = c("treat", "rep"), remove = FALSE) %>%
+    mutate(
+      rep_i = as.numeric(str_extract(rep, "[0-9]+$")),
+      clr   = clrs[treat],
+      clr   = lighten(clr, 0.3 * (rep_i - 1))
     )
-  ) %>%
-  ungroup()
-
-# X-axis labels
-x_labs <- distinct(plt_dat, comp_reg, x_lab)
-
-x_labs <- set_names(
-  x_labs$x_lab,
-  x_labs$comp_reg
-)
-
-# Split data.frame into list for plotting
-df_lst <- plt_dat %>%
-  arrange(region) %>%
-  mutate(comp_reg = fct_inorder(comp_reg)) %>%
-  group_by(comp) %>%
-  group_split()
   
-# Create bar graphs
-bars <- df_lst %>%
-  map(~ {
-    fill_labs <- set_names(
-      unique(.x$fill_lab),
-      unique(.x$sample)
-    )
-    
-    plt_clrs <- bar_clrs[names(bar_clrs) %in% .x$sample]
-    
-    .x %>%
-      mutate(
-        sample = fct_drop(sample),
-        sample = fct_relevel(sample, "shared", after = 1)
-      ) %>%
-      ggplot(aes(comp_reg, n, fill = sample)) +
-      geom_col(position = "fill", width = 0.95) +
-      scale_fill_manual(values = plt_clrs, labels = fill_labs) +
-      scale_x_discrete(labels = x_labs) +
-      facet_wrap(~ region, scales = "free") +
-
-      ggtitle(unique(.x$comp)) +
-      theme_info +
-      theme(
-        aspect.ratio     = 3,
-        strip.text       = element_text(vjust = 0),
-        legend.position  = "left",
-        legend.title     = element_blank(),
-        panel.border     = element_blank(),
-        panel.spacing    = unit(-10, "pt"),
-        axis.title       = element_blank(),
-        axis.line        = element_blank(),
-        axis.ticks       = element_blank(),
-        axis.text.x      = element_text(vjust = 4),
-        axis.text.y      = element_blank()
+  bar_clrs <- set_names(clr_df$clr, clr_df$sample)
+  bar_clrs <- c(shared = "grey85", bar_clrs)
+  
+  # Bar graph data
+  plt_dat <- pause_overlap %>%
+    mutate(
+      sample = ifelse(class == "shared", class, sample),
+      sample = fct_relevel(sample, names(bar_clrs)),
+      comp   = fct_inorder(comp),
+      region = fct_relevel(region, names(regs))
+    ) %>%
+    group_by(comp, region) %>%
+    mutate(
+      comp_reg = str_c(comp, "_", region),
+      x_lab    = str_c(comma(sum(n)), "\npauses")
+    ) %>%
+    ungroup()
+  
+  # Fill labels for legend
+  plt_dat <- plt_dat %>%
+    group_by(comp) %>%
+    mutate(
+      fill_lab = case_when(
+        n_distinct(treat, na.rm = TRUE) == 1 ~ rep,
+        n_distinct(rep,   na.rm = TRUE) == 1 ~ treat
+      ),
+      fill_lab = if_else(
+        is.na(fill_lab),
+        as.character(sample),
+        fill_lab
       )
-  })
-
-bars <- plot_grid(
-  plotlist = bars,
-  nrow     = 1
-)
+    ) %>%
+    ungroup()
+  
+  # X-axis labels
+  x_labs <- distinct(plt_dat, comp_reg, x_lab)
+  
+  x_labs <- set_names(
+    x_labs$x_lab,
+    x_labs$comp_reg
+  )
+  
+  # Split data.frame into list for plotting
+  df_lst <- plt_dat %>%
+    arrange(region) %>%
+    mutate(comp_reg = fct_inorder(comp_reg)) %>%
+    group_by(comp) %>%
+    group_split()
+  
+  # Create bar graphs
+  bars <- df_lst %>%
+    map(~ {
+      fill_labs <- set_names(
+        unique(.x$fill_lab),
+        unique(.x$sample)
+      )
+      
+      plt_clrs <- bar_clrs[names(bar_clrs) %in% .x$sample]
+      
+      .x %>%
+        mutate(
+          sample = fct_drop(sample),
+          sample = fct_relevel(sample, "shared", after = 1)
+        ) %>%
+        ggplot(aes(comp_reg, n, fill = sample)) +
+        geom_col(position = "fill", width = 0.95) +
+        scale_fill_manual(values = plt_clrs, labels = fill_labs) +
+        scale_x_discrete(labels = x_labs) +
+        facet_wrap(~ region, scales = "free") +
+        
+        ggtitle(unique(.x$comp)) +
+        theme_info +
+        theme(
+          aspect.ratio     = 3,
+          strip.text       = element_text(vjust = 0),
+          legend.position  = "left",
+          legend.title     = element_blank(),
+          panel.border     = element_blank(),
+          panel.spacing    = unit(-10, "pt"),
+          axis.title       = element_blank(),
+          axis.line        = element_blank(),
+          axis.ticks       = element_blank(),
+          axis.text.x      = element_text(vjust = 4),
+          axis.text.y      = element_blank()
+        )
+    })
+  
+  bars <- plot_grid(
+    plotlist = bars,
+    nrow     = 1
+  )
+}
 
 bars
 
@@ -540,9 +547,10 @@ bars
 
 Mean mNET-seq signal is shown below for pause sites identified for TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions. The sequence preference for each group of sites is shown below each plot. The dotted line indicates the 3' end of the nascent RNA.
 
-* genes >2 kb long and separated by >5 kb
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
+  are shown
 * pauses were identified after downsampling entire gene region
-* pauses separated by >30 bp
+* pauses separated by >30 bp are shown
 
 ```{r "{{grp}} pauses mean"}
 
@@ -679,6 +687,9 @@ y_lab    <- "RPKM"
 y_lim    <- range(mean_p$counts)
 y_lim[1] <- 0
 
+logo_regs <- names(regs)
+logo_regs <- logo_regs[logo_regs %in% sep_pause_df$region]
+
 mean_figs <- sep_pause_df %>%
   mutate(
     ttl = str_c(treat, rep, region, sep = " "),
@@ -689,7 +700,7 @@ mean_figs <- sep_pause_df %>%
       y_lim = y_lim
     ),
     sample = fct_relevel(sample, sam_nms),
-    region = fct_relevel(region, names(regs))
+    region = fct_relevel(region, logo_regs)
   ) %>%
   arrange(region, sample)
 
@@ -709,10 +720,11 @@ plot_grid(
 
 ### Relative signal
 
-Mean relative mNET-seq signal is shown below for pause sites identified for TSS (TSS - +500 bp), gene body (+500 bp - pAS), and pAS (pAS - +5 kb) regions. The sequence preference for each group of sites is shown below each plot. The dotted line indicates the 3' end of the nascent RNA.
+Mean relative mNET-seq signal is shown below for pause sites identified for TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions. The sequence preference for each group of sites is shown below each plot. The dotted line indicates the 3' end of the nascent RNA.
 
-* genes >2 kb long and separated by >5 kb
-* pauses separated by >30 bp
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
+  are shown
+* pauses separated by >30 bp are shown
 
 ```{r "{{grp}} pauses rel meta", include = FALSE}
 
@@ -730,7 +742,7 @@ rel_figs <- sep_pause_df %>%
       y_lim = y_lim
     ),
     sample = fct_relevel(sample, sam_nms),
-    region = fct_relevel(region, names(regs))
+    region = fct_relevel(region, logo_regs)
   ) %>%
   arrange(region, sample)
 

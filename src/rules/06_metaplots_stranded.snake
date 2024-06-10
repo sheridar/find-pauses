@@ -6,14 +6,15 @@ rule metaplot_beds:
     input:
         RESULTS + "/{sam_grp}/{sam_grp}.bed.gz"
     output:
-        S    = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S.bed.gz",
-        AS   = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_AS.bed.gz",
-        S_N  = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S_N.bed.gz",
-        AS_N = RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_AS_N.bed.gz"
+        S    = meta_temp_fn(RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S.bed.gz"),
+        AS   = meta_temp_fn(RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_AS.bed.gz"),
+        S_N  = meta_temp_fn(RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S_N.bed.gz"),
+        AS_N = meta_temp_fn(RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_AS_N.bed.gz")
     params:
         job_name = "{sam_grp}_{region}_metaplot_beds",
-        memory   = MEMORY * 2,
         bed      = lambda wildcards: META_BEDS[wildcards.region]
+    resources:
+        mem_gb = _get_mem(2)
     log:
         out = RESULTS + "/logs/{sam_grp}_{region}_metaplot_beds.out",
         err = RESULTS + "/logs/{sam_grp}_{region}_metaplot_beds.err"
@@ -23,23 +24,23 @@ rule metaplot_beds:
         6
     shell:
         """
-        source {SRC}/funs.sh
+        source '{SRC}/funs.sh'
 
         intersect_reads \
-            {input} \
-            {params.bed} \
+            '{input}' \
+            '{params.bed}' \
             {threads} \
-            {output.S} \
-            {output.S_N} \
-            "-wa -c -s"
+            '{output.S}' \
+            '{output.S_N}' \
+            '-wa -c -s'
 
         intersect_reads \
-            {input} \
-            {params.bed} \
+            '{input}' \
+            '{params.bed}' \
             {threads} \
-            {output.AS} \
-            {output.AS_N} \
-            "-wa -c -S"
+            '{output.AS}' \
+            '{output.AS_N}' \
+            '-wa -c -S'
         """
 
 

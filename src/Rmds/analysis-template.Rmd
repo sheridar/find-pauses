@@ -1,13 +1,17 @@
 
+```{r "{{.x}} setup"}
+
+grp     <- "{{.x}}"
+stren   <- "{{stren}}"
+win     <- {{win}}
+
+```
+
 ```{r "{{.x}} sample names", cache = FALSE}
 
 # Strings to match samples and create labels
-grp     <- "{{.x}}"
 samples <- plot_grps$SAMPLES[[grp]]
 clrs    <- plot_grps$COLORS[[grp]]
-
-win   <- plot_params$pause_win
-stren <- plot_params$pause_strength
 
 pause_prfx <- str_c("_", win, stren)
 
@@ -209,7 +213,10 @@ sam_df %>%
 
 Mean mNET-seq signal (top) or mean relative signal (bottom) is shown below for 5' (10 bp bins) and 3' regions (50 bp bins).
 
-* genes >2 kb long and separated by >5 kb
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_5)` kb
+  were plotted for 5' regions (`r basename(plot_params$genes_5)`)
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_3)` kb
+  were plotted for 3' regions (`r basename(plot_params$genes_3)`)
 * bottom `r plot_params$gene_min_pct * 100`% of genes were removed
 
 ```{r "{{.x}} 5' mean"}
@@ -472,6 +479,9 @@ z3_plts_2 %>%
 
 Mean mNET-seq signal is shown below for the region around 5' splice sites.
 
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_5)` kb
+  are shown
+
 ```{r "{{.x}} ss functions", eval = n_treats > 1}
 
 # Create metaplot bargraph
@@ -695,7 +705,10 @@ dat %>%
 
 Mean mNET-seq signal (top) or mean relative signal (bottom) is shown below for 5' (10 bp bins) and 3' regions (50 bp bins). These plots were generated using files generated without subsampling reads to equalize library sizes.
 
-* genes >2 kb long and separated by >5 kb
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_5)` kb
+  were plotted for 5' regions (`r basename(plot_params$genes_5)`)
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_3)` kb
+  were plotted for 3' regions (`r basename(plot_params$genes_3)`)
 * bottom `r plot_params$gene_min_pct * 100`% of genes were removed
 
 ```{r "{{.x}} 5' mean NO SUBSAMPLING"}

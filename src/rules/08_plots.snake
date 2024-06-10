@@ -1,0 +1,71 @@
+#===== Rule to generate final plots ============================
+
+
+rule create_plots:
+    input:
+        # Gene lists and splice site metaplots
+        expand(
+            RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S_N.bed.gz",
+            sam_grp = GENE_SUB_GRPS, region = ["gene", "5ss-wins"]
+        ),
+
+        # Metaplots with subsampling
+        expand(
+            RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_{strand}_N.bed.gz",
+            sam_grp = SAM_GRPS, region = ["5-10bp", "3-50bp"], strand = ["S", "AS"]
+        ),
+
+        # Metaplots without subsampling
+        expand(
+            RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_{strand}_N.bed.gz",
+            sample = SAMS_UNIQ, region = ["5-10bp", "3-50bp"], strand = ["S", "AS"]
+        ),
+
+        # NET-seq counts for pause regions
+        expand(
+            RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{pause_region}_S.bed.gz",
+            sam_grp = GENE_SUB_GRPS, pause_region = PAUSE_REGIONS
+        ),
+
+        # Number of pauses for pause regions
+        expand(
+            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_{pause_region}.bed.gz",
+            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS, pause_region = PAUSE_REGIONS
+        ),
+
+        # Pause reads for pause regions
+        expand(
+            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pause_reads_{pause_region}.bed.gz",
+            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS, pause_region = PAUSE_REGIONS
+        ),
+
+        # NET-seq counts for region around pauses
+        expand(
+            RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_meta_N.bed.gz",
+            sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
+        )
+    output:
+        RESULTS + "/" + PROJ + "_analysis.html"
+    params:
+        job_name = PROJ + "_plots"
+    resources:
+        mem_gb = _get_mem(4)
+    log:
+        out = RESULTS + "/logs/" + PROJ + "_plots.out",
+        err = RESULTS + "/logs/" + PROJ + "_plots.err"
+    threads:
+        1
+    shell:
+        """
+        Rmd='{SRC}/Rmds/analysis.Rmd'
+        script='{SRC}/Rmds/knit_rmd.R'
+
+        Rscript "$script" \
+            -i "$Rmd" \
+            -p '{PROJ}' \
+            -c 'src/configs/plots.yaml' \
+            -g '{GENOME_CONFIG}' \
+            -o '{RESULTS}'
+        """
+
+

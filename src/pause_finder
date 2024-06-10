@@ -89,6 +89,7 @@ fi
 
 
 # Divide bed files by chromosome ===============================================
+# THIS IS NOT USED
 split_by_chrom() {
     local input="$1"
     local output="$2"

@@ -59,7 +59,7 @@ grp_key <- qc_sams %>%
 # QC theme
 qc_theme <- theme(
   panel.border = element_blank(),
-  axis.line    = element_line(color = "black", size = ln_pt)
+  axis.line    = element_line(color = "black", linewidth = ln_pt)
 )
 
 ```
@@ -113,6 +113,8 @@ fq_sum <- fq_sum %>%
   )
   
 # Create tiles
+ratio <- n_distinct(fq_sum$metric) / n_distinct(fq_sum$fq_name)
+
 fq_sum %>%
   ggplot(aes(path, metric, fill = value)) +
   geom_tile(color = "white", size = 0.5) +
@@ -120,6 +122,7 @@ fq_sum %>%
   scale_fill_manual(values = theme_colors[c(3, 4, 2)]) +
   theme_info +
   theme(
+    aspect.ratio    = ratio,
     legend.position = "top",
     legend.title = element_blank(),
     axis.title   = element_blank(),
@@ -165,7 +168,8 @@ trim_sum %>%
     lab_metric = "Pairs written (passing filters)",
     n_rows     = 2
   ) +
-  qc_theme
+  qc_theme +
+  theme(aspect.ratio = 5 / n_distinct(trim_sum$sample))
 
 ```
 
@@ -173,7 +177,7 @@ trim_sum %>%
 
 ## Read alignment
 
-`Bowtie2` was used to align reads, metrics are shown below. The number of aligned reads (aligned exactly 1 time + aligned >1 times) is displayed on each bar.
+`Bowtie2` was used to align reads to the `r basename(plot_params$INDEX)` genome, metrics are shown below. The number of aligned reads (aligned exactly 1 time + aligned >1 times) is displayed on each bar.
 
 ```{r "bwt summary", fig.width = 16, fig.height = 10}
 
@@ -200,7 +204,8 @@ bwt_sum %>%
     lab_metric = c("aligned exactly 1 time", "aligned >1 times"),
     n_rows     = 2
   ) +
-  qc_theme
+  qc_theme +
+  theme(aspect.ratio = 5 / n_distinct(bwt_sum$sample))
 
 ```
 
@@ -238,7 +243,8 @@ dup_sum %>%
     lab_metric = "Number of reads out",
     n_rows     = 2
   ) +
-  qc_theme
+  qc_theme +
+  theme(aspect.ratio = 5 / n_distinct(dup_sum$sample))
 
 ```
 
@@ -306,7 +312,8 @@ counts_sum %>%
     lab_metric = "protein_coding",
     n_rows     = 2
   ) +
-  qc_theme
+  qc_theme +
+  theme(aspect.ratio = 5 / n_distinct(counts_sum$sample))
 
 ```
 
@@ -314,7 +321,7 @@ counts_sum %>%
 
 ## Subsampling
 
-Unique reads were filtered to only include those that align within 5 kb of a protein coding gene and do not align to a snoRNA gene. Libraries were then subsampled so that downstream analysis is performed using an equal number of unique reads for sample groups. The number of sampled reads is displayed on each bar.
+Unique reads were filtered to only include those that align within 5 kb of a protein coding gene and do not align to a snoRNA gene (`r str_c(c(basename(plot_params$GENES), basename(plot_params$MASK)), collapse = ", ")`). Libraries were then subsampled so that downstream analysis is performed using an equal number of unique reads for sample groups. The number of sampled reads is displayed on each bar.
 
 ```{r "Sub summary", fig.width = 16, fig.height = 10}
 
@@ -338,7 +345,8 @@ sub_sum %>%
     lab_metric = "Sampled reads",
     n_rows     = 2
   ) +
-  qc_theme
+  qc_theme +
+  theme(aspect.ratio = 5 / n_distinct(sub_sum$sample))
 
 ```
 

@@ -8,38 +8,39 @@ rule metaplot_beds_nosub:
     input:
         RESULTS + "/{sample}/{sample}_shift.bed.gz"
     output:
-        S    = RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S.bed.gz",
-        AS   = RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_AS.bed.gz",
-        S_N  = RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S_N.bed.gz",
-        AS_N = RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_AS_N.bed.gz"
+        S    = meta_temp_fn(RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S.bed.gz"),
+        AS   = meta_temp_fn(RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_AS.bed.gz"),
+        S_N  = meta_temp_fn(RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S_N.bed.gz"),
+        AS_N = meta_temp_fn(RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_AS_N.bed.gz")
     params:
         job_name = "{sample}_{region}_metaplot_beds",
-        memory   = MEMORY * 2,
         bed      = lambda wildcards: META_BEDS[wildcards.region]
+    resources:
+        mem_gb = _get_mem(2)
     log:
         out = RESULTS + "/logs/{sample}_{region}_metaplot_beds.out",
         err = RESULTS + "/logs/{sample}_{region}_metaplot_beds.err"
-    message:
-        "Intersecting reads for {wildcards.sample} {wildcards.region} without subsampling"
     threads:
         6
     shell:
         """
-        source {SRC}/funs.sh
+        source '{SRC}/funs.sh'
 
         intersect_reads \
-            {input} \
-            {params.bed} \
+            '{input}' \
+            '{params.bed}' \
             {threads} \
-            {output.S} \
-            {output.S_N} \
-            "-wa -c -s"
+            '{output.S}' \
+            '{output.S_N}' \
+            '-wa -c -s'
 
         intersect_reads \
-            {input} \
-            {params.bed} \
+            '{input}' \
+            '{params.bed}' \
             {threads} \
-            {output.AS} \
-            {output.AS_N} \
-            "-wa -c -S"
+            '{output.AS}' \
+            '{output.AS_N}' \
+            '-wa -c -S'
         """
+
+
