@@ -1,6 +1,6 @@
 # NET-seq analysis workflow
 
-This pipeline will process NET-seq data identify pause sites.
+This pipeline will process NET-seq data and identify pause sites.
 
 <br>
 
