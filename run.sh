@@ -101,9 +101,9 @@ run_snakemake() {
         fi
 
         # initialize shell for micromamba
-        eval "$(micromamba shell hook --shell bash)"
-
         export MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:=$HOME/micromamba}"
+
+        eval "$(micromamba shell hook --shell bash)"
 
         micromamba create -y -n "$env_name" -f "$env_file"
     fi
@@ -113,10 +113,10 @@ run_snakemake() {
     # MAMBA_ROOT_PREFIX is still unset after initializing
     if command -v micromamba &> /dev/null
     then
-        eval "$(micromamba shell hook --shell bash)"
-
         export MAMBA_ROOT_PREFIX="${MAMBA_ROOT_PREFIX:=$HOME/micromamba}"
     
+        eval "$(micromamba shell hook --shell bash)"
+
         if [ -d "$MAMBA_ROOT_PREFIX/envs/$env_name" ]
         then
             micromamba activate "$env_name"
@@ -127,7 +127,6 @@ run_snakemake() {
 
     drmaa_args='
         -J {params.job_name}
-        -q rna
         -oo {log.out} 
         -eo {log.err} 
         -R "rusage[mem={resources.mem_gb}] span[hosts=1]"
@@ -155,14 +154,13 @@ export function_def
 
 bsub \
     -J 'NET-seq' \
-    -q 'rna' \
     -o 'logs/net_%J.out' \
     -e 'logs/net_%J.err' \
     -R 'rusage[mem=4GB] span[hosts=1]' \
     -n 1 <<EOF
 #! /usr/bin/env bash
 
-set -o nounset -o pipefail -o errexit
+set -o nounset -o pipefail -o errexit -x
 
 $function_def
 
