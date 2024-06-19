@@ -5,7 +5,7 @@
 rule featureCounts:
     input:
         expand(
-            RESULTS + "/{sample}/{sample}_dedup.bam",
+            RESULTS + "/{sample}/{sample}.bam",
             sample = SAMS_UNIQ
         )
     output:

@@ -4,7 +4,7 @@
 # Align trimmed reads with bowtie2
 rule bowtie:
     input:
-        R1 = RESULTS + "/{sample}/{sample}_R1_trim.fastq.gz"
+        R1 = RESULTS + "/{sample}/{sample}_R2_trim.fastq.gz"
     output:
         sam   = temp_fn(RESULTS + "/{sample}/{sample}.sam"),
         bam   = temp_fn(RESULTS + "/{sample}/{sample}.bam"),

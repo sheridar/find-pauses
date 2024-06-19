@@ -215,7 +215,7 @@ bwt_sum %>%
 
 Duplicate reads were removed using `umi-tools`, metrics are shown below. The number of reads written is displayed on each bar. 
 
-```{r "dedup summary", fig.width = 16, fig.height = 10}
+```{r "dedup summary", fig.width = 16, fig.height = 10,eval=FALSE}
 
 # dedup stats
 mets <- c("Input Reads", "Number of reads out")
