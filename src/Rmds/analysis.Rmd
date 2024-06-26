@@ -150,7 +150,7 @@ exon_lens <- exon_lens %>%
 
 # Quality Control
 
-<!-- `r knitr::knit_child(here(plot_params$template_dir, "qc-template.Rmd"))` -->
+`r knitr::knit_child(here(plot_params$template_dir, "qc-template.Rmd"))`
 
 ```{r "build chunks"}
 
