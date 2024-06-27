@@ -19,6 +19,7 @@ rule gene_subsample_test:
         job_name = "{group}_{sub_region}_test",
         genes    = TEST_GENES
     resources:
+        mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
     log:
         out = RESULTS + "/logs/{group}_{sub_region}_test.out",
@@ -85,6 +86,7 @@ rule gene_subsample_test_summary:
     params:
         job_name = "gene_subsample_test_summary"
     resources:
+        mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/gene_subsample_test_summary.out",
@@ -120,6 +122,7 @@ rule subsample_test:
     params:
         job_name = "{group}_test"
     resources:
+        mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
     log:
         out = RESULTS + "/logs/{group}_test.out",
@@ -180,6 +183,7 @@ rule subsample_test_summary:
     params:
         job_name = "subsample_test_summary"
     resources:
+        mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/subsample_test_summary.out",

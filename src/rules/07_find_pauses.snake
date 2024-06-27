@@ -19,6 +19,7 @@ rule find_pauses:
         mask     = PAUSE_MASK,
         chroms   = CHROMS
     resources:
+        mem_mb = _get_mem(4, 1000),
         mem_gb = _get_mem(4)
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}_pauses.out",
@@ -92,6 +93,7 @@ rule pauses_strong:
         job_name = "{sam_grp}_{win}{stren}pauses",
         r        = lambda wildcards: PAUSE_ROUND[wildcards.stren]
     resources:
+        mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}{stren}pauses.out",
@@ -144,6 +146,7 @@ rule pause_reads:
     params:
         job_name = "{sam_grp}_{win}{stren_grp}pause_reads"
     resources:
+        mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_reads.out",
@@ -173,6 +176,7 @@ rule pausing_summary:
     params:
         job_name = PROJ + "_{win}{stren_grp}pausing_summary"
     resources:
+        mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_{win}{stren_grp}pausing_summary.out",
@@ -216,6 +220,7 @@ rule pause_density:
         job_name = "{sam_grp}_{pause_region}_{win}{stren_grp}pause_density",
         bed      = lambda wildcards: PAUSE_META_BEDS[wildcards.pause_region]
     resources:
+        mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}{pause_region}_density.out",
@@ -255,6 +260,7 @@ rule pause_metaplots:
         job_name = "{sam_grp}_{win}{stren_grp}pause_metaplots",
         chroms   = CHROMS
     resources:
+        mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_metaplots.out",
