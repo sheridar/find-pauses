@@ -1,72 +1,10 @@
 # ====== Rules for removing PCR duplicates with UMI-tools ======================
 
 
-# Remove duplicate reads
-rule dedup:
-    input:
-        bam = RESULTS + "/{sample}/{sample}.bam",
-        bai = RESULTS + "/{sample}/{sample}.bam.bai"
-    output:
-        bam   = temp_fn(RESULTS + "/{sample}/{sample}_dedup.bam"),
-        bai   = temp_fn(RESULTS + "/{sample}/{sample}_dedup.bam.bai"),
-        stats = RESULTS + "/{sample}/{sample}_dedup_stats.txt"
-    params:
-        job_name = "{sample}_dedup",
-        args     = CMD_PARAMS["umi_tools"]
-    resources:
-        mem_gb = _get_mem(3)
-    log:
-        out = RESULTS + "/logs/{sample}_dedup.out",
-        err = RESULTS + "/logs/{sample}_dedup.err"
-    threads:
-        1
-    shell:
-        """
-        umi_tools dedup \
-            {params.args} \
-            -I '{input.bam}' \
-            -S '{output.bam}' \
-            -L '{output.stats}'
-
-        samtools index '{output.bam}'
-        """
-
-
-# Create duplication summary
-rule dedup_summary:
-    input:
-        expand(
-            RESULTS + "/{sample}/{sample}_dedup_stats.txt",
-            sample = SAMS_UNIQ
-        )
-    output:
-        RESULTS + "/stats/" + PROJ + "_dedup.tsv"
-    params:
-        job_name = PROJ + "_dedup_summary"
-    resources:
-        mem_gb = _get_mem(0.125)
-    log:
-        out = RESULTS + "/logs/" + PROJ + "_dedup_summary.out",
-        err = RESULTS + "/logs/" + PROJ + "_dedup_summary.err"
-    threads:
-        1
-    shell:
-        """
-        python - << 'EOF'
-import sys
-sys.path.insert(0, "{SRC}")
-
-import rules
-
-rules._dedup_summary("{input}".split(), "{output[0]}")
-EOF
-        """
-
-
 # Create bed files for RNA 3' end
 rule create_beds:
     input:
-        RESULTS + "/{sample}/{sample}_dedup.bam",
+        RESULTS + "/{sample}/{sample}.bam",
         expand(SRC + "/{script}", script = SCRIPTS)
     output:
         bed   = temp_fn(RESULTS + "/{sample}/{sample}.bed.gz"),
@@ -112,9 +50,9 @@ rule create_beds:
            | sort -S1G --parallel={threads} -k1,1 -k2,2n -k4,4 -u \
            | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
                if ($6 == "+") {{
-                   $2 = $3 - 1;
-               }} else {{
                    $3 = $2 + 1;
+               }} else {{
+                   $2 = $3 - 1;
                }};
                count += 1;
                print

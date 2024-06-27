@@ -43,9 +43,7 @@ CONTAINER:
 # -t gene             - feature type for counting
 # -O                  - count if aligned to multiple features
 CMD_PARAMS:
-    cutadapt:      " --pair-filter=first --discard-untrimmed --minimum-length 15 --overlap 10 "
-    umi_pattern:   "NNNNNNNNNNNN"
-    umi_tools:     " --method unique --read-length "
+    cutadapt:      " -q 30 -m 20 -O 13 "
     featureCounts: " --extraAttributes 'gene_name,gene_biotype' -s 0 -t gene -O "
 
 

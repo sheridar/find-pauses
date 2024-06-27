@@ -204,7 +204,7 @@ rule all:
         RESULTS + "/stats/" + PROJ + "_bowtie.tsv",
         
         # De-duplication
-        RESULTS + "/stats/" + PROJ + "_dedup.tsv",
+        #RESULTS + "/stats/" + PROJ + "_dedup.tsv",
         
         # FeatureCounts
         RESULTS + "/" + PROJ + "_featureCounts.tsv",

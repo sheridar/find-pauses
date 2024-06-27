@@ -215,7 +215,7 @@ bwt_sum %>%
 
 Duplicate reads were removed using `umi-tools`, metrics are shown below. The number of reads written is displayed on each bar. 
 
-```{r "dedup summary", fig.width = 16, fig.height = 10}
+```{r "dedup summary", fig.width = 16, fig.height = 10,eval=FALSE}
 
 # dedup stats
 mets <- c("Input Reads", "Number of reads out")
@@ -267,7 +267,7 @@ rnas <- c(
 un_counts <- str_c(counts_sum, ".summary") %>%
   vroom(col_names = TRUE) %>%
   pivot_longer(cols = ends_with(".bam"), names_to = "sample") %>%
-  trim_path("_dedup\\.bam$") %>%
+  trim_path("\\.bam$") %>%
   
   dplyr::filter(grepl("^Unassigned_", Status)) %>%
   mutate(metric = "unassigned") %>%
@@ -283,7 +283,7 @@ col_types <- cols(
 counts_sum <- counts_sum %>%
   vroom(skip = 1, col_names = TRUE, col_types = col_types) %>%
   pivot_longer(cols = ends_with(".bam"), names_to = "sample") %>%
-  trim_path("_dedup\\.bam$") %>%
+  trim_path("\\.bam$") %>%
   mutate(name = str_c(Geneid, gene_name, sep = "|")) %>%
   dplyr::select(
     name, Length, sample,
