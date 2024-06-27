@@ -11,13 +11,14 @@ KEEP_META_FILES:
     False
 
 
-# Base memory to request for each rule
-# * The acutal amount requested will be higher for rules that generally
+# Base memory in GB to request for each rule
+# * The actual amount requested will be higher for rules that generally
 #   require more memory
-# * A value of 8 will result in rules requesting between 8Gb - 32Gb of
+# * A value of 8 will result in rules requesting between 8GB - 32GB of
 #   memory
+# * If left blank, requested memory will be calculated based on the size
+#   of the input files for each rule
 MEMORY:
-    16
 
 
 # Docker container to use for pipeline

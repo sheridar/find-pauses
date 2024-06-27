@@ -9,6 +9,7 @@ rule compile_cpp:
     params:
         job_name = "{script}_compile"
     resources:
+        mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/{script}.out",

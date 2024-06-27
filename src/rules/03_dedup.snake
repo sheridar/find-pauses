@@ -14,6 +14,7 @@ rule dedup:
         job_name = "{sample}_dedup",
         args     = CMD_PARAMS["umi_tools"]
     resources:
+        mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_dedup.out",
@@ -44,6 +45,7 @@ rule dedup_summary:
     params:
         job_name = PROJ + "_dedup_summary"
     resources:
+        mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_dedup_summary.out",
@@ -77,6 +79,7 @@ rule create_beds:
         genes    = GENES,
         mask     = MASK
     resources:
+        mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_beds.out",
@@ -139,7 +142,8 @@ rule filt_summary:
         RESULTS + "/stats/"+ PROJ + "_filt.tsv"
     params:
         job_name = PROJ + "_filt_summary"
-    resources:
+    resources: 
+        mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_filt_summary.out",

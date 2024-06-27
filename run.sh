@@ -130,6 +130,7 @@ run_snakemake() {
         -oo {log.out} 
         -eo {log.err} 
         -R "rusage[mem={resources.mem_gb}] span[hosts=1]"
+        -M {resources.mem_gb}
         -n {threads} '
 
     snakemake $snake_args \
@@ -157,6 +158,7 @@ bsub \
     -o 'logs/net_%J.out' \
     -e 'logs/net_%J.err' \
     -R 'rusage[mem=4GB] span[hosts=1]' \
+    -M 4GB \
     -n 1 <<EOF
 #! /usr/bin/env bash
 
