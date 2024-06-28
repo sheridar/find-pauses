@@ -51,8 +51,10 @@ rule create_beds:
            | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
                if ($6 == "+") {{
                    $3 = $2 + 1;
+                   $6 = "-"
                }} else {{
                    $2 = $3 - 1;
+                   $6 = "+"
                }};
                count += 1;
                print

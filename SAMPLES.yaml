@@ -76,11 +76,11 @@ SSH:
 SAMPLES:
     K562-dTAG:
         dTAG-r1:
-            dTAG-1h: "K562_dTAG7_1h_R1"
+            DMSO-4h: "K562_DMSO_4h_R1"
             dTAG-4h: "K562_dTAG7_4h_R1"
 
         dTAG-r2:
-            dTAG-1h: "K562_dTAG7_1h_R2"
+            DMSO-4h: "K562_DMSO_4h_R2"
             dTAG-4h: "K562_dTAG7_4h_R2"
 
 
