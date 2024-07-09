@@ -1,3 +1,8 @@
+---
+output: html_document
+editor_options: 
+  chunk_output_type: inline
+---
 
 ```{r "{{grp}} pause motif setup"}
 
@@ -393,7 +398,7 @@ pause_overlap <- nms %>%
     
     res <- dat %>%
       full_join(res, by = c(sample = "key")) %>%
-      mutate(comp = str_c(names(dfs), collapse = " "))
+      mutate(comp = str_c(names(dfs), collapse = "\n"))
     
     # Fill in NAs
     res <- res %>%
@@ -429,7 +434,7 @@ if (is_empty(pause_overlap)) {
 
 ```
 
-```{r "{{grp}} pause overlap bars", fig.width = n_comps * 3, fig.height = 4}
+```{r "{{grp}} pause overlap bars", fig.width = n_comps * 3, fig.height = 4.5}
 
 bars <- ggplot() +
   geom_blank()
@@ -517,12 +522,14 @@ if (PLOT_OVERLAP) {
         ggtitle(unique(.x$comp)) +
         theme_info +
         theme(
-          aspect.ratio     = 3,
-          strip.text       = element_text(vjust = 0),
-          legend.position  = "left",
-          legend.title     = element_blank(),
+          aspect.ratio     = 2.5,
           panel.border     = element_blank(),
           panel.spacing    = unit(-10, "pt"),
+          plot.title       = element_text(hjust = 0.5),
+          legend.position  = "bottom",
+          legend.title     = element_blank(),
+          legend.direction = "vertical",
+          strip.text       = element_text(vjust = 0),
           axis.title       = element_blank(),
           axis.line        = element_blank(),
           axis.ticks       = element_blank(),
@@ -533,7 +540,9 @@ if (PLOT_OVERLAP) {
   
   bars <- plot_grid(
     plotlist = bars,
-    nrow     = 1
+    nrow     = 1,
+    align    = "h",
+    axis     = "tb"
   )
 }
 

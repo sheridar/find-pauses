@@ -1,9 +1,9 @@
 
 ```{r "{{.x}} setup"}
 
-grp     <- "{{.x}}"
-stren   <- "{{stren}}"
-win     <- {{win}}
+grp   <- "{{.x}}"
+stren <- "{{stren}}"
+win   <- {{win}}
 
 ```
 
@@ -32,12 +32,15 @@ sam_lnms <- set_names(
 
 sams <- names(sam_lnms)
 
+# Control samples
+# this will be the first sample listed in the comparison group
+# these samples will be used for filtering gene lists based on expression
+# use samples that are not subsampled
 con_sams <- samples %>%
   map(pluck, 1) %>%
-  imap(~ str_c(.x, "-", .y)) %>%
   unlist(use.names = FALSE)
 
-con_sams <- sam_lnms[con_sams]
+con_sams <- sam_nms[con_sams]
 
 # Subsample sample names
 sub_regs <- set_names(plot_params$subsample_regions)
@@ -111,6 +114,13 @@ pause_dir <- set_names(sams) %>%
 meta_dir <- set_names(sams) %>%
   map_chr(~ here(res_dir, .x, "metaplot_beds"))
 
+# Directories for files generated without subsampling
+meta_dir_nosub <- sam_df$file %>%
+  set_names() %>%
+  map_chr(~ here(res_dir, .x, "metaplot_beds"))
+
+nosub_sample_names <- set_names(sams, names(meta_dir_nosub))
+
 # Subsample sample directories
 get_file_dir <- function(sam_dir, file_dir) {
   sam_dir %>%
@@ -153,32 +163,39 @@ chunks <- templates %>%
 # for WT use all samples
 g_sams <- con_sams
 
-if (grp == "WT") {
-  g_sams <- sam_lnms
-}
-
 # Load and merge bed files
-paths <- g_sams %>%
-  imap(~ {
-    p <- here(res_dir, .y, "metaplot_beds/")
-    p <- str_c(p, str_c(.y, "_gene_S_N.bed.gz"))
-    
-    names(p) <- .x
-    p
-  }) %>%
-  purrr::reduce(c)
+# use files that are not subsampled
+out_file <- here(plot_params$obj_dir, str_c(grp, "_genes.tsv.gz"))
 
-gene_coords <- paths %>%
-  imap(~ {
-    .x %>%
-      load_bed(c(bed_cols, "counts")) %>%
-      mutate(sample = .y) %>%
-      separate(sample, sep = "_", into = c("treat", "rep"), remove = FALSE)
-  }) %>%
-  merge_beds(bind = TRUE) %>%
-  mutate(gene_len = (end - start) / 1000) %>%
-  group_by(chrom, start, end, name, strand, gene_len) %>%
-  summarize(counts = mean(counts), .groups = "drop")
+if (!file.exists(out_file) | plot_params$overwrite) {
+  paths <- g_sams %>%
+    imap(~ {
+      p <- here(res_dir, .y, "metaplot_beds/")
+      p <- str_c(p, str_c(.y, "_gene_S_N.bed.gz"))
+      
+      names(p) <- .x
+      p
+    }) %>%
+    purrr::reduce(c)
+  
+  gene_coords <- paths %>%
+    imap(~ {
+      .x %>%
+        load_bed(c(bed_cols, "counts")) %>%
+        mutate(sample = .y) %>%
+        separate(sample, sep = "_", into = c("treat", "rep"), remove = FALSE)
+    }) %>%
+    merge_beds(bind = TRUE) %>%
+    mutate(gene_len = (end - start) / 1000) %>%
+    group_by(chrom, start, end, name, strand, gene_len) %>%
+    summarize(counts = mean(counts), .groups = "drop")
+  
+  gene_coords %>%
+    write_tsv(out_file)
+  
+} else {
+  gene_coords <- read_tsv(out_file)
+}
 
 # Filter genes to remove poorly expressed genes
 # genes must have >0 signal and not be in the bottom params$gene_min_pct of
@@ -211,7 +228,7 @@ sam_df %>%
   
 ```
 
-Mean mNET-seq signal (top) or mean relative signal (bottom) is shown below for 5' (10 bp bins) and 3' regions (50 bp bins).
+Mean eNET-seq signal (top) or mean relative signal (bottom) is shown below for 5' (10 bp bins) and 3' regions (50 bp bins). These plots use files generated without subsampling reads to equalize library sizes.
 
 * genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_5)` kb
   were plotted for 5' regions (`r basename(plot_params$genes_5)`)
@@ -219,37 +236,39 @@ Mean mNET-seq signal (top) or mean relative signal (bottom) is shown below for 5
   were plotted for 3' regions (`r basename(plot_params$genes_3)`)
 * bottom `r plot_params$gene_min_pct * 100`% of genes were removed
 
-```{r "{{.x}} 5' mean"}
-
+```{r "{{.x}} 5' mean NO SUBSAMPLING"}
 # Load and merge bed files
+# need to add subsampling group (even though no subsampling was performed)
+# so name conforms to expected format
 sfxs <- c(
   "sense"      = "_5-10bp_S_N.bed.gz",
   "anti-sense" = "_5-10bp_AS_N.bed.gz"
 )
 
-out <- here(plot_params$obj_dir, str_c(grp, "_NET_5_10bp.tsv.gz"))
+out_file <- here(plot_params$obj_dir, str_c(grp, "_NOSUB_NET_5_10bp.tsv.gz"))
 
-merge_5 <- load_merge_wins(
-  prfxs     = names(meta_dir),   # Sample names
-  sfxs      = sfxs,              # Suffix list with types as names
-  paths     = meta_dir,          # Directories containing files
-  group     = grp,               # Group name
-  genes     = g_5,               # Genes to filter
+merge_5_nosub <- load_merge_wins(
+  prfxs     = names(meta_dir_nosub),  # Sample names
+  sfxs      = sfxs,                   # Suffix list with types as names
+  paths     = meta_dir_nosub,         # Directories containing files
+  group     = grp,                    # Group name
+  genes     = g_5,                    # Genes to filter
   
-  file_out  = out,               # Path to output file
+  file_out  = out_file,               # Path to output file
   overwrite = plot_params$overwrite,  # Overwrite output file if it exists
-  col_names = win_cols,          # Column names for bed files
-  win_num   = 800,               # Total number of expected windows (including sense + anti)
-  ref_win   = 201,               # Reference window for adjusting window ids
-  win_min   = 101                # Min window for filtering
+  col_names = win_cols,               # Column names for bed files
+  win_num   = 800,                    # Total number of expected windows (including sense + anti)
+  ref_win   = 201,                    # Reference window for adjusting window ids
+  win_min   = 101                     # Min window for filtering
 ) %>%
   check_group_size(
     clmns = c("name", "sample", "type", "win_id"),
     quiet = TRUE
-  )
+  ) %>%
+  mutate(sample = nosub_sample_names[sample])
 
 # Calculate mean signal
-mean_5 <- merge_5 %>%
+mean_5_nosub <- merge_5_nosub %>%
   calc_mean_signal(
     rel  = FALSE,
     grps = c("sample", "group", "type")
@@ -258,7 +277,7 @@ mean_5 <- merge_5 %>%
 
 ```
 
-```{r "{{.x}} 3' mean"}
+```{r "{{.x}} 3' mean NO SUBSAMPLING"}
 
 # Load bed files
 sfxs <- c(
@@ -266,30 +285,31 @@ sfxs <- c(
   "anti-sense" = "_3-50bp_AS_N.bed.gz"
 )
 
-out <- here(plot_params$obj_dir, str_c(grp, "_NET_3_50bp.tsv.gz"))
+out_file <- here(plot_params$obj_dir, str_c(grp, "_NOSUB_NET_3_50bp.tsv.gz"))
 
-merge_3 <- load_merge_wins(
-  prfxs     = names(meta_dir),   # Sample list with group as name
-  sfxs      = sfxs,              # Suffix list with types as names
-  paths     = meta_dir,          # Directories containing files
-  group     = grp,               # Group name
-  genes     = g_3,               # Genes to filter
+merge_3_nosub <- load_merge_wins(
+  prfxs     = names(meta_dir_nosub),  # Sample list with group as name
+  sfxs      = sfxs,                   # Suffix list with types as names
+  paths     = meta_dir_nosub,         # Directories containing files
+  group     = grp,                    # Group name
+  genes     = g_3,                    # Genes to filter
   
-  file_out  = out,               # Path to output file
+  file_out  = out_file,               # Path to output file
   overwrite = plot_params$overwrite,  # Overwrite output file if it exists
-  col_names = win_cols,          # Column names for bed files
-  win_num   = 400,               # Total number of expected windows (including sense + anti)
-  ref_win   = 100,               # Reference window for adjusting window ids
-  win_min   = 61,                # Min window for filtering
-  win_max   = 170                # Max window for filtering
+  col_names = win_cols,               # Column names for bed files
+  win_num   = 400,                    # Total number of expected windows (including sense + anti)
+  ref_win   = 100,                    # Reference window for adjusting window ids
+  win_min   = 61,                     # Min window for filtering
+  win_max   = 170                     # Max window for filtering
 ) %>%
   check_group_size(
     clmns = c("name", "sample", "type", "win_id"),
     quiet = TRUE
-  )
-  
+  ) %>%
+  mutate(sample = nosub_sample_names[sample])
+
 # Calculate mean signal
-mean_3 <- merge_3 %>%
+mean_3_nosub <- merge_3_nosub %>%
   calc_mean_signal(
     rel  = FALSE,
     grps = c("sample", "group", "type")
@@ -298,10 +318,10 @@ mean_3 <- merge_3 %>%
 
 ```
 
-```{r "{{.x}} 5' 3' metaplots", fig.width = 9, fig.height = 4}
+```{r "{{.x}} 5' 3' metaplots NO SUBSAMPLING", fig.width = 9, fig.height = 4}
 
 # Create final figure
-ylim_3 <- set_strand_ratio(mean_3, mean_5, mtplyr = 4)
+ylim_3 <- set_strand_ratio(mean_3_nosub, mean_5_nosub, mtplyr = 4)
 
 se <- NULL
 
@@ -310,8 +330,8 @@ if (n_reps > 1) {
 }
 
 create_meta_fig(
-  df_5      = mean_5,
-  df_3      = mean_3,
+  df_5      = mean_5_nosub,
+  df_3      = mean_3_nosub,
   color     = "treat",
   ylim_3    = ylim_3,
   sams      = treats,
@@ -322,10 +342,10 @@ create_meta_fig(
 
 ```
 
-```{r "{{.x}} 5' 3' rel metaplots", fig.width = 10, fig.height = 4}
+```{r "{{.x}} 5' 3' rel metaplots NO SUBSAMPLING", fig.width = 10, fig.height = 4}
 
 # Calculate mean signal
-rel_5 <- merge_5 %>%
+rel_5_nosub <- merge_5_nosub %>%
   calc_mean_signal(
     rel  = TRUE,
     grps = c("sample", "group", "type")
@@ -333,7 +353,7 @@ rel_5 <- merge_5 %>%
   format_sample_names(add_grp = TRUE)
 
 # Calculate mean signal
-rel_3 <- merge_3 %>%
+rel_3_nosub <- merge_3_nosub %>%
   calc_mean_signal(
     rel  = TRUE,
     grps = c("sample", "group", "type")
@@ -341,11 +361,11 @@ rel_3 <- merge_3 %>%
   format_sample_names(add_grp = TRUE)
 
 # Create final figure
-ylim_3 <- set_strand_ratio(rel_3, rel_5, mtplyr = 4)
+ylim_3 <- set_strand_ratio(rel_3_nosub, rel_5_nosub, mtplyr = 4)
 
 create_meta_fig(
-  df_5      = rel_5,
-  df_3      = rel_3,
+  df_5      = rel_5_nosub,
+  df_3      = rel_3_nosub,
   color     = "treat",
   ylim_3    = ylim_3,
   sams      = treats,
@@ -358,9 +378,9 @@ create_meta_fig(
 
 <br>
 
-Zoomed-in versions of the 5' and 3' metaplots are shown below.
+Zoomed-in versions of 5' and 3' metaplots are shown below.
 
-```{r "{{.x}} 5' 3' zoom metaplots", fig.width = 10, fig.height = 5}
+```{r "{{.x}} 5' 3' zoom metaplots NO SUBSAMPLING", fig.width = 10, fig.height = 5}
 
 meta_theme <- theme(
   aspect.ratio = 0.9,
@@ -373,8 +393,8 @@ if (n_treats == 1) {
 
 # Create zoomed 5' plots
 z_dfs <- list(
-  "mean eNET-seq (RPKM)"     = mean_5,
-  "relative eNET-seq signal" = rel_5
+  "mean eNET-seq (RPKM)"     = mean_5_nosub,
+  "relative eNET-seq signal" = rel_5_nosub
 )
 
 z5_plts <- z_dfs %>%
@@ -400,8 +420,8 @@ z5_plts <- z_dfs %>%
 
 # Create zoomed 3' plots
 z_dfs <- list(
-  "mean eNET-seq (RPKM)"     = mean_3,
-  "relative eNET-seq signal" = rel_3
+  "mean eNET-seq (RPKM)"     = mean_3_nosub,
+  "relative eNET-seq signal" = rel_3_nosub
 )
 
 z3_plts <- z_dfs %>%
@@ -438,46 +458,9 @@ z_plts[[2]]
 
 ```
 
-```{r "{{.x}} 3' zoom metaplots", fig.width = 10, fig.height = 5}
-
-z3_plts_2 <- z_dfs %>%
-  imap(~ {
-    res <- .x %>%
-      dplyr::filter(type == "sense") %>%
-      create_meta(
-        x          = "win_dist",
-        y          = "counts",
-        color      = "treat",
-        alpha      = "type",
-        n_lab      = "n",
-        se_clmn    = se,
-        plot_clrs  = clrs,
-        plot_lvls  = treats,
-        h_line     = NULL,
-        plot_alphs = 1
-      ) +
-      labs(y = .y) +
-      add_breaks(seq(-3, 3, 1.5), "pAS") +
-      meta_theme +
-      expand_limits(y = 0) +
-      theme(
-        aspect.ratio = 0.7
-      )
-    
-    res
-  })
-
-z3_plts_2 %>%
-  plot_grid(
-    plotlist = .,
-    nrow = 1
-  )
-
-```
-
 <br>
 
-Mean mNET-seq signal is shown below for the region around 5' splice sites.
+Mean eNET-seq signal is shown below for the region around 5' splice sites.
 
 * genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_5)` kb
   are shown
@@ -579,7 +562,7 @@ convert_to_bars <- function(df_in, xclmn = "win_id", yclmn = "counts") {
 
 ```
 
-```{r "{{.x}} meta exons", eval = n_treats > 1}
+```{r "{{.x}} meta exons NO SUBSMAPLING", eval = n_treats > 1}
 
 # Get exons to use for metaplots
 # only include separated genes
@@ -616,22 +599,22 @@ meta_exons <- exons %>%
 
 ```
 
-```{r "{{.x}} ss data", eval = n_treats > 1}
+```{r "{{.x}} ss data NO SUBSMAPLING", eval = n_treats > 1}
 
 # Load and merge bed files
 sfxs <- c("sense" = "_5ss-wins_S_N.bed.gz")
 
-out <- here(plot_params$obj_dir, str_c(grp, "_NET_5ss.tsv.gz"))
+out_file <- here(plot_params$obj_dir, str_c(grp, "_NET_5ss.tsv.gz"))
 
-merge_5ss <- load_merge_wins(
-  prfxs     = names(meta_dir),   # Sample names
-  sfxs      = sfxs,              # Suffix list with types as names
-  paths     = meta_dir,          # Directories containing files
-  group     = grp,               # Group name
+merge_5ss_nosub <- load_merge_wins(
+  prfxs     = names(meta_dir_nosub),  # Sample names
+  sfxs      = sfxs,                   # Suffix list with types as names
+  paths     = meta_dir,               # Directories containing files
+  group     = grp,                    # Group name
   
-  file_out  = out,               # Path to output file
+  file_out  = out_file,               # Path to output file
   overwrite = plot_params$overwrite,  # Overwrite output file if it exists
-  col_names = win_cols,          # Column names for bed files
+  col_names = win_cols,               # Column names for bed files
   win_num   = 100,
   win_len   = 1,
   genes     = meta_exons
@@ -639,10 +622,11 @@ merge_5ss <- load_merge_wins(
   check_group_size(
     clmns = c("name", "sample", "type", "win_id"),
     quiet = TRUE
-  )
+  ) %>%
+  mutate(sample = nosub_sample_names[sample])
 
 # Calculate mean signal
-mean_5ss <- merge_5ss %>%
+mean_5ss_nosub <- merge_5ss_nosub %>%
   left_join(meta_exons, by = "name") %>%
   dplyr::filter(!is.na(class)) %>%
   dplyr::select(sample, name, win_id, class, qrt, counts) %>%
@@ -656,10 +640,10 @@ mean_5ss <- merge_5ss %>%
 
 ```
 
-```{r "{{.x}} ss metaplot", fig.width = 10, fig.height = 1 + (2 * n_reps), eval = n_treats > 1}
+```{r "{{.x}} ss metaplot NO SUBSMAPLING", fig.width = 10, fig.height = 1 + (2 * n_reps), eval = n_treats > 1}
 
 # Create metaplots
-mean_5ss %>%
+mean_5ss_nosub %>%
   create_ss_bars(
     y        = "counts",
     color    = "treat",
@@ -668,313 +652,6 @@ mean_5ss %>%
     yttl     = "mean eNET-seq (RPKM)"
   ) +
   facet_wrap(rep ~ class, scale = "free_y")
-
-```
-
-<br>
-
-Zoomed-in versions of 5' splice site metaplots for 1st exons are shown below. 
-
-```{r "{{.x}} zoom ss metaplot", fig.width = 10, fig.height = 1 + (2 * n_reps), eval = n_treats > 1}
-
-# Create metaplots
-dat <- mean_5ss %>%
-  dplyr::filter(class == "first")
-
-mx_sig <- dat %>%
-  dplyr::filter(win_id < 50) %>%
-  pull(counts) %>%
-  max()
-
-dat %>%
-  create_ss_bars(
-    y        = "counts",
-    color    = "treat",
-    wins     = c(1, 100),
-    plt_clrs = clrs,
-    yttl     = "mean eNET-seq (RPKM)"
-  ) +
-  facet_wrap(rep ~ class, scale = "free_y") +
-  coord_cartesian(ylim = c(0, mx_sig * 1.01))
-
-```
-
-<br>
-
-## NO SUBSAMPLING
-
-Mean mNET-seq signal (top) or mean relative signal (bottom) is shown below for 5' (10 bp bins) and 3' regions (50 bp bins). These plots were generated using files generated without subsampling reads to equalize library sizes.
-
-* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_5)` kb
-  were plotted for 5' regions (`r basename(plot_params$genes_5)`)
-* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_3)` kb
-  were plotted for 3' regions (`r basename(plot_params$genes_3)`)
-* bottom `r plot_params$gene_min_pct * 100`% of genes were removed
-
-```{r "{{.x}} 5' mean NO SUBSAMPLING"}
-
-# Directories for files generated without subsampling
-meta_dir_nosub <- sam_df$file %>%
-  set_names() %>%
-  map_chr(~ here(res_dir, .x, "metaplot_beds"))
-
-new_sample_names <- set_names(sams, names(meta_dir_nosub))
-
-# Load and merge bed files
-sfxs <- c(
-  "sense"      = "_5-10bp_S_N.bed.gz",
-  "anti-sense" = "_5-10bp_AS_N.bed.gz"
-)
-
-out <- here(plot_params$obj_dir, str_c(grp, "_NOSUB_NET_5_10bp.tsv.gz"))
-
-merge_5_nosub <- load_merge_wins(
-  prfxs     = names(meta_dir_nosub),  # Sample names
-  sfxs      = sfxs,              # Suffix list with types as names
-  paths     = meta_dir_nosub,    # Directories containing files
-  group     = grp,               # Group name
-  genes     = g_5,               # Genes to filter
-  
-  file_out  = out,               # Path to output file
-  overwrite = plot_params$overwrite,  # Overwrite output file if it exists
-  col_names = win_cols,          # Column names for bed files
-  win_num   = 800,               # Total number of expected windows (including sense + anti)
-  ref_win   = 201,               # Reference window for adjusting window ids
-  win_min   = 101                # Min window for filtering
-) %>%
-  check_group_size(
-    clmns = c("name", "sample", "type", "win_id"),
-    quiet = TRUE
-  ) %>%
-  mutate(sample = new_sample_names[sample])
-
-# Calculate mean signal
-# need to add subsampling group (even though no subsampling was performed)
-# so name conforms to expected format 
-mean_5_nosub <- merge_5_nosub %>%
-  calc_mean_signal(
-    rel  = FALSE,
-    grps = c("sample", "group", "type")
-  ) %>%
-  format_sample_names(add_grp = TRUE)
-
-```
-
-```{r "{{.x}} 3' mean NO SUBSAMPLING"}
-
-# Load bed files
-sfxs <- c(
-  "sense"      = "_3-50bp_S_N.bed.gz",
-  "anti-sense" = "_3-50bp_AS_N.bed.gz"
-)
-
-out <- here(plot_params$obj_dir, str_c(grp, "_NOSUB_NET_3_50bp.tsv.gz"))
-
-merge_3_nosub <- load_merge_wins(
-  prfxs     = names(meta_dir_nosub),  # Sample list with group as name
-  sfxs      = sfxs,              # Suffix list with types as names
-  paths     = meta_dir_nosub,    # Directories containing files
-  group     = grp,               # Group name
-  genes     = g_3,               # Genes to filter
-  
-  file_out  = out,               # Path to output file
-  overwrite = plot_params$overwrite,  # Overwrite output file if it exists
-  col_names = win_cols,          # Column names for bed files
-  win_num   = 400,               # Total number of expected windows (including sense + anti)
-  ref_win   = 100,               # Reference window for adjusting window ids
-  win_min   = 61,                # Min window for filtering
-  win_max   = 170                # Max window for filtering
-) %>%
-  check_group_size(
-    clmns = c("name", "sample", "type", "win_id"),
-    quiet = TRUE
-  ) %>%
-  mutate(sample = new_sample_names[sample])
-
-# Calculate mean signal
-mean_3_nosub <- merge_3_nosub %>%
-  calc_mean_signal(
-    rel  = FALSE,
-    grps = c("sample", "group", "type")
-  ) %>%
-  format_sample_names(add_grp = TRUE)
-
-```
-
-```{r "{{.x}} 5' 3' metaplots NO SUBSAMPLING", fig.width = 9, fig.height = 4}
-
-# Create final figure
-ylim_3 <- set_strand_ratio(mean_3_nosub, mean_5_nosub, mtplyr = 4)
-
-se <- NULL
-
-if (n_reps > 1) {
-  se <- "rep"
-}
-
-create_meta_fig(
-  df_5      = mean_5_nosub,
-  df_3      = mean_3_nosub,
-  color     = "treat",
-  ylim_3    = ylim_3,
-  sams      = treats,
-  plot_clrs = clrs,
-  se_clmn   = se,
-  plot_ttl  = "mean eNET-seq (RPKM)"
-)
-
-```
-
-```{r "{{.x}} 5' 3' rel metaplots NO SUBSAMPLING", fig.width = 10, fig.height = 4}
-
-# Calculate mean signal
-rel_5_nosub <- merge_5_nosub %>%
-  calc_mean_signal(
-    rel  = TRUE,
-    grps = c("sample", "group", "type")
-  ) %>%
-  format_sample_names(add_grp = TRUE)
-
-# Calculate mean signal
-rel_3_nosub <- merge_3_nosub %>%
-  calc_mean_signal(
-    rel  = TRUE,
-    grps = c("sample", "group", "type")
-  ) %>%
-  format_sample_names(add_grp = TRUE)
-
-# Create final figure
-ylim_3 <- set_strand_ratio(rel_3_nosub, rel_5_nosub, mtplyr = 4)
-
-create_meta_fig(
-  df_5      = rel_5_nosub,
-  df_3      = rel_3_nosub,
-  color     = "treat",
-  ylim_3    = ylim_3,
-  sams      = treats,
-  plot_clrs = clrs,
-  se_clmn   = se,
-  plot_ttl  = "relative eNET-seq signal"
-)
-
-```
-
-<br>
-
-Zoomed-in versions of the 5' and 3' metaplots are shown below.
-
-```{r "{{.x}} 5' 3' zoom metaplots NO SUBSAMPLING", fig.width = 10, fig.height = 5}
-
-meta_theme <- theme(
-  aspect.ratio = 0.9,
-  legend.position = "top"
-)
-
-if (n_treats == 1) {
-  meta_theme$legend.position <- "none"
-}
-
-# Create zoomed 5' plots
-z_dfs <- list(
-  "mean eNET-seq (RPKM)"     = mean_5_nosub,
-  "relative eNET-seq signal" = rel_5_nosub
-)
-
-z5_plts <- z_dfs %>%
-  imap(~ {
-    res <- .x %>%
-      dplyr::filter(win_dist >= -0.5 & win_dist <= 0.5) %>%
-      create_meta(
-        x         = "win_dist",
-        y         = "counts",
-        color     = "treat",
-        alpha     = "type",
-        n_lab     = "n",
-        se_clmn   = se,
-        plot_clrs = clrs,
-        plot_lvls = treats
-      ) +
-      labs(y = .y) +
-      add_breaks(seq(-0.6, 0.6, 0.2), "TSS") +
-      meta_theme
-    
-    res
-  })
-
-# Create zoomed 3' plots
-z_dfs <- list(
-  "mean eNET-seq (RPKM)"     = mean_3_nosub,
-  "relative eNET-seq signal" = rel_3_nosub
-)
-
-z3_plts <- z_dfs %>%
-  imap(~ {
-    res <- .x %>%
-      create_meta(
-        x         = "win_dist",
-        y         = "counts",
-        color     = "treat",
-        alpha     = "type",
-        n_lab     = "n",
-        se_clmn   = se,
-        plot_clrs = clrs,
-        plot_lvls = treats
-      ) +
-      labs(y = .y) +
-      add_breaks(seq(-3, 3, 1.5), "pAS") +
-      meta_theme
-    
-    res
-  })
-
-# Creat final figures
-z_plts <- map2(z5_plts, z3_plts, ~ {
-  plot_grid(
-    .x, .y,
-    align = "vh",
-    axis  = "trbl"
-  )
-})
-
-z_plts[[1]]
-z_plts[[2]]
-
-```
-
-```{r "{{.x}} 3' zoom metaplots NO SUBSAMPLING", fig.width = 10, fig.height = 5}
-
-z3_plts_2 <- z_dfs %>%
-  imap(~ {
-    res <- .x %>%
-      dplyr::filter(type == "sense") %>%
-      create_meta(
-        x          = "win_dist",
-        y          = "counts",
-        color      = "treat",
-        alpha      = "type",
-        n_lab      = "n",
-        se_clmn    = se,
-        plot_clrs  = clrs,
-        plot_lvls  = treats,
-        h_line     = NULL,
-        plot_alphs = 1
-      ) +
-      labs(y = .y) +
-      add_breaks(seq(-3, 3, 1.5), "pAS") +
-      meta_theme +
-      expand_limits(y = 0) +
-      theme(
-        aspect.ratio = 0.7
-      )
-    
-    res
-  })
-
-z3_plts_2 %>%
-  plot_grid(
-    plotlist = .,
-    nrow = 1
-  )
 
 ```
 

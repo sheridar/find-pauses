@@ -3,22 +3,14 @@
 
 rule create_plots:
     input:
-        # Gene lists and splice site metaplots
-        expand(
-            RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_S_N.bed.gz",
-            sam_grp = GENE_SUB_GRPS, region = ["gene", "5ss-wins"]
-        ),
-
-        # Metaplots with subsampling
-        expand(
-            RESULTS + "/{sam_grp}/metaplot_beds/{sam_grp}_{region}_{strand}_N.bed.gz",
-            sam_grp = SAM_GRPS, region = ["5-10bp", "3-50bp"], strand = ["S", "AS"]
-        ),
-
         # Metaplots without subsampling
         expand(
             RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_{strand}_N.bed.gz",
             sample = SAMS_UNIQ, region = ["5-10bp", "3-50bp"], strand = ["S", "AS"]
+        ),
+        expand(
+            RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S_N.bed.gz",
+            sample = SAMS_UNIQ, region = ["gene", "5ss-wins"]
         ),
 
         # NET-seq counts for pause regions

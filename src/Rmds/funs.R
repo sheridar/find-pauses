@@ -1661,7 +1661,7 @@ create_bubbles <- function(go_df, plot_colors = NULL, n_terms = 15, txt_size = 6
       term_id = str_remove(term_id, "(GO|KEGG):"),
       term_id = str_c(term_id, " ", term_name),
       term_id = str_to_lower(term_id),
-      term_id = str_trunc(term_id, 40, "right"),
+      term_id = str_trunc(term_id, 30, "right"),
       source  = go_nms[source]
     )
   

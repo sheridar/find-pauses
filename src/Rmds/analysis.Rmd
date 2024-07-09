@@ -14,7 +14,7 @@ output:
 params:
   title:   "<p style=font-size:45px;>NET-seq analysis</p>"
   proj:    "NET-seq"
-  res_dir: "results"
+  res_dir: "~/Projects/find-pauses/OLD_results"
   genome:  "src/configs/GRCh38.yaml"
   samples: "SAMPLES.yaml"
   config:  "src/configs/plots.yaml"
