@@ -91,7 +91,7 @@ def _get_mem(n = 1, mult = 1, base_mem = MEMORY, min_mem = 1):
         mem = mem * mult
 
     else:
-        mem = lambda wildcards, input: max(2 * input.size_mb / 1000, min_mem) * mult
+        mem = lambda wildcards, input: max(3 * input.size_mb / 1000, min_mem) * mult
 
     return mem
 
