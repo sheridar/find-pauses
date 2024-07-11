@@ -68,7 +68,7 @@ qc_theme <- theme(
 
 `FastQC` was used to assess the quality of each fastq file. A summary of the results is shown below.
 
-```{r "fq summary", fig.width = 24, fig.height = 9}
+```{r "fq summary", fig.width = 24, fig.height = 10}
 
 # Some sample names are missing part of the fastq file name
 # need to match samples with fastq files
@@ -132,6 +132,10 @@ fq_sum %>%
 
 ```
 
+---
+
+<br>
+
 <br>
 
 ## Cutadapt
@@ -173,6 +177,10 @@ trim_sum %>%
 
 ```
 
+---
+
+<br>
+
 <br>
 
 ## Read alignment
@@ -208,6 +216,10 @@ bwt_sum %>%
   theme(aspect.ratio = 5 / n_distinct(bwt_sum$sample))
 
 ```
+
+---
+
+<br>
 
 <br>
 
@@ -247,6 +259,10 @@ dup_sum %>%
   theme(aspect.ratio = 5 / n_distinct(dup_sum$sample))
 
 ```
+
+---
+
+<br>
 
 <br>
 
@@ -316,6 +332,10 @@ counts_sum %>%
   theme(aspect.ratio = 5 / n_distinct(counts_sum$sample))
 
 ```
+
+---
+
+<br>
 
 <br>
 

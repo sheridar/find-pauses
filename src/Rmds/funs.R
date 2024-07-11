@@ -829,8 +829,8 @@ create_meta <- function(df_in, x, y, color = NULL, alpha = NULL, plot_clrs = NUL
   
   res <- res +
     geom_vline(xintercept = v_line, color = vline_clr, linetype = vline_type) +
-    geom_hline(yintercept = h_line, size = 0.25) +
-    geom_line(size = size, key_glyph = draw_key_point, ...)
+    geom_hline(yintercept = h_line, linewidth = 0.25) +
+    geom_line(linewidth = size, key_glyph = draw_key_point, ...)
   
   # Add n labels
   # Check that there is only one n label present
@@ -929,9 +929,9 @@ create_meta_fig <- function(df_5, df_3, color, ylim_3, sams = NULL, grp = NULL,
     add_breaks(seq(-10, 10), "TSS") +
     theme(
       legend.position    = "top",
-      aspect.ratio       = 0.8,
+      aspect.ratio       = 0.9,
       strip.text         = element_text(hjust = 0),
-      panel.grid.major.x = element_line(size = 0.5, color = "grey90")
+      panel.grid.major.x = element_line(linewidth = 0.5, color = "grey90")
     )
   
   # Remove legend if only one treatment
@@ -958,7 +958,7 @@ create_meta_fig <- function(df_5, df_3, color, ylim_3, sams = NULL, grp = NULL,
     theme(
       aspect.ratio       = 0.9,
       strip.text         = element_text(color = "white"),
-      panel.grid.major.x = element_line(size = 0.5, color = "grey90"),
+      panel.grid.major.x = element_line(linewidth = 0.5, color = "grey90"),
       legend.position    = "none",
       axis.title.y       = element_blank()
     )
@@ -982,10 +982,10 @@ create_meta_fig <- function(df_5, df_3, color, ylim_3, sams = NULL, grp = NULL,
   # Create final figure
   res <- plot_grid(
     met_5, met_3,
-    rel_widths = c(1, 0.7),
+    rel_widths = c(1, 1),
     nrow       = 1,
-    align      = "h",
-    axis       = "tb"
+    align      = "vh",
+    axis       = "trbl"
   )
   
   if (!is.null(file)) {
@@ -1661,7 +1661,7 @@ create_bubbles <- function(go_df, plot_colors = NULL, n_terms = 15, txt_size = 6
       term_id = str_remove(term_id, "(GO|KEGG):"),
       term_id = str_c(term_id, " ", term_name),
       term_id = str_to_lower(term_id),
-      term_id = str_trunc(term_id, 40, "right"),
+      term_id = str_trunc(term_id, 30, "right"),
       source  = go_nms[source]
     )
   

@@ -75,12 +75,23 @@ include: "../funs.py"
 # Function to return memory specification for rule
 # define this in the Snakefile since the function needs access
 # to the MEMORY variable
-def _get_mem(n = 1, base_mem = MEMORY, min_mem = 2):
-    import math
+# n:        multiplier to use when base_mem is provided
+# mult:     conversion multiplier to convert final memory calculation to
+#           different unit, default returns GB
+# base_mem: base memory in GB, if this is not provided, memory is
+#           calculated based on input file size
+# min_mem:  minimum memory in GB
+def _get_mem(n = 1, mult = 1, base_mem = MEMORY, min_mem = 1):
 
-    mem = math.ceil(base_mem * n)
-    mem = max(mem, min_mem)
-    mem = str(mem)
+    if base_mem:
+        import math
+    
+        mem = math.ceil(base_mem * n)
+        mem = max(mem, min_mem)
+        mem = mem * mult
+
+    else:
+        mem = lambda wildcards, input: max(3 * input.size_mb / 1000, min_mem) * mult
 
     return mem
 
@@ -145,6 +156,24 @@ SAMS_UNIQ = _get_uniq_list(SAMS)
 SAM_GRPS      = [x + "-" + y for y in SAMPLES for x in SAMPLES[y]]
 GENE_SUB_GRPS = [x + "_" + y for x in SAM_GRPS for y in GENE_SUB_REGS]
 GENE_SUB_GRPS = SAM_GRPS + GENE_SUB_GRPS
+
+
+# Dicts to set adapter sequences for each sample
+def _create_adapter_dict(adapter):
+    
+    if not isinstance(adapter, dict):
+        if not isinstance(adapter, str):
+            sys.exit("ERROR: READ_*_ADAPTER must be a single value or a dictionary")
+
+        adapter = {key: adapter for key in SAMS_UNIQ}
+
+    if not all(item in adapter for item in SAMS_UNIQ):
+        sys.exit("ERROR: READ_*_ADAPTER must include a sequence for each sample")
+
+    return(adapter)
+
+READ_1_ADAPTER = _create_adapter_dict(READ_1_ADAPTER)
+READ_2_ADAPTER = _create_adapter_dict(READ_2_ADAPTER)
 
 
 # Print summary of samples and groups
@@ -275,21 +304,19 @@ include: "../rules/03_dedup.snake"
 # Run featureCounts
 include: "../rules/04_featureCounts.snake"
 
-# Files without subsampling
-include: "../rules/04_metaplots_nosub.snake"
+# Create bigwigs
+include: "../rules/06_bigwigs.snake"
 include: "../rules/04_bigwigs_nosub.snake"
+
+# Create bed files for metaplots
+include: "../rules/06_metaplots.snake"
+include: "../rules/04_metaplots_nosub.snake"
 
 # Sample subsampling
 include: "../rules/04_subsample.snake"
 
 # Gene subsampling
 include: "../rules/05_gene_subsample.snake"
-
-# Create bigwigs
-include: "../rules/06_bigwigs.snake"
-
-# Create bed files for metaplots
-include: "../rules/06_metaplots_stranded.snake"
 
 # Test output files
 include: "../rules/07_test.snake"

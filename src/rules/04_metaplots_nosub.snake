@@ -4,7 +4,7 @@
 # Intersect reads with metaplot regions
 # these gene counts are used for the per-gene subsampling
 # these are also used for generating plots without subsampling
-rule metaplot_beds_nosub:
+use rule metaplot_beds as metaplot_beds_nosub with:
     input:
         RESULTS + "/{sample}/{sample}_shift.bed.gz"
     output:
@@ -15,32 +15,8 @@ rule metaplot_beds_nosub:
     params:
         job_name = "{sample}_{region}_metaplot_beds",
         bed      = lambda wildcards: META_BEDS[wildcards.region]
-    resources:
-        mem_gb = _get_mem(2)
     log:
         out = RESULTS + "/logs/{sample}_{region}_metaplot_beds.out",
         err = RESULTS + "/logs/{sample}_{region}_metaplot_beds.err"
-    threads:
-        6
-    shell:
-        """
-        source '{SRC}/funs.sh'
-
-        intersect_reads \
-            '{input}' \
-            '{params.bed}' \
-            {threads} \
-            '{output.S}' \
-            '{output.S_N}' \
-            '-wa -c -s'
-
-        intersect_reads \
-            '{input}' \
-            '{params.bed}' \
-            {threads} \
-            '{output.AS}' \
-            '{output.AS_N}' \
-            '-wa -c -S'
-        """
 
 

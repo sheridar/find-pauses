@@ -27,8 +27,15 @@ GENOME:
 
 # Adapter sequences to trim from the 3' end of each read
 # * These are passed to the -a and -A arguments of cutadapt
+# * Provide either a single sequence (as shown for READ_2_ADAPTER)
+#   or separate separate sequences for each sample (as shown for
+#   READ_1_ADAPTER)
 READ_1_ADAPTER:
-    "AACTGTAGGCACCATCAAT"
+    293flpin_Xrn2_WT_R2: "AACTGTAGGCACCATCAAT"
+    293flpin_Xrn2_MT_R2: "AACTGTAGGCACCATCAAT"
+    293flpin_Xrn2_WT_R3: "AACTGTAGGCACCATCAAT"
+    293flpin_Xrn2_MT_R3: "AACTGTAGGCACCATCAAT"
+    293flpin_Xrn2_WT_R4: "AACTGTAGGCACCATCAAT"
 
 READ_2_ADAPTER:
     "AGATCGGAAGAGCGTCGTGTAG"

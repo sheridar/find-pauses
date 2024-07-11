@@ -76,6 +76,7 @@ ALL_STREN_GRPS.append("_")
 
 
 # # Wildcard constraints
+# # use this when running the pausing piepline separately
 # # for stren exclude "_sep_" but allow "_"
 # wildcard_constraints:
 #     win          = "[0-9]+",
@@ -85,6 +86,7 @@ ALL_STREN_GRPS.append("_")
 
 
 # # Final output files
+# # use this when running the pausing pipeline separately
 # rule all:
 #     input:
 #         # Identify pauses

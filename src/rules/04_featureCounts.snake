@@ -15,6 +15,7 @@ rule featureCounts:
         args     = CMD_PARAMS["featureCounts"],
         gtf      = GTF
     resources:
+        mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
     log:
         out = RESULTS + "/logs/" + PROJ + "_featureCounts.out",

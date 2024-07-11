@@ -17,6 +17,7 @@ rule gene_subsample_1:
     params:
         job_name = "{group}_{sub_region}_summary"
     resources:
+        mem_mb = _get_mem(2, 1000),
         mem_gb = _get_mem(2)
     log:
         out = RESULTS + "/logs/{group}_{sub_region}_summary.out",
@@ -58,6 +59,7 @@ rule gene_subsample_2:
     params:
         job_name = "{sample}_{group}_{sub_region}"
     resources:
+        mem_mb = _get_mem(2, 1000),
         mem_gb = _get_mem(2)
     log:
         out = RESULTS + "/logs/{sample}_{group}_{sub_region}.out",
@@ -112,6 +114,7 @@ rule gene_subsample_cleanup:
     params:
         job_name = "{group}_{sub_region}_cleanup"
     resources:
+        mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/{group}_{sub_region}_cleanup.out",

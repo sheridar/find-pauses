@@ -19,7 +19,8 @@ rule bigwigs:
         job_name = "{sam_grp}_bigwig",
         chroms   = CHROMS
     resources:
-        mem_gb = _get_mem()
+        mem_mb = _get_mem(0.5, 1000),
+        mem_gb = _get_mem(0.5)
     log:
         out = RESULTS + "/logs/{sam_grp}_bigwig.out",
         err = RESULTS + "/logs/{sam_grp}_bigwig.err"
@@ -56,6 +57,12 @@ rule bigwigs:
 
 
 # Create IGV browser session
+SSH_PARAMS = {
+    "url":         URL,
+    "ssh":         SSH,
+    "ssh_key_dir": SSH_KEY_DIR
+}
+
 rule igv_browser:
     input:
         pos = expand(
@@ -70,11 +77,11 @@ rule igv_browser:
         urls = RESULTS + "/urls/" + PROJ + "_urls.tsv",
         xml  = RESULTS + "/urls/" + PROJ + "_igv.xml"
     params:
-        job_name    = PROJ + "_igv",
-        url         = URL,
-        ssh         = SSH,
-        ssh_key_dir = SSH_KEY_DIR
+        job_name = PROJ + "_igv",
+        regex    = GRP_REGEX,
+        **SSH_PARAMS
     resources:
+        mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
     log:
         out = RESULTS + "/logs/" + PROJ + "_igv.out",
@@ -93,7 +100,7 @@ rule igv_browser:
             '{params.ssh_key_dir}' \
             '{params.url}' \
             '{output.urls}' \
-            '{GRP_REGEX}'
+            '{params.regex}'
 
         create_urls \
             '{input.neg}' \
@@ -101,7 +108,7 @@ rule igv_browser:
             '{params.ssh_key_dir}' \
             '{params.url}' \
             '{output.urls}' \
-            '{GRP_REGEX}'
+            '{params.regex}'
 
         # Create IGV session
         '{SRC}/write_igv_xml.py' \

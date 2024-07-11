@@ -9,6 +9,7 @@ rule subsample_dict:
     params:
         job_name = "subsample_dict"
     resources:
+        mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/subsample_dict.out",
@@ -43,6 +44,7 @@ rule subsample_1:
     params:
         job_name = "{group}_summary"
     resources:
+        mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
     log:
         out = RESULTS + "/logs/{group}_summary.out",
@@ -84,6 +86,7 @@ rule subsample_2:
     params:
         job_name = "{sample}_{group}"
     resources:
+        mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_{group}.out",
@@ -136,6 +139,7 @@ rule sub_summary:
     params:
         job_name = PROJ + "_subsample_summary"
     resources:
+        mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_subsample_summary.out",
