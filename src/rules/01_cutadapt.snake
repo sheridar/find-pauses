@@ -49,8 +49,8 @@ rule cutadapt:
     params:
         job_name = "{sample}_cutadapt",
         args     = CMD_PARAMS["cutadapt"],
-        seq1     = READ_1_ADAPTER,
-        seq2     = READ_2_ADAPTER
+        seq1     = lambda wildcards: READ_1_ADAPTER[wildcards.sample],
+        seq2     = lambda wildcards: READ_2_ADAPTER[wildcards.sample]
     resources:
         mem_mb = _get_mem(2, 1000),
         mem_gb = _get_mem(2)

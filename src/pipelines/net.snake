@@ -158,6 +158,24 @@ GENE_SUB_GRPS = [x + "_" + y for x in SAM_GRPS for y in GENE_SUB_REGS]
 GENE_SUB_GRPS = SAM_GRPS + GENE_SUB_GRPS
 
 
+# Dicts to set adapter sequences for each sample
+def _create_adapter_dict(adapter):
+    
+    if not isinstance(adapter, dict):
+        if not isinstance(adapter, str):
+            sys.exit("ERROR: READ_*_ADAPTER must be a single value or a dictionary")
+
+        adapter = {key: adapter for key in SAMS_UNIQ}
+
+    if not all(item in adapter for item in SAMS_UNIQ):
+        sys.exit("ERROR: READ_*_ADAPTER must include a sequence for each sample")
+
+    return(adapter)
+
+READ_1_ADAPTER = _create_adapter_dict(READ_1_ADAPTER)
+READ_2_ADAPTER = _create_adapter_dict(READ_2_ADAPTER)
+
+
 # Print summary of samples and groups
 print("\nSAMS (%s): %s\n" % (len(SAMS), SAMS))
 print("GRPS (%s): %s\n" % (len(GRPS), GRPS))
