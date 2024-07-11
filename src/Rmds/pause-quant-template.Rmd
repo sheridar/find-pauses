@@ -513,7 +513,7 @@ plot_ex_int_pauses <- function(df_in, y = "p-reads_NET", y_ttl = "fraction pause
   
   if (violin) {
     res <- res +
-      geom_violin(draw_quantiles = c(0.25, 0.75), ...) +
+      geom_violin(draw_quantiles = c(0.25, 0.75), scale = "width", ...) +
       stat_summary(geom = "point", fun = median, alpha = 1)
     
   } else {
@@ -547,7 +547,7 @@ plot_ex_int_pauses <- function(df_in, y = "p-reads_NET", y_ttl = "fraction pause
 
 ```
 
-### TSS pausing
+### TSS-body pausing
 
 The fraction of reads aligning to pauses is shown for windows downstream of the TSS. For TSS windows, libraries were downsampled so genes have the same number of aligned reads for each sample. For the gene body region (+500 - pAS), reads were downsampled so the body region for each gene has the same number of aligned reads for each sample. p-values were calculated using the Wilcoxon rank sum test.
 
@@ -689,7 +689,7 @@ box_dat_sctr <- pause_stats %>%
 
 ```
 
-```{r "{{grp}} pause reads tss boxes", fig.width = 1 + (4.5 * n_common_reps), fig.height = 5}
+```{r "{{grp}} pause reads tss boxes", fig.width = n_common_reps * 5, fig.height = 5, out.width = ifelse(n_sams == 1, "50%", "100%")}
 
 # Regions to exclude from boxplots
 boxes_exclude_regs <- "tss"
@@ -725,7 +725,7 @@ The fraction of reads aligning to pauses is shown for TSS and gene body regions.
 * body region >=`r BODY_LIM` read/kb
 * all regions >= `r PAUSE_LIM[2]` pause
 
-```{r "{{grp}} pause reads tss-body boxes", fig.width = 1 + (2.5 * n_common_reps), fig.height = 5}
+```{r "{{grp}} pause reads tss-body boxes", fig.width = max(1 + (2.5 * n_common_reps), 10), fig.height = 5}
 
 # Data for boxplots
 metric <- c("fraction pause reads" = "p-reads_NET")
@@ -749,7 +749,8 @@ common_reps %>%
         breaks = seq(0, 1, 0.5),
         expand = expansion(mult = c(0.05, 0.2))
       ) +
-      labs(title = .x)
+      labs(title = .x) +
+      theme(aspect.ratio = 1.5)
   }) %>%
   plot_grid(plotlist = ., nrow = 1)
 
@@ -765,7 +766,7 @@ The average number of reads aligning to each pause site is shown for regions des
 * body region >=`r BODY_LIM` read/kb
 * all regions >= `r PAUSE_LIM[2]` pause (there must be at least 1 pause to calculate reads / pause)
 
-```{r "{{grp}} pause strength tss boxes", fig.width = n_common_reps * 5, fig.height = 5}
+```{r "{{grp}} pause strength tss boxes", fig.width = n_common_reps * 5, fig.height = 5, out.width = ifelse(n_sams == 1, "50%", "100%")}
 
 metric <- c("reads / pause" = "p-reads_pauses")
 
@@ -787,9 +788,9 @@ common_reps %>%
 
 <br>
 
-### TSS correlation
-
-The correlation between the fraction pause reads and total eNET-seq reads is shown for TSS regions described above.
+The correlation between the fraction pause reads and total NET-seq reads is shown for TSS and body regions described above.
+The fraction of reads aligning to pause sites should not be influenced by total read depth.
+This can be assessed by calculating the correlation with the total number of reads in each region.
 
 * genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
   are shown (`r basename(plot_params$genes_pause)`)
@@ -810,7 +811,7 @@ treats %>%
         !region %in% c("tss", "body", "5-500bp-1kb")  # do not show all regions
       ) %>%
       create_stat_corr(
-        x          = c("eNET-seq counts" = "NET"),
+        x          = c("NET-seq counts" = "NET"),
         y          = c("fraction pause reads" = "p-reads_NET"),
         ttl        = .x,
         reg_labels = regs
@@ -829,7 +830,9 @@ treats %>%
 
 ### Exon intron pausing
 
-The fraction pause reads is shown below for exons and introns. For each gene the total number of reads aligning to pause sites were summed for all exons or introns in the gene. The total pause reads were then divided by the total number of exonic or intronic reads for the gene.
+The fraction pause reads is shown below for exons and introns.
+For each gene the total number of reads aligning to pause sites were summed for all exons or introns in the gene.
+The total pause reads were then divided by the total number of exonic or intronic reads for the gene.
 
 * genes >`r MIN_ZONE_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_zone)` kb
   are shown (`r basename(plot_params$genes_zone)`)
@@ -956,7 +959,7 @@ first_dat <- bind_rows(first_dat, body_dat)
 
 ```
 
-```{r "{{grp}} EXON INTRON PLOTS 1", fig.width = 8, fig.height = 1 + (2.5 * n_reps)}
+```{r "{{grp}} EXON INTRON PLOTS 1", fig.width = 12, fig.height = 1 + (2.5 * n_reps)}
 
 all_bxs <- all_dat %>%
   plot_ex_int_pauses(p_lab = TRUE) +
@@ -967,7 +970,7 @@ all_bxs
 
 ```
 
-The fraction pause reads is shown below for the first exons/introns and gene body exons/introns, as described above.
+The fraction pause reads is shown below for first exons/introns and gene body exons/introns, as described above.
 
 ```{r "{{grp}} EXON INTRON PLOTS 2", fig.width = 12, fig.height = 6.5}
 
@@ -1148,7 +1151,8 @@ df <- c(0, 10, 25, 50, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 1000) %
 
 ### Strength vs density
 
-The fold change in pause strength vs pause density is shown below for the TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions. Reads were downsampled so each region has the same number of aligned reads for each sample.
+The fold change in pause strength vs pause density is shown below for the TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions.
+Reads were downsampled so each region has the same number of aligned reads for each sample.
 
 * genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
   are shown (`r basename(plot_params$genes_pause)`)

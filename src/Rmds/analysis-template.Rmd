@@ -228,7 +228,9 @@ sam_df %>%
   
 ```
 
-Mean eNET-seq signal (top) or mean relative signal (bottom) is shown below for 5' (10 bp bins) and 3' regions (50 bp bins). These plots use files generated without subsampling reads to equalize library sizes.
+#### {.tabset .tabset-pills}
+
+Mean NET-seq signal (top) or mean relative signal (bottom) is shown below for 5' (10 bp bins) and 3' regions (50 bp bins). These plots use files generated without subsampling reads to equalize library sizes.
 
 * genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_5)` kb
   were plotted for 5' regions (`r basename(plot_params$genes_5)`)
@@ -318,9 +320,9 @@ mean_3_nosub <- merge_3_nosub %>%
 
 ```
 
-```{r "{{.x}} 5' 3' metaplots NO SUBSAMPLING", fig.width = 9, fig.height = 4}
+```{r "{{.x}} 5' 3' mean metaplots NO SUBSAMPLING"}
 
-# Create final figure
+# Calculate mean signal
 ylim_3 <- set_strand_ratio(mean_3_nosub, mean_5_nosub, mtplyr = 4)
 
 se <- NULL
@@ -329,7 +331,7 @@ if (n_reps > 1) {
   se <- "rep"
 }
 
-create_meta_fig(
+mean_meta_fig <- create_meta_fig(
   df_5      = mean_5_nosub,
   df_3      = mean_3_nosub,
   color     = "treat",
@@ -342,7 +344,7 @@ create_meta_fig(
 
 ```
 
-```{r "{{.x}} 5' 3' rel metaplots NO SUBSAMPLING", fig.width = 10, fig.height = 4}
+```{r "{{.x}} 5' 3' rel metaplots NO SUBSAMPLING"}
 
 # Calculate mean signal
 rel_5_nosub <- merge_5_nosub %>%
@@ -363,7 +365,7 @@ rel_3_nosub <- merge_3_nosub %>%
 # Create final figure
 ylim_3 <- set_strand_ratio(rel_3_nosub, rel_5_nosub, mtplyr = 4)
 
-create_meta_fig(
+rel_meta_fig <- create_meta_fig(
   df_5      = rel_5_nosub,
   df_3      = rel_3_nosub,
   color     = "treat",
@@ -376,11 +378,23 @@ create_meta_fig(
 
 ```
 
-<br>
+```{r "{{.x}} 5' 3' metaplots NO SUBSAMPLING", fig.width = 10, fig.height = 4.5, results = "asis"}
+
+cat("\n\n##### Mean signal\n\n")
+print(mean_meta_fig)
+cat("\n\n<br>\n\n")
+
+cat("\n\n##### Relative signal\n\n")
+print(rel_meta_fig)
+cat("\n\n<br>\n\n")
+
+```
+
+#### {.tabset .tabset-pills}
 
 Zoomed-in versions of 5' and 3' metaplots are shown below.
 
-```{r "{{.x}} 5' 3' zoom metaplots NO SUBSAMPLING", fig.width = 10, fig.height = 5}
+```{r "{{.x}} 5' 3' zoom metaplots NO SUBSAMPLING", fig.width = 10, fig.height = 5, results = "asis"}
 
 meta_theme <- theme(
   aspect.ratio = 0.9,
@@ -444,7 +458,7 @@ z3_plts <- z_dfs %>%
     res
   })
 
-# Creat final figures
+# Create final figures
 z_plts <- map2(z5_plts, z3_plts, ~ {
   plot_grid(
     .x, .y,
@@ -453,14 +467,19 @@ z_plts <- map2(z5_plts, z3_plts, ~ {
   )
 })
 
-z_plts[[1]]
-z_plts[[2]]
+cat("\n\n##### Mean signal\n\n")
+print(z_plts[[1]])
+cat("\n\n<br>\n\n")
+
+cat("\n\n##### Relative signal\n\n")
+print(z_plts[[2]])
+cat("\n\n<br>\n\n")
 
 ```
 
-<br>
+#### 
 
-Mean eNET-seq signal is shown below for the region around 5' splice sites.
+Mean NET-seq signal is shown below for the region around 5' splice sites.
 
 * genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_5)` kb
   are shown
@@ -657,7 +676,7 @@ mean_5ss_nosub %>%
 
 <br>
 
-## Pause motifs
+## Pause motifs {.tabset .tabset-pills}
 
 `r knit_child(text = chunks$motif)`
 
@@ -667,11 +686,13 @@ mean_5ss_nosub %>%
 
 `r knit_child(text = chunks$quant)`
 
+
 <br>
 
 ## Pausing zones
 
 `r knit_child(text = chunks$zone)`
+
 
 ---
 

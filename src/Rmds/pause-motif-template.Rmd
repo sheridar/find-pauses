@@ -552,14 +552,15 @@ bars
 
 <br>
 
-### Mean signal
+NET-seq signal is shown below for pause sites identified for TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions.
+The sequence preference for each group of sites is shown below each plot.
+The dotted line indicates the 3' end of the nascent RNA.
 
-Mean mNET-seq signal is shown below for pause sites identified for TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions. The sequence preference for each group of sites is shown below each plot. The dotted line indicates the 3' end of the nascent RNA.
-
-* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
-  are shown
+* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb are shown (`r basename(plot_params$genes_pause)`)
 * pauses were identified after downsampling entire gene region
 * pauses separated by >30 bp are shown
+
+### Mean signal
 
 ```{r "{{grp}} pauses mean"}
 
@@ -715,7 +716,7 @@ mean_figs <- sep_pause_df %>%
 
 ```
 
-```{r "{{grp}} pauses mean meta 2", fig.width = 3 * n_sams, fig.height = 3.2 * n_regs}
+```{r "{{grp}} pauses mean meta 2", fig.width = 3 * n_sams, fig.height = 3.2 * n_regs, out.width = ifelse(n_sams == 1, "25%", "100%")}
 
 # Run this in separate chunk to exclude fasta messages
 plot_grid(
@@ -728,12 +729,6 @@ plot_grid(
 <br>
 
 ### Relative signal
-
-Mean relative mNET-seq signal is shown below for pause sites identified for TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions. The sequence preference for each group of sites is shown below each plot. The dotted line indicates the 3' end of the nascent RNA.
-
-* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
-  are shown
-* pauses separated by >30 bp are shown
 
 ```{r "{{grp}} pauses rel meta", include = FALSE}
 
@@ -757,7 +752,7 @@ rel_figs <- sep_pause_df %>%
 
 ```
 
-```{r "{{grp}} pauses rel meta 2", fig.width = 3 * n_sams, fig.height = 3.2 * n_regs}
+```{r "{{grp}} pauses rel meta 2", fig.width = 3 * n_sams, fig.height = 3.2 * n_regs, out.width = ifelse(n_sams == 1, "25%", "100%")}
 
 # Run this in separate chunk to exclude fasta messages
 plot_grid(

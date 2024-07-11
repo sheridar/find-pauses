@@ -29,12 +29,6 @@ rule create_plots:
             pause_region = PAUSE_REGIONS
         ),
 
-        # # Pause reads for pause regions
-        # expand(
-        #     RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pause_reads_{pause_region}.bed.gz",
-        #     sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS, pause_region = PAUSE_REGIONS
-        # ),
-
         # NET-seq counts for region around pauses
         expand(
             RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_meta_N.bed.gz",

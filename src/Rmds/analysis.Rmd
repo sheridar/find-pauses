@@ -13,7 +13,7 @@ output:
     highlight:      "tango"
 params:
   title:   "<p style=font-size:45px;>NET-seq analysis</p>"
-  proj:    "NET-seq"
+  proj:    "MY-PROJECT"
   res_dir: "results"
   genome:  "src/configs/GRCh38.yaml"
   samples: "SAMPLES.yaml"
@@ -22,7 +22,7 @@ params:
 
 ---
 
-```{r "chunk opts", include = FALSE}
+```{r "chunk opts", echo = FALSE}
 
 # Set default chunk options
 knitr::opts_chunk$set(
@@ -33,7 +33,9 @@ knitr::opts_chunk$set(
   comment    = "",
   dpi        = 150,
   cache      = FALSE,
-  cache.lazy = FALSE
+  cache.lazy = FALSE,
+  
+  fig.retina = NULL
 )
 
 ```
@@ -148,7 +150,7 @@ exon_lens <- exon_lens %>%
 
 ```
 
-# Quality Control
+# Quality Control {.tabset .tabset-pills}
 
 `r knitr::knit_child(here(plot_params$template_dir, "qc-template.Rmd"))`
 

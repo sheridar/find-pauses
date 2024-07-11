@@ -166,6 +166,7 @@ create_qrt_go <- function(zone_df, go_path = NULL, plot_clr, background = NULL) 
     dplyr::filter(zone_qrt == last(qrts)) %>%
     create_bubbles(color = plot_clr, txt_size = 5 / .pt) +
     theme(
+      aspect.ratio = 2,
       legend.title = element_text(size = txt_pt),
       legend.text  = element_text(size = txt_pt)
     )
@@ -348,13 +349,7 @@ create_len_plots <- function(df_in, sam, zone_col = "zone", len_col = "gene_len"
 
 ### Identification of pausing zones
 
-Pausing zones were identified as the window (200 bp) where the fraction of pause reads is >`r cutoff` and the average for the prospective zone is >`r cutoff * ave_mtplyr`. Metaplots (200 bp windows) are shown for different pausing metrics. The vertical lines show the mean length of the pausing zone for each sample.
-
-* genes >`r MIN_ZONE_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_zone)` kb
-  are shown
-* entire gene region was downsampled
-
-```{r "{{grp}} load data", eval = find_zones}
+```{r "{{grp}} load zone data", eval = find_zones}
 
 # Suffixes for files to load
 gene_meta_dir  <- sub_meta_dir$gene
@@ -448,7 +443,7 @@ stopifnot(
 
 ```
 
-```{r "{{grp}} format data", eval = find_zones}
+```{r "{{grp}} format zone data", eval = find_zones}
 
 # Data for pause zones
 # Some windows are slightly longer than the gene length since 0.2 kb (win size)
@@ -543,7 +538,7 @@ zone_wins <- out_file %>%
 
 ```
 
-```{r "{{grp}} zone tables"}
+```{r "{{grp}} filter zone data"}
 
 # Window length
 win_kb <- unique(zone_wins$win_len)
@@ -570,7 +565,7 @@ zone_genes <- zones %>%
 
 ```
 
-```{r "{{grp}} zone metaplots", fig.width = 14, fig.height = 1 + (n_reps * 3)}
+```{r "{{grp}} format zone metaplot data", fig.width = 14, fig.height = 1 + (n_reps * 3)}
 
 # Names for type columns
 stat_cols <- c(
@@ -623,23 +618,18 @@ meta_dat <- meta_dat %>%
     rep      = fct_relevel(rep, reps)
   )
 
-# Create metaplots
-meta_dat %>%
-  create_stat_meta(plot_clrs = clrs) +
-  theme(
-    strip.clip   = "off",
-    axis.title.y = element_blank()
-  )
-
 ```
 
-The mean fraction of pause reads is shown on the left for all replicates for the region +4 kb downstream of the TSS. The vertical lines show the mean length of the pausing zone for each sample and replicate. Zeros make up `r pct_0`% of data points.
+Pausing zones were identified as the window (200 bp) where the fraction of pause reads is >`r cutoff` and the average for the prospective zone is >`r cutoff * ave_mtplyr`.
+The mean fraction of pause reads is shown on the left for all replicates for the region +4 kb downstream of the TSS.
+The vertical lines show the mean length of the pausing zone for each sample and replicate.
+Zeros make up `r pct_0`% of data points.
 
 * genes >`r MIN_ZONE_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_zone)` kb
-  are shown
+  are shown (`r basename(plot_params$genes_zone)`)
 * entire gene region was downsampled
 
-```{r "{{grp}} fraction pause reads metaplots"}
+```{r "{{grp}} zone metaplots"}
 
 # Function to label x-axis
 x_labs <- function(x) {
@@ -774,7 +764,7 @@ plot_grid(
 
 ```
 
-```{r "{{grp}} zone rep metaplots", fig.width = 5.5 * n_reps, fig.height = 3.5}
+```{r "{{grp}} zone rep metaplots", fig.width = 5.5 * n_reps, fig.height = 3.5, eval = FALSE}
 
 meta +
   facet_wrap(~ rep) +
@@ -782,7 +772,7 @@ meta +
 
 ```
 
-```{r "{{grp}} zone histograms", fig.width = 1 + (n_reps * 3.5), fig.height = 3.5}
+```{r "{{grp}} zone histograms", fig.width = 1 + (n_reps * 3.5), fig.height = 3.5, eval = FALSE}
 
 h_dat %>%
   ggplot(aes(zone, fill = treat)) +
@@ -957,7 +947,7 @@ if (cor_clr %in% c("black", "#000000")) {
 
 ```
 
-```{r "{{grp}} rep corr", fig.width = n_rep_plts * 4, fig.height = 3.5}
+```{r "{{grp}} rep corr", fig.width = n_rep_plts * 5, fig.height = 3.5}
 
 # Format data for plotting
 cor_dat <- h_dat %>%
@@ -1013,7 +1003,7 @@ rep_corr_plt
 
 Scatter plots show the correlation between samples for pausing zone length. Colors indicate the number of overlapping points.
 
-```{r "{{grp}} treatment corr", fig.width = n_treat_plts * 4, fig.height = 3.5}
+```{r "{{grp}} treatment corr", fig.width = n_treat_plts * 5, fig.height = 3.5}
 
 # Create scatter plots
 treat_corr_plt <- ggplot() +
@@ -1056,13 +1046,7 @@ treat_corr_plt
 
 ```
 
-<br>
-
-### Gene length correlation
-
-Scatter plots show the correlation between pausing zone length and gene length for each sample. The shaded portion shows the maximum pausing zone length for each gene. Points close to the shaded region have a high fraction of the gene overlapped by the pausing zone. Colors indicate the number of overlapping points.
-
-```{r "{{grp}} gene length corr", fig.width = ceiling(n_sams / 2) * 4, fig.height = 7}
+```{r "{{grp}} gene length corr", fig.width = ceiling(n_sams / 2) * 4, fig.height = 7, eval = FALSE}
 
 # Create scatter plots
 len_plts <- sam_nms %>%
@@ -1077,13 +1061,7 @@ len_plts %>%
 
 ```
 
-<br>
-
-### 1st exon length correlation
-
-Scatter plots show the correlation between pausing zone length and 1st exon length. Colors indicate the number of overlapping points.
-
-```{r "{{grp}} exon length corr", fig.width = ceiling(n_sams / 2) * 4, fig.height = 7}
+```{r "{{grp}} exon length corr", fig.width = ceiling(n_sams / 2) * 4, fig.height = 7, eval = FALSE}
 
 # Format data for plotting
 # number of genes is slightly less than shown for other pause zone plots since
