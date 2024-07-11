@@ -609,7 +609,7 @@ out_file <- here(plot_params$obj_dir, str_c(grp, "_NET_5ss.tsv.gz"))
 merge_5ss_nosub <- load_merge_wins(
   prfxs     = names(meta_dir_nosub),  # Sample names
   sfxs      = sfxs,                   # Suffix list with types as names
-  paths     = meta_dir,               # Directories containing files
+  paths     = meta_dir_nosub,         # Directories containing files
   group     = grp,                    # Group name
   
   file_out  = out_file,               # Path to output file
