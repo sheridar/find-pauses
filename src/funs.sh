@@ -114,6 +114,16 @@ create_urls() {
             > "$url_file"
     fi
 
+    # Create remote directory if it does not exist
+    # add trailing slash to ssh path to ensure symlink is not overwritten
+    # by rsync
+    ssh="$ssh/"
+    hostname=$(echo "$ssh" | cut -d ':' -f 1)
+    hostdir=$(echo "$ssh" | cut -d ':' -f 2-)
+
+    ssh "$hostname" "[ ! -d \"\$(readlink -f $hostdir)\" ] && mkdir -p $hostdir"
+
+    # Transfer bigwigs to amc-sandbox
     for path in $paths
     do
         local bw=$(basename "$path")
