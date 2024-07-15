@@ -42,6 +42,7 @@ READ_2_ADAPTER:
 
 
 # Specify base URL and destination to transfer bigwigs
+# * Directory path will be created if it does not exist
 URL:
     "http://amc-sandbox.ucdenver.edu/User25/MY-PROJECT"
 
