@@ -121,7 +121,8 @@ create_urls() {
     hostname=$(echo "$ssh" | cut -d ':' -f 1)
     hostdir=$(echo "$ssh" | cut -d ':' -f 2-)
 
-    ssh "$hostname" "[ ! -d \"\$(readlink -f $hostdir)\" ] && mkdir -p -m 755 $hostdir"
+    ssh -o StrictHostKeyChecking=no "$hostname" \
+        "[ ! -d \"\$(readlink -f $hostdir)\" ] && mkdir -p -m 755 $hostdir"
 
     # Transfer bigwigs to amc-sandbox
     for path in $paths
