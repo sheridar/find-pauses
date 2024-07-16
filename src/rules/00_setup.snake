@@ -12,8 +12,8 @@ rule compile_cpp:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
-        out = RESULTS + "/logs/{script}.out",
-        err = RESULTS + "/logs/{script}.err"
+        out = RESULTS + "/logs/{script}_compile.out",
+        err = RESULTS + "/logs/{script}_compile.err"
     threads:
         1
     shell:
