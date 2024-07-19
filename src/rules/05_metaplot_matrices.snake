@@ -1,0 +1,107 @@
+# ====== Rules for making stranded sense matrices =======================
+
+
+# Split genes by strand
+rule split_genes_by_strand:
+    input:
+        META_MATRIX_BED
+    output:
+        p_genes = temp(RESULTS + "/matrix_genes_pos.bed"),
+        n_genes = temp(RESULTS + "/matrix_genes_neg.bed")
+    resources:
+        mem_mb = _get_mem(0.25, 1000),
+        mem_gb = _get_mem(0.25)
+    log:
+        out = RESULTS + "/logs/meta_matrix_genes.out",
+        err = RESULTS + "/logs/meta_matrix_genes.err"
+    threads:
+        1
+    shell:
+        """
+        zcat {input} \
+            | awk '$6 == "+"' \
+            > {output.p_genes}
+
+        zcat {input} \
+            | awk '$6 == "-"' \
+            > {output.n_genes}
+        """
+
+
+# Stranded sense matrices for metaplots
+rule create_metaplot_matrices:
+    input:
+        p_bw    = RESULTS + "/{sample}/{sample}_pos.bw",
+        n_bw    = RESULTS + "/{sample}/{sample}_neg.bw",
+        p_genes = RESULTS + "/matrix_genes_pos.bed",
+        n_genes = RESULTS + "/matrix_genes_neg.bed"
+    output:
+        matrix = RESULTS +      "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_matrix_S.gz",
+        p_tmp  = temp(RESULTS + "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_tmp_pos.gz"),
+        n_tmp  = temp(RESULTS + "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_tmp_neg.gz")
+    params:
+        job_name = "{sample}_{ref}_{start}_{end}_{bin}_matrix",
+        args     = CMD_PARAMS["computeMatrix"]
+    log:
+        out = RESULTS + "/logs/{sample}_{ref}_{start}_{end}_{bin}_matrix.out",
+        err = RESULTS + "/logs/{sample}_{ref}_{start}_{end}_{bin}_matrix.err"
+    threads: 
+        12
+    shell:
+        """
+        computeMatrix reference-point \
+            {params.args} \
+            --referencePoint {wildcards.ref} \
+            --upstream {wildcards.start} \
+            --downstream {wildcards.end} \
+            --binSize {wildcards.bin} \
+            -R {input.p_genes} \
+            -S {input.p_bw} \
+            -p {threads} \
+            -o {output.p_tmp}
+
+        computeMatrix reference-point \
+            {params.args} \
+            --referencePoint {wildcards.ref} \
+            --upstream {wildcards.start} \
+            --downstream {wildcards.end} \
+            --binSize {wildcards.bin} \
+            -R {input.n_genes} \
+            -S {input.n_bw} \
+            -p {threads} \
+            -o {output.n_tmp}
+
+        computeMatrixOperations rbind \
+            -m {output.p_tmp} {output.n_tmp} \
+            -o {matrix}
+        """
+
+
+# Make URLs and transfer to sandbox
+rule create_matrix_urls:
+    input:
+        expand(
+            RESULTS + "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_matrix_S.gz",
+            zip,
+            ref    = META_MATRIX_PARAMS[0],
+            start  = META_MATRIX_PARAMS[1],
+            end    = META_MATRIX_PARAMS[2],
+            bin    = META_MATRIX_PARAMS[3],
+            sample = SAMS_UNIQ
+        )
+    output:
+        urls = RESULTS + "/urls/" + PROJ + "_matrix_urls.tsv",
+        igv  = RESULTS + "/urls/" + PROJ + "_matrix_igv.xml"
+    params:
+        job_name = PROJ + "_matrix_urls"
+    log:
+        out = RESULTS + "/logs/metaplot_matrix_urls.out",
+        err = RESULTS + "/logs/metaplot_matrix_urls.err"
+    threads:
+        1
+    shell:
+        """
+        sleep 10
+        """
+
+

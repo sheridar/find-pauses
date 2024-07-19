@@ -18,44 +18,37 @@ GTF:
     "/beevol/home/rbilab/ref/annotation/human/GRCh38/gtf/Homo_sapiens.GRCh38.95.gtf"
 
 
-# Path to bed file containing regions to use for downstream analysis.
-# Reads not overlapping these regions will be removed. Since lower quality
-# mNET-seq libraries will have more reads aligning in intergenic regions,
-# we decided to only use reads that fall with +/-5 kb of a protein coding
-# gene.
+# Path to bed file containing regions to use for downstream analysis
+# * Reads not overlapping these regions will be removed
+# * Since lower quality mNET-seq libraries will have more reads aligning in
+#   intergenic regions, we decided to only use reads that fall with +/-5 kb
+#   of a protein coding gene
 GENES:
     "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_4_-5kb_+5kb.bed.gz"
 
 
-# Path to bed file containing regions to exclude from analysis. Reads
-# overlapping these regions will be removed. Since lower quality mNET-seq
-# libraries will have more reads aligning to snoRNAs, we decided to remove
-# these reads before performing downstream analysis
+# Path to bed file containing regions to exclude from analysis
+# * Reads overlapping these regions will be removed
+# * Since lower quality mNET-seq libraries will have more reads aligning to
+#   snoRNAs, we decided to remove these reads before performing downstream
+#   analysis
 MASK:
     "/beevol/home/sheridanr/ref/gene_lists/GRCh38/base_lists/GRCh38_snoRNAs.bed.gz"
 
 
 # Regions to use for subsampling reads
-# The samples in each group will be subsampled to the same read depth for
-# the provided regions. These files should be bed files with the regions
-# containing the regions to use for each gene.
+# * The samples in each group will be subsampled to the same read depth for
+#   the provided regions
+# * These files should be bed files containing the regions to use for each gene
 GENE_SUBSAMPLE_BEDS:
     tss:  "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_TSS_+500bp.bed.gz"
     body: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_4_+500bp_pAS.bed.gz"
     gene: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/base_lists/GRCh38_4_TSS_pAS.bed.gz"
 
 
-# Regions to use for testing output files from per-gene subsampling. This
-# will double check that each gene in the provided bed file has the same
-# number of overlapping reads for each sample in the subsampling group. This
-# list cannot include overlapping genes, since read counts for
-# overlapping genes may differ between samples in the subsampling group.
-TEST_GENES: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/base_lists/GRCh38_0ksep.bed.gz"
-
-
-# Bed files to use for counting mNET-seq reads, the resulting output files
-# can be used to generate metaplots. For each bed file, provide a unique
-# name to use for naming output files.
+# Bed files to use for counting mNET-seq reads
+# * The resulting output files can be used to generate metaplots
+# * For each bed file, provide a unique name to use for naming output files
 META_BEDS:
     5-TSS-100bp:   "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_TSS_+100bp.bed.gz"
     5-100bp-300bp: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_+100bp_+300bp.bed.gz"
@@ -67,6 +60,20 @@ META_BEDS:
     5ss-wins:      "/beevol/home/sheridanr/ref/gene_lists/GRCh38/splicing_lists/GRCh38_5ss_50bp_1bp.bed.gz"
     exons:         "/beevol/home/sheridanr/ref/gene_lists/GRCh38/splicing_lists/GRCh38_exons.bed.gz"
     introns:       "/beevol/home/sheridanr/ref/gene_lists/GRCh38/splicing_lists/GRCh38_introns.bed.gz"
+
+
+# Bed file containing gene coordinates to use for generating matrices for
+# metaplots
+META_MATRIX_BED:
+    "/beevol/home/sheridanr/ref/gene_lists/GRCh38/base_lists/GRCh38_4_TSS_pAS.bed.gz"
+
+
+# Regions to use for testing output files from per-gene subsampling
+# * This will double check that each gene in the provided bed file has the same
+#   number of overlapping reads for each sample in the subsampling group
+# * This list cannot include overlapping genes, since read counts for
+#   overlapping genes may differ between samples in the subsampling group
+TEST_GENES: "/beevol/home/sheridanr/ref/gene_lists/GRCh38/base_lists/GRCh38_0ksep.bed.gz"
 
 
 

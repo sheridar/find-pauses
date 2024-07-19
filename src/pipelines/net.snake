@@ -63,8 +63,10 @@ READ_1_ADAPTER = config["READ_1_ADAPTER"]
 READ_2_ADAPTER = config["READ_2_ADAPTER"]
 TEST_GENES     = config["TEST_GENES"]
 
-GENE_SUB_BEDS = config["GENE_SUBSAMPLE_BEDS"]
-META_BEDS     = config["META_BEDS"]
+GENE_SUB_BEDS      = config["GENE_SUBSAMPLE_BEDS"]
+META_BEDS          = config["META_BEDS"]
+META_MATRIX_BED    = config["META_MATRIX_BED"]
+META_MATRIX_PARAMS = config["META_MATRIX_PARAMS"]
 
 
 # Functions for pipeline
@@ -107,6 +109,7 @@ os.makedirs(DICT_DIR, exist_ok = True)
 
 
 # Files for metaplots
+# * Need to transpose matrix params list
 GENE_SUB_REGS = list(GENE_SUB_BEDS.keys())
 
 if GENE_SUB_REGS & META_BEDS.keys():
@@ -115,6 +118,8 @@ if GENE_SUB_REGS & META_BEDS.keys():
 META_BEDS.update(dict(GENE_SUB_BEDS))
 
 REGIONS = list(META_BEDS.keys())
+
+META_MATRIX_PARAMS = list(map(list, zip(*META_MATRIX_PARAMS)))
 
 
 # Scripts to compile
@@ -266,6 +271,9 @@ rule all:
 
         RESULTS + "/urls/" + PROJ + "_igv.xml",
 
+        # Metaplot matrices
+        RESULTS + "/urls/" + PROJ + "_matrix_urls.tsv",
+
         # Subsampling tests
         RESULTS + "/stats/" + PROJ + "_subsample_test.tsv",
 
@@ -307,6 +315,9 @@ include: "../rules/04_featureCounts.snake"
 # Create bigwigs
 include: "../rules/06_bigwigs.snake"
 include: "../rules/04_bigwigs_nosub.snake"
+
+# Create matrices for metaplots
+include: "../rules/05_metaplot_matrices.snake"
 
 # Create bed files for metaplots
 include: "../rules/06_metaplots.snake"
