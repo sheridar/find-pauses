@@ -6,14 +6,14 @@ rule split_genes_by_strand:
     input:
         META_MATRIX_BED
     output:
-        p_genes = temp(RESULTS + "/matrix_genes_pos.bed"),
-        n_genes = temp(RESULTS + "/matrix_genes_neg.bed")
+        p_genes = temp(RESULTS + "/" + PROJ + "_matrix_genes_pos.bed"),
+        n_genes = temp(RESULTS + "/" + PROJ + "_matrix_genes_neg.bed")
     resources:
         mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
     log:
-        out = RESULTS + "/logs/meta_matrix_genes.out",
-        err = RESULTS + "/logs/meta_matrix_genes.err"
+        out = RESULTS + "/logs/" + PROJ + "_matrix_genes.out",
+        err = RESULTS + "/logs/" + PROJ + "_matrix_genes.err"
     threads:
         1
     shell:
@@ -28,7 +28,7 @@ rule split_genes_by_strand:
         """
 
 
-# Stranded sense matrices for metaplots
+# Create matrices for metaplots
 rule create_metaplot_matrices:
     input:
         p_bw    = RESULTS + "/{sample}/{sample}_pos.bw",
@@ -36,9 +36,10 @@ rule create_metaplot_matrices:
         p_genes = RESULTS + "/matrix_genes_pos.bed",
         n_genes = RESULTS + "/matrix_genes_neg.bed"
     output:
-        matrix = RESULTS +      "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_matrix_S.gz",
-        p_tmp  = temp(RESULTS + "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_tmp_pos.gz"),
-        n_tmp  = temp(RESULTS + "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_tmp_neg.gz")
+        S_matrix  = RESULTS +  "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_matrix_S.gz",
+        AS_matrix = RESULTS +  "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_matrix_AS.gz",
+        p_tmp = temp(RESULTS + "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_pos.gz"),
+        n_tmp = temp(RESULTS + "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_neg.gz")
     params:
         job_name = "{sample}_{ref}_{start}_{end}_{bin}_matrix",
         args     = CMD_PARAMS["computeMatrix"]
@@ -49,31 +50,52 @@ rule create_metaplot_matrices:
         12
     shell:
         """
-        computeMatrix reference-point \
-            {params.args} \
-            --referencePoint {wildcards.ref} \
-            --upstream {wildcards.start} \
-            --downstream {wildcards.end} \
-            --binSize {wildcards.bin} \
-            -R {input.p_genes} \
-            -S {input.p_bw} \
-            -p {threads} \
-            -o {output.p_tmp}
+        create_matrices() {{
+            local bw="$1"
+            local genes="$2"
+            local out="$3"
 
-        computeMatrix reference-point \
-            {params.args} \
-            --referencePoint {wildcards.ref} \
-            --upstream {wildcards.start} \
-            --downstream {wildcards.end} \
-            --binSize {wildcards.bin} \
-            -R {input.n_genes} \
-            -S {input.n_bw} \
-            -p {threads} \
-            -o {output.n_tmp}
+            computeMatrix reference-point \
+                {params.args} \
+                --referencePoint {wildcards.ref} \
+                --upstream {wildcards.start} \
+                --downstream {wildcards.end} \
+                --binSize {wildcards.bin} \
+                -p {threads} \
+                -S "$bw" \
+                -R "$genes" \
+                -o "$out"
+        }}
+
+        # Create sense matrices
+        create_matrices \
+            '{input.p_bw}' \
+            '{input.p_genes}' \
+            '{output.p_tmp}'
+
+        create_matrices \
+            '{input.n_bw}' \
+            '{input.n_genes}' \
+            '{output.n_tmp}'
 
         computeMatrixOperations rbind \
-            -m {output.p_tmp} {output.n_tmp} \
-            -o {matrix}
+            -m '{output.p_tmp}' '{output.n_tmp}' \
+            -o '{output.S_matrix}'
+
+        # Create antisense matrices
+        create_matrices \
+            '{input.n_bw}' \
+            '{input.p_genes}' \
+            '{output.p_tmp}'
+
+        create_matrices \
+            '{input.p_bw}' \
+            '{input.n_genes}' \
+            '{output.n_tmp}'
+
+        computeMatrixOperations rbind \
+            -m '{output.p_tmp}' '{output.n_tmp}' \
+            -o '{output.AS_matrix}'
         """
 
 
@@ -81,27 +103,40 @@ rule create_metaplot_matrices:
 rule create_matrix_urls:
     input:
         expand(
-            RESULTS + "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_matrix_S.gz",
-            zip,
-            ref    = META_MATRIX_PARAMS[0],
-            start  = META_MATRIX_PARAMS[1],
-            end    = META_MATRIX_PARAMS[2],
-            bin    = META_MATRIX_PARAMS[3],
-            sample = SAMS_UNIQ
+            expand(
+                RESULTS + "/{{sample}}/meta_matrices/{{sample}}_{ref}_{start}_{end}_{bin}_matrix_{{strand}}.gz",
+                zip,
+                ref   = META_MATRIX_PARAMS[0],
+                start = META_MATRIX_PARAMS[1],
+                end   = META_MATRIX_PARAMS[2],
+                bin   = META_MATRIX_PARAMS[3]
+            ),
+            sample = SAMS_UNIQ,
+            strand = ["S", "AS"]
         )
     output:
-        urls = RESULTS + "/urls/" + PROJ + "_matrix_urls.tsv",
-        igv  = RESULTS + "/urls/" + PROJ + "_matrix_igv.xml"
+        urls = RESULTS + "/urls/" + PROJ + "_matrix_urls.tsv"
     params:
-        job_name = PROJ + "_matrix_urls"
+        job_name = PROJ + "_matrix_urls",
+        **SSH_PARAMS
+    resources:
+        mem_mb = _get_mem(0.25, 1000),
+        mem_gb = _get_mem(0.25)
     log:
-        out = RESULTS + "/logs/metaplot_matrix_urls.out",
-        err = RESULTS + "/logs/metaplot_matrix_urls.err"
+        out = RESULTS + "/logs/" + PROJ + "_matrix_urls.out",
+        err = RESULTS + "/logs/" + PROJ + "_matrix_urls.err"
     threads:
         1
     shell:
         """
-        sleep 10
+        source '{SRC}/funs.sh'
+
+        create_urls \
+            '{input}' \
+            '{params.ssh}' \
+            '{params.ssh_key_dir}' \
+            '{params.url}' \
+            '{output.urls}'
         """
 
 

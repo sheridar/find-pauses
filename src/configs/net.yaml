@@ -52,13 +52,13 @@ CMD_PARAMS:
 
 
 # Parameters to use when generating matrices using Deeptools
-# 1. End of gene to use for reference when generating bins, can be "TSS"
-#    or "pAS"
+# 1. End of gene to use for reference when generating bins, can be "TSS",
+#    "TES", or "center"  
 # 2. Number of basepairs upstream of gene end
 # 3. Number of basepairs downstream of gene end
 # 4. Bin size in basepairs
 META_MATRIX_PARAMS:
     - ["TSS", 2000, 2000, 100]
-    - ["pAS", 2000, 2000, 100]
+    - ["TES", 2000, 2000, 100]
 
 

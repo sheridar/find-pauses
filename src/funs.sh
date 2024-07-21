@@ -133,12 +133,12 @@ create_urls() {
     do
         local bw=$(basename "$path")
         local url="$url/$bw"
-        local strand=$(echo "$bw" | grep -oP "(?<=_)[a-zA-Z]+(?=.bw)")
+        local strand=$(echo "$bw" | grep -oP "(?<=_)[a-zA-Z]+(?=.[a-z]+$)")
         local sffx="$strand"
         
         if [ ! -z "$grp_re" ]
         then
-            local grp=$(echo "$bw" | grep -oP "(?<=-)""$grp_re""(?=_"$strand".bw$)")
+            local grp=$(echo "$bw" | grep -oP "(?<=-)""$grp_re""(?=_"$strand".[a-z]+$)")
             local sffx="$grp"
         fi
         
