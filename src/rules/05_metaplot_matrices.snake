@@ -2,12 +2,14 @@
 
 
 # Split genes by strand
-rule split_genes_by_strand:
+rule split_matrix_genes:
     input:
         META_MATRIX_BED
     output:
         p_genes = temp(RESULTS + "/" + PROJ + "_matrix_genes_pos.bed"),
         n_genes = temp(RESULTS + "/" + PROJ + "_matrix_genes_neg.bed")
+    params:
+        job_name = PROJ + "_split_matrix_genes"
     resources:
         mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
@@ -33,8 +35,8 @@ rule create_metaplot_matrices:
     input:
         p_bw    = RESULTS + "/{sample}/{sample}_pos.bw",
         n_bw    = RESULTS + "/{sample}/{sample}_neg.bw",
-        p_genes = RESULTS + "/matrix_genes_pos.bed",
-        n_genes = RESULTS + "/matrix_genes_neg.bed"
+        p_genes = RESULTS + "/" + PROJ + "_matrix_genes_pos.bed",
+        n_genes = RESULTS + "/" + PROJ + "_matrix_genes_neg.bed"
     output:
         S_matrix  = RESULTS +  "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_matrix_S.gz",
         AS_matrix = RESULTS +  "/{sample}/meta_matrices/{sample}_{ref}_{start}_{end}_{bin}_matrix_AS.gz",
@@ -43,6 +45,9 @@ rule create_metaplot_matrices:
     params:
         job_name = "{sample}_{ref}_{start}_{end}_{bin}_matrix",
         args     = CMD_PARAMS["computeMatrix"]
+    resources:
+        mem_mb = _get_mem(0.5, 1000),
+        mem_gb = _get_mem(0.5)
     log:
         out = RESULTS + "/logs/{sample}_{ref}_{start}_{end}_{bin}_matrix.out",
         err = RESULTS + "/logs/{sample}_{ref}_{start}_{end}_{bin}_matrix.err"
