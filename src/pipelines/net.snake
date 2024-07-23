@@ -264,6 +264,9 @@ rule all:
         RESULTS + "/urls/" + PROJ + "_nosub_igv.xml",
         RESULTS + "/urls/" + PROJ + "_nosub_urls.tsv",
 
+        RESULTS + "/urls/" + PROJ + "_nofilt_igv.xml",
+        RESULTS + "/urls/" + PROJ + "_nofilt_urls.tsv",
+
         # Bigwigs with subsampling
         expand(
             RESULTS + "/{sam_grp}/{sam_grp}_neg.bw",

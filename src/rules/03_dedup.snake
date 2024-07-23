@@ -71,9 +71,10 @@ rule beds:
         RESULTS + "/{sample}/{sample}_dedup.bam",
         expand(SRC + "/{script}", script = SCRIPTS)
     output:
-        bed   = temp_fn(RESULTS + "/{sample}/{sample}.bed.gz"),
-        shift = RESULTS + "/{sample}/{sample}_shift.bed.gz",
-        stats = temp(RESULTS + "/{sample}/{sample}_filt_stats.tsv")
+        bed    = temp_fn(RESULTS + "/{sample}/{sample}.bed.gz"),
+        shift  = RESULTS + "/{sample}/{sample}_shift.bed.gz",
+        nofilt = RESULTS + "/{sample}/{sample}_nofilt.bed.gz",
+        stats  = temp(RESULTS + "/{sample}/{sample}_filt_stats.tsv")
     params:
         job_name = "{sample}_create_beds",
         genes    = GENES,
@@ -103,6 +104,7 @@ rule beds:
                    > "{output.stats}"
            }}' \
            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+           | bedtools intersect -sorted -v  -a - -b {params.mask} \
            | pigz -p {threads} \
            > '{output.bed}'
 
@@ -110,9 +112,7 @@ rule beds:
        # params.mask. This filtering is not strand specific. Collapse
        # read coordinates to the RNA 3' end.
        zcat '{output.bed}' \
-           | bedtools intersect -sorted -v  -a - -b {params.mask} \
            | bedtools intersect -sorted -wa -a - -b {params.genes} \
-           | sort -S1G --parallel={threads} -k1,1 -k2,2n -k4,4 -u \
            | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
                if ($6 == "+") {{
                    $2 = $3 - 1;
@@ -128,6 +128,19 @@ rule beds:
            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
            | pigz -p {threads} \
            > '{output.shift}'
+
+       zcat '{output.bed}' \
+           | awk -v OFS="\t" '{{
+               if ($6 == "+") {{
+                   $2 = $3 - 1;
+               }} else {{
+                   $3 = $2 + 1;
+               }};
+               print
+           }}' \
+           | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+           | pigz -p {threads} \
+           > '{output.nofilt}'
        """
 
         

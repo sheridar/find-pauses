@@ -31,10 +31,6 @@ use rule igv_browser as igv_browser_nosub with:
         expand(
             RESULTS + "/{sample}/{sample}_{strand}.bw",
             sample = SAMS_UNIQ, strand = ["pos", "neg"]
-        ),
-        neg = expand(
-            RESULTS + "/{sample}/{sample}_neg.bw",
-            sample = SAMS_UNIQ
         )
     output:
         urls = RESULTS + "/urls/" + PROJ + "_nosub_urls.tsv",
