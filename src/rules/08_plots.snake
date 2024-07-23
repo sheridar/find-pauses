@@ -1,7 +1,7 @@
 #===== Rule to generate final plots ============================
 
 
-rule create_plots:
+rule plots:
     input:
         # Metaplots without subsampling
         expand(

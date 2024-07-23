@@ -92,7 +92,7 @@ create_urls() {
     local grp_re="${6:-}"
 
     local header="URL\tSAMPLE\tSTRAND"
-    local cmd='echo -e $url\t$sam\t$strand'
+    local cmd='echo -e $bw_url\\t$sam\\t$strand'
 
     # When running in docker container $HOME becomes workflow working directory
     # need to link .ssh folder to ensure ssh credentials are available within
@@ -104,8 +104,8 @@ create_urls() {
 
     if [ ! -z "$grp_re" ]
     then
-        local header="${header/STRAND/GROUP\\tSTRAND}"
-        local cmd="${cmd/strand/grp\\t\$strand}"
+        local header="${header/STRAND/GROUP\\\tSTRAND}"
+        local cmd="${cmd/strand/grp\\\\t\$strand}"
     fi
 
     if [ ! -s "$url_file" ]
@@ -117,9 +117,9 @@ create_urls() {
     # Create remote directory if it does not exist
     # add trailing slash to ssh path to ensure symlink is not overwritten
     # by rsync
-    ssh="$ssh/"
-    hostname=$(echo "$ssh" | cut -d ':' -f 1)
-    hostdir=$(echo "$ssh" | cut -d ':' -f 2-)
+    local ssh="$ssh/"
+    local hostname=$(echo "$ssh" | cut -d ':' -f 1)
+    local hostdir=$(echo "$ssh" | cut -d ':' -f 2-)
 
     ssh -o StrictHostKeyChecking=no "$hostname" "
     if [ ! -d \"\$(readlink -f $hostdir)\" ];
@@ -132,17 +132,17 @@ create_urls() {
     for path in $paths
     do
         local bw=$(basename "$path")
-        local url="$url/$bw"
-        local strand=$(echo "$bw" | grep -oP "(?<=_)[a-zA-Z]+(?=.bw)")
+        local bw_url="$url/$bw"
+        local strand=$(echo "$bw" | grep -oP "(?<=_)[a-zA-Z]+(?=.[a-z]+$)")
         local sffx="$strand"
         
         if [ ! -z "$grp_re" ]
         then
-            local grp=$(echo "$bw" | grep -oP "(?<=-)""$grp_re""(?=_"$strand".bw$)")
+            local grp=$(echo "$bw" | grep -oP "(?<=-)""$grp_re""(?=_"$strand".[a-z]+$)")
             local sffx="$grp"
         fi
         
-        local sam=$(echo "$bw" | grep -oP ".+(?=[_-])""$sffx")
+        local sam=$(echo "$bw" | grep -oP ".+(?<=[_-])""$sffx")
 
         rsync -e 'ssh -o StrictHostKeyChecking=no' --perms --chmod=ugo+r "$path" "$ssh"
 

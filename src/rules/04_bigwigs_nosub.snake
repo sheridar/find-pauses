@@ -28,13 +28,9 @@ use rule bigwigs as bigwigs_nosub with:
 # Create IGV browser session
 use rule igv_browser as igv_browser_nosub with:
     input:
-        pos = expand(
-            RESULTS + "/{sample}/{sample}_pos.bw",
-            sample = SAMS_UNIQ
-        ),
-        neg = expand(
-            RESULTS + "/{sample}/{sample}_neg.bw",
-            sample = SAMS_UNIQ
+        expand(
+            RESULTS + "/{sample}/{sample}_{strand}.bw",
+            sample = SAMS_UNIQ, strand = ["pos", "neg"]
         )
     output:
         urls = RESULTS + "/urls/" + PROJ + "_nosub_urls.tsv",
@@ -76,13 +72,9 @@ use rule bigwigs as bigwigs_nofilt with:
 # Create IGV browser session
 use rule igv_browser as igv_browser_nofilt with:
     input:
-        pos = expand(
-            RESULTS + "/{sample}/{sample}_nofilt_pos.bw",
-            sample = SAMS_UNIQ
-        ),
-        neg = expand(
-            RESULTS + "/{sample}/{sample}_nofilt_neg.bw",
-            sample = SAMS_UNIQ
+        expand(
+            RESULTS + "/{sample}/{sample}_nofilt_{strand}.bw",
+            sample = SAMS_UNIQ, strand = ["pos", "neg"]
         )
     output:
         urls = RESULTS + "/urls/" + PROJ + "_nofilt_urls.tsv",

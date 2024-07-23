@@ -65,13 +65,9 @@ SSH_PARAMS = {
 
 rule igv_browser:
     input:
-        pos = expand(
-            RESULTS + "/{sam_grp}/{sam_grp}_pos.bw",
-            sam_grp = SAM_GRPS
-        ),
-        neg = expand(
-            RESULTS + "/{sam_grp}/{sam_grp}_neg.bw",
-            sam_grp = SAM_GRPS
+        expand(
+            RESULTS + "/{sam_grp}/{sam_grp}_{strand}.bw",
+            sam_grp = SAM_GRPS, strand = ["pos", "neg"]
         )
     output:
         urls = RESULTS + "/urls/" + PROJ + "_urls.tsv",
@@ -86,8 +82,6 @@ rule igv_browser:
     log:
         out = RESULTS + "/logs/" + PROJ + "_igv.out",
         err = RESULTS + "/logs/" + PROJ + "_igv.err"
-    benchmark:
-        RESULTS + "/benchmarks/" + PROJ + "_igv.tsv"
     threads:
         1
     shell:
@@ -95,15 +89,7 @@ rule igv_browser:
         source '{SRC}/funs.sh'
 
         create_urls \
-            '{input.pos}' \
-            '{params.ssh}' \
-            '{params.ssh_key_dir}' \
-            '{params.url}' \
-            '{output.urls}' \
-            '{params.regex}'
-
-        create_urls \
-            '{input.neg}' \
+            '{input}' \
             '{params.ssh}' \
             '{params.ssh_key_dir}' \
             '{params.url}' \

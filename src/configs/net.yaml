@@ -23,7 +23,7 @@ MEMORY:
 
 # Docker container to use for pipeline
 CONTAINER:
-    "docker://rmsheridan/find-pauses:latest"
+    "docker://rmsheridan/find-pauses:v1.2.0"
 
 
 ## Additional parameters for various processing steps
@@ -48,5 +48,17 @@ CMD_PARAMS:
     umi_pattern:   "NNNNNNNNNNNN"
     umi_tools:     " --method unique --read-length "
     featureCounts: " --extraAttributes 'gene_name,gene_biotype' -s 0 -t gene -O "
+    computeMatrix: " --missingDataAsZero --skipZeros -q "
+
+
+# Parameters to use when generating matrices using Deeptools
+# 1. End of gene to use for reference when generating bins, can be "TSS",
+#    "TES", or "center"  
+# 2. Number of basepairs upstream of gene end
+# 3. Number of basepairs downstream of gene end
+# 4. Bin size in basepairs
+META_MATRIX_PARAMS:
+    - ["TSS", 2000, 2000, 100]
+    - ["TES", 2000, 2000, 100]
 
 
