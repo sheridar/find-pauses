@@ -59,6 +59,6 @@ CMD_PARAMS:
 # 4. Bin size in basepairs
 META_MATRIX_PARAMS:
     - ["TSS", 2000, 2000, 100]
-    - ["TES", 2000, 2000, 100]
+    - ["TES", 2000, 4000, 100]
 
 
