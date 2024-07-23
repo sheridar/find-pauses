@@ -105,12 +105,14 @@ rule beds:
            }}' \
            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
            | bedtools intersect -sorted -v  -a - -b {params.mask} \
+           | sort -S1G --parallel={threads} -k1,1 -k2,2n \
            | pigz -p {threads} \
            > '{output.bed}'
 
        # Filter for reads that are within params.gene and not within
-       # params.mask. This filtering is not strand specific. Collapse
-       # read coordinates to the RNA 3' end.
+       # params.mask
+       # * This filtering is not strand specific
+       # * Collapse read coordinates to the RNA 3' end.
        zcat '{output.bed}' \
            | bedtools intersect -sorted -wa -a - -b {params.genes} \
            | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
@@ -143,7 +145,7 @@ rule beds:
            > '{output.nofilt}'
        """
 
-        
+
 # Create filtering summary
 rule filt_summary:
     input:
