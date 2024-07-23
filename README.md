@@ -39,3 +39,18 @@ This pipeline will process NET-seq data and identify pause sites.
 3. Identify reads that align to pauses
 4. Generate bed files for metaplots
 5. Create summary plots
+
+<br>
+
+## Output
+
+* Summary plots (results/analysis.html)
+* URLs for bigwigs, subsampled so libraries that
+  are being compared have the same number of reads (results/urls/urls.tsv)
+* URLs for bigwigs without read subsampling (results/urls/nosub_urls.tsv)
+* URLs for bigwigs without filtering for
+  reads near protein coding genes and without subsampling
+  (results/urls/nofilt_urls.tsv)
+* URLs for matrix files that can be used to
+  generate metaplots (results/urls/matrix_urls.tsv)
+
