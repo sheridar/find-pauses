@@ -17,5 +17,6 @@ dependencies:
   - bowtie2=2.5.1
   - fastqc=0.12.1
   - samtools=1.12
+  - deeptools
   - ucsc-bedgraphtobigwig
   - subread

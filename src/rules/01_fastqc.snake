@@ -12,6 +12,7 @@ rule fastqc:
         job_name = "{fastq}_fastqc",
         out      = RESULTS + "/fastqc"
     resources:
+        mem_mb = _get_mem(2, 1000),
         mem_gb = _get_mem(2)
     log:
         out = RESULTS + "/logs/{fastq}_fastqc.out",
@@ -49,6 +50,7 @@ rule fastqc_summary:
     params:
         job_name = PROJ + "_fastqc_summary",
     resources:
+        mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_fastqc_summary.out",

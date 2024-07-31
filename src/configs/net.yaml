@@ -11,18 +11,19 @@ KEEP_META_FILES:
     False
 
 
-# Base memory to request for each rule
-# * The acutal amount requested will be higher for rules that generally
+# Base memory in GB to request for each rule
+# * The actual amount requested will be higher for rules that generally
 #   require more memory
-# * A value of 8 will result in rules requesting between 8Gb - 32Gb of
+# * A value of 8 will result in rules requesting between 8GB - 32GB of
 #   memory
+# * If left blank, requested memory will be calculated based on the size
+#   of the input files for each rule
 MEMORY:
-    16
 
 
 # Docker container to use for pipeline
 CONTAINER:
-    "docker://rmsheridan/find-pauses:latest"
+    "docker://rmsheridan/find-pauses:v1.2.0"
 
 
 ## Additional parameters for various processing steps
@@ -43,7 +44,20 @@ CONTAINER:
 # -t gene             - feature type for counting
 # -O                  - count if aligned to multiple features
 CMD_PARAMS:
-    cutadapt:      " -q 30 -m 20 -O 13 "
+    cutadapt:      " --minimum-length 15 --overlap 10 "
+    umi_tools:     " --method unique --read-length "
     featureCounts: " --extraAttributes 'gene_name,gene_biotype' -s 0 -t gene -O "
+    computeMatrix: " --missingDataAsZero --skipZeros -q "
+
+
+# Parameters to use when generating matrices using Deeptools
+# 1. End of gene to use for reference when generating bins, can be "TSS",
+#    "TES", or "center"  
+# 2. Number of basepairs upstream of gene end
+# 3. Number of basepairs downstream of gene end
+# 4. Bin size in basepairs
+META_MATRIX_PARAMS:
+    - ["TSS", 2000, 2000, 100]
+    - ["TES", 2000, 4000, 100]
 
 

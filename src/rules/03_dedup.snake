@@ -1,20 +1,103 @@
 # ====== Rules for removing PCR duplicates with UMI-tools ======================
 
 
-# Create bed files for RNA 3' end
-rule create_beds:
+# Remove duplicate reads
+rule dedup:
     input:
-        RESULTS + "/{sample}/{sample}.bam",
+        bam = RESULTS + "/{sample}/{sample}.bam",
+        bai = RESULTS + "/{sample}/{sample}.bam.bai"
+    output:
+        bam   = temp_fn(RESULTS + "/{sample}/{sample}_dedup.bam"),
+        bai   = temp_fn(RESULTS + "/{sample}/{sample}_dedup.bam.bai"),
+        stats = RESULTS + "/{sample}/{sample}_dedup_stats.txt"
+    params:
+        job_name = "{sample}_dedup",
+        args     = CMD_PARAMS["umi_tools"],
+        umi_opt  = _get_ca_options(ORENTATION,UMI_PATTERN)
+    resources:
+        mem_mb = _get_mem(3, 1000),
+        mem_gb = _get_mem(3)
+    log:
+        out = RESULTS + "/logs/{sample}_dedup.out",
+        err = RESULTS + "/logs/{sample}_dedup.err"
+    threads:
+        1
+    run:
+        # If no params are passed step is skipped
+        if len(params.umi_opt) == 0:
+            shell(
+                """
+                cp {input[0]} {output[0]}
+                cp {input[1]} {output[1]}
+                echo "$(date +"%Y-%m-%d %H:%M:%S"),1 INFO Reads: Input Reads: $(samtools idxstats {input.bam} | awk '{{s+=$3}} END {{print s}}')" >> {output[2]}
+                echo "$(date +"%Y-%m-%d %H:%M:%S"),2 INFO Number of reads out: $(samtools idxstats {input.bam} | awk '{{s+=$3}} END {{print s}}')" >> {output[2]}
+                echo "$(date +"%Y-%m-%d %H:%M:%S"),3 INFO Total number of positions deduplicated: 0" >> {output[2]}
+                echo "$(date +"%Y-%m-%d %H:%M:%S"),4 INFO Mean number of unique UMIs per position: 0" >> {output[2]}
+                echo "$(date +"%Y-%m-%d %H:%M:%S"),5 INFO Max. number of unique UMIs per position: 0" >> {output[2]}
+                
+                """
+              )
+        else:
+            shell(
+                """
+                umi_tools dedup \
+                  {params.args} \
+                  -I '{input.bam}' \
+                  -S '{output.bam}' \
+                  -L '{output.stats}'
+
+        samtools index '{output.bam}'
+        """
+            )
+
+
+# Create duplication summary
+rule dedup_summary:
+    input:
+        expand(
+            RESULTS + "/{sample}/{sample}_dedup_stats.txt",
+            sample = SAMS_UNIQ
+        )
+    output:
+        RESULTS + "/stats/" + PROJ + "_dedup.tsv"
+    params:
+        job_name = PROJ + "_dedup_summary"
+    resources:
+        mem_mb = _get_mem(0.125, 1000),
+        mem_gb = _get_mem(0.125)
+    log:
+        out = RESULTS + "/logs/" + PROJ + "_dedup_summary.out",
+        err = RESULTS + "/logs/" + PROJ + "_dedup_summary.err"
+    threads:
+        1
+    shell:
+        """
+        python - << 'EOF'
+import sys
+sys.path.insert(0, "{SRC}")
+
+import rules
+
+rules._dedup_summary("{input}".split(), "{output[0]}")
+EOF
+        """
+
+# Create bed files for RNA 3' end
+rule beds:
+    input:
+        RESULTS + "/{sample}/{sample}_dedup.bam",
         expand(SRC + "/{script}", script = SCRIPTS)
     output:
-        bed   = temp_fn(RESULTS + "/{sample}/{sample}.bed.gz"),
-        shift = RESULTS + "/{sample}/{sample}_shift.bed.gz",
-        stats = temp(RESULTS + "/{sample}/{sample}_filt_stats.tsv")
+        bed    = temp_fn(RESULTS + "/{sample}/{sample}.bed.gz"),
+        shift  = RESULTS + "/{sample}/{sample}_shift.bed.gz",
+        nofilt = RESULTS + "/{sample}/{sample}_nofilt.bed.gz",
+        stats  = temp(RESULTS + "/{sample}/{sample}_filt_stats.tsv")
     params:
         job_name = "{sample}_create_beds",
         genes    = GENES,
         mask     = MASK
     resources:
+        mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
     log:
         out = RESULTS + "/logs/{sample}_beds.out",
@@ -38,24 +121,33 @@ rule create_beds:
                    > "{output.stats}"
            }}' \
            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+           | bedtools intersect -sorted -v  -a - -b {params.mask} \
+           | sort -S1G --parallel={threads} -k1,1 -k2,2n \
            | pigz -p {threads} \
            > '{output.bed}'
 
        # Filter for reads that are within params.gene and not within
-       # params.mask. This filtering is not strand specific. Collapse
-       # read coordinates to the RNA 3' end.
+       # params.mask
+       # * This filtering is not strand specific
+       # * Collapse read coordinates to the RNA 3' end.
        zcat '{output.bed}' \
-           | bedtools intersect -sorted -v  -a - -b {params.mask} \
            | bedtools intersect -sorted -wa -a - -b {params.genes} \
-           | sort -S1G --parallel={threads} -k1,1 -k2,2n -k4,4 -u \
            | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
-               if ($6 == "+") {{
-                   $3 = $2 + 1;
-                   $6 = "-"
+               if (ORENTATION == "R2") {{
+                  if ($6 == "+") {{
+                      $3 = $2 + 1;
+                      $6 = "-"
+                  }} else {{
+                      $2 = $3 - 1;
+                      $6 = "+"
+                  }};
                }} else {{
-                   $2 = $3 - 1;
-                   $6 = "+"
-               }};
+                  if ($6 == "+") {{
+                      $2 = $3 - 1;
+                   }} else {{
+                       $3 = $2 + 1;
+                   }};
+               }}
                count += 1;
                print
            }} END {{
@@ -65,9 +157,32 @@ rule create_beds:
            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
            | pigz -p {threads} \
            > '{output.shift}'
+
+       zcat '{output.bed}' \
+           | awk -v OFS="\t" '{{
+               if (ORENTATION == "R2") {{
+                  if ($6 == "+") {{
+                      $3 = $2 + 1;
+                      $6 = "-"
+                  }} else {{
+                      $2 = $3 - 1;
+                      $6 = "+"
+                  }};
+               }} else {{
+                  if ($6 == "+") {{
+                      $2 = $3 - 1;
+                   }} else {{
+                       $3 = $2 + 1;
+                   }};
+               }}
+               print
+           }}' \
+           | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+           | pigz -p {threads} \
+           > '{output.nofilt}'
        """
 
-        
+
 # Create filtering summary
 rule filt_summary:
     input:
@@ -79,7 +194,8 @@ rule filt_summary:
         RESULTS + "/stats/"+ PROJ + "_filt.tsv"
     params:
         job_name = PROJ + "_filt_summary"
-    resources:
+    resources: 
+        mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_filt_summary.out",

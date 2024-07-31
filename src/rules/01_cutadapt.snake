@@ -1,10 +1,63 @@
 # ===== Snakefile for trimming and filtering NET-seq reads =====================
 
 
+# Extract UMI sequence
+# The UMI is the first 12 bases of read 2. By default umi_tools assumes
+# the given UMI pattern starts at the 5' end of the read. To account for
+# this read 2 is provided with -I and read 1 is provided with --read2-in.
+rule extract_umi:
+    input:
+        _get_fq_paths
+    output:
+        R1    = temp_fn(RESULTS + "/{sample}/{sample}_R1_umi.fastq.gz"),
+        R2    = temp_fn(RESULTS + "/{sample}/{sample}_R2_umi.fastq.gz"),
+        stats = RESULTS + "/{sample}/{sample}_umi_stats.txt"
+    params:
+        job_name = "{sample}_umi_extract",
+        umi_pat  = UMI_PATTERN,
+        umi_opt  = _get_ca_options(ORENTATION,UMI_PATTERN)
+    resources:
+        mem_mb = _get_mem(mult = 1000),
+        mem_gb = _get_mem()
+    log:
+        out = RESULTS + "/logs/{sample}_extract_umi.out",
+        err = RESULTS + "/logs/{sample}_extract_umi.err"
+    threads:
+        1
+    run:
+        # If no params are passed step is skipped
+        if len(params.umi_opt) == 0:
+            shell(
+                """
+                cp {input[0]} {output[0]}
+                cp {input[1]} {output[1]}
+                echo "Input Reads:  0" >> {output[2]}
+                echo "Reads output:  0" >> {output[2]}
+                
+                """
+              )
+        else:
+            shell(
+                """
+                umi_tools extract \
+                    -I '{input[1]}' \
+                    --extract-method=string \
+                    --bc-pattern={params.umi_pat} \
+                    --read2-in='{input[0]}' \
+                    --read2-out='{output.R1}' \
+                    -L '{output.stats}' \
+                    | gzip \
+                    > '{output.R2}'
+                """
+            )
+        
+
+
 # Trim reads with cutadapt
 rule cutadapt:
     input:
-        _get_fq_paths
+        R1 = RESULTS + "/{sample}/{sample}_R1_umi.fastq.gz",
+        R2 = RESULTS + "/{sample}/{sample}_R2_umi.fastq.gz"
     output:
         R1    = temp_fn(RESULTS + "/{sample}/{sample}_R1_trim.fastq.gz"),
         R2    = temp_fn(RESULTS + "/{sample}/{sample}_R2_trim.fastq.gz"),
@@ -12,9 +65,11 @@ rule cutadapt:
     params:
         job_name = "{sample}_cutadapt",
         args     = CMD_PARAMS["cutadapt"],
-        seq1     = READ_1_ADAPTER,
-        seq2     = READ_2_ADAPTER
+        args2    = _get_ca_options(ORENTATION,UMI_PATTERN),
+        seq1     = lambda wildcards: READ_1_ADAPTER[wildcards.sample],
+        seq2     = lambda wildcards: READ_2_ADAPTER[wildcards.sample]
     resources:
+        mem_mb = _get_mem(2, 1000),
         mem_gb = _get_mem(2)
     log:
         out = RESULTS + "/logs/{sample}_cutadapt.out",
@@ -25,13 +80,14 @@ rule cutadapt:
         """
         cutadapt \
             {params.args} \
+            {params.args2} \
             -a {params.seq1} \
             -A {params.seq2} \
             -j {threads} \
             -o '{output.R1}' \
             -p '{output.R2}' \
-            '{input[0]}' \
-            '{input[1]}' \
+            '{input.R1}' \
+            '{input.R2}' \
             > '{output.stats}'
         """
 
@@ -48,6 +104,7 @@ rule cutadapt_summary:
     params:
         job_name = PROJ + "_cutadapt_summary"
     resources:
+        mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
     log:
         out = RESULTS + "/logs/" + PROJ + "_cutadapt_summary.out",

@@ -4,7 +4,7 @@
 # Project name
 # * This is used for naming various outputs
 PROJ:
-    "240530_GSE242376_SSRP1_dTag"
+    "180629_200228_SRC"
 
 
 # Directory to save results
@@ -16,7 +16,8 @@ RESULTS:
 # * Multiple directories can be provided
 # * The sample names must correspond to the begining of the fastq name
 RAW_DATA:
-    - "/beevol/home/erickson/Human/NetSeq/240530_GSE242376_SSRP1_dTag/fastqs"
+    - "/beevol/home/erickson/fastqs/180629_A00405_0031_BH5LNMDSXX" # 3' 5'
+    - "/beevol/home/erickson/fastqs/200228_A00405_0213_BH2FGYDSXY" # U 5'
 
 
 # Genome to use for analysis
@@ -27,19 +28,33 @@ GENOME:
 
 # Adapter sequences to trim from the 3' end of each read
 # * These are passed to the -a and -A arguments of cutadapt
-READ_1_ADAPTER:
-    "TGGAATTCTCGGGTGCCAAGGAACTCCAGTCAC"
+       
+# U = AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC / AGATCGGAAGAGCGTCGTGTAG / ACACTCTTTCCCTACACGACGCTCTTCCGATCT
+# 3' = TGGAATTCTCGGGTGCCAAGG 
+# 5' = GTTCAGAGTTCTACAGTCCGACGATC / GATCGTCGGACTGTAGAACTCTGAAC
+
+READ_1_ADAPTER: 
+    Control_mNetSeq_ER_SRC: "TGGAATTCTCGGGTGCCAAGG"
+    TAM_mNetSeq_ER_SrC: "TGGAATTCTCGGGTGCCAAGG"
+    NF_ERSrcMinusTamoxifen_mNETseq: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
+    NF_ERSrcPlusTamoxifen_mNETseq: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
 
 READ_2_ADAPTER:
     "GATCGTCGGACTGTAGAACTCTGAAC"
+     
 
+ORENTATION:
+    "R2" # R1, R2
+
+UMI_PATTERN:
+    "none" # "NNNNNNNNNNNN", if no UMI set to "none" or ""
 
 # Specify base URL and destination to transfer bigwigs
 URL:
-    "http://amc-sandbox.ucdenver.edu/User7/240530_GSE242376_SSRP1_dTag"
+    "http://amc-sandbox.ucdenver.edu/User7/180629_200228_SRC"
 
 SSH:
-    "amc-sandbox:~/public_html/240530_GSE242376_SSRP1_dTag"
+    "amc-sandbox:~/public_html/180629_200228_SRC"
 
 
 # Sample groups for subsampling, use the following format:
@@ -74,21 +89,20 @@ SSH:
 #         ...
 #
 SAMPLES:
-    K562-dTAG:
-        dTAG-r1:
-            DMSO-4h: "K562_DMSO_4h_R1"
-            dTAG-4h: "K562_dTAG7_4h_R1"
+    SRC-TAM:
+        SRC-r1:
+            Control: "Control_mNetSeq_ER_SRC"
+            Tamoxifen: "TAM_mNetSeq_ER_SrC"
 
-        dTAG-r2:
-            DMSO-4h: "K562_DMSO_4h_R2"
-            dTAG-4h: "K562_dTAG7_4h_R2"
+        SRC-r2:
+            Control: "NF_ERSrcMinusTamoxifen_mNETseq"
+            Tamoxifen: "NF_ERSrcPlusTamoxifen_mNETseq"
 
 
 # Sample colors
 # * For each section, a color can be provided for each sample name
 # * Colors will be set automatically if they are not provided 
 COLORS:
-    K562-dTAG: ["black", "#4DB4C2"]
-
+    SRC-TAM: ["black", "#4DB4C2"]
 
 

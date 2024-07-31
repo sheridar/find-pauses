@@ -1,0 +1,38 @@
+#===== Config file for standared scer3 genome  ===================
+
+# Path to bowtie2 index ref files
+GENELIST:
+    ""
+INDEX_PATH:
+    "/beevol/home/bentleyd/ref/scer3/"
+INDEX_MAP:
+    "scer3"
+INDEX_SAMPLE:
+    "scer3"
+INDEX_SPIKE:
+    ""
+MASK:
+  ""
+GTF:
+  "/beevol/home/bentleyd/ref/scer3/saccharomyces_cerevisiae.gff"
+SAF:
+  "/beevol/home/bentleyd/ref/scer3/enrich.saf"
+SAF_SPIKE:
+  ""
+FA_SAMPLE:
+  "/beevol/home/bentleyd/ref/scer3/scer3.fa"
+FA_SPIKE:
+  ""
+MY_REF:
+  "/beevol/home/bentleyd/ref/scer3/sgd3Gene.bed"
+FW_REF:
+  "/beevol/home/bentleyd/ref/scer3/sgd3Gene_fw.bed"
+REV_REF:
+  "/beevol/home/bentleyd/ref/scer3/sgd3Gene_rev.bed"
+PI_REF:
+  "/beevol/home/bentleyd/ref/scer3/PI.bed"
+EI_FW_REF:
+  ""
+EI_REV_REF:
+  ""
+
