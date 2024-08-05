@@ -173,3 +173,16 @@ def _get_fq_paths(wildcards):
     return fqs
 
 
+# set options for cutadapt 
+def _get_ca_options(orientation, umi_pattern):
+  # Normalize the UMI pattern to lowercase and strip any whitespace
+  normalized_umi_pattern = umi_pattern.lower().strip()
+  # Check conditions to determine Cutadapt options
+  if normalized_umi_pattern not in ["none", "no"] and orientation == "R1":
+      ca_opts = "--pair-filter=first --discard-untrimmed "
+  else:
+      ca_opts = ""
+
+  return ca_opts
+
+
