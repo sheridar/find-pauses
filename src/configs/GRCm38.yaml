@@ -45,14 +45,6 @@ GENE_SUBSAMPLE_BEDS:
     gene: "/beevol/home/sheridanr/ref/gene_lists/GRCm38/base_lists/GRCm38_4_TSS_pAS.bed.gz"
 
 
-# Regions to use for testing output files from per-gene subsampling. This
-# will double check that each gene in the provided bed file has the same
-# number of overlapping reads for each sample in the subsampling group. This
-# list cannot include overlapping genes, since read counts for
-# overlapping genes may differ between samples in the subsampling group.
-TEST_GENES: "/beevol/home/sheridanr/ref/gene_lists/GRCm38/base_lists/GRCm38_0ksep.bed.gz"
-
-
 # Bed files to use for counting mNET-seq reads, the resulting output files
 # can be used to generate metaplots. For each bed file, provide a unique
 # name to use for naming output files.
@@ -67,6 +59,20 @@ META_BEDS:
     5ss-wins:      "/beevol/home/sheridanr/ref/gene_lists/GRCm38/splicing_lists/GRCm38_5ss_50bp_1bp.bed.gz"
     exons:         "/beevol/home/sheridanr/ref/gene_lists/GRCm38/splicing_lists/GRCm38_exons.bed.gz"
     introns:       "/beevol/home/sheridanr/ref/gene_lists/GRCm38/splicing_lists/GRCm38_introns.bed.gz"
+
+
+# Bed file containing gene coordinates to use for generating matrices for
+# metaplots
+META_MATRIX_BED:
+    "/beevol/home/sheridanr/ref/gene_lists/GRCm38/base_lists/GRCm38_4_TSS_pAS.bed.gz"
+
+
+# Regions to use for testing output files from per-gene subsampling. This
+# will double check that each gene in the provided bed file has the same
+# number of overlapping reads for each sample in the subsampling group. This
+# list cannot include overlapping genes, since read counts for
+# overlapping genes may differ between samples in the subsampling group.
+TEST_GENES: "/beevol/home/sheridanr/ref/gene_lists/GRCm38/base_lists/GRCm38_0ksep.bed.gz"
 
 
 
@@ -114,5 +120,10 @@ genes_zone:        "base_lists/GRCm38_2ksep.bed.gz"                             
 genes_pause:       "base_lists/GRCm38_5ksep.bed.gz"                                     # Gene list for pause metaplots and sequence logos
 exons:             "/splicing_lists/GRCm38_exons.bed.gz"                                # Bed file containing exon coordinates
 trxn_info:         "/base_lists/base_gene_files/GRCm38_transcripts.bed.gz"              # Bed file containing transcript info to use for filtering exons
+
+pause_regions:
+    TSS:  "/beevol/home/sheridanr/ref/gene_lists/GRCm38/gene_regions/GRCm38_5_TSS_+500bp.bed.gz"
+    body: "/beevol/home/sheridanr/ref/gene_lists/GRCm38/gene_regions/GRCm38_4_+500bp_pAS.bed.gz"
+    pAS:  "/beevol/home/sheridanr/ref/gene_lists/GRCm38/gene_regions/GRCm38_3_pAS_+5kb.bed.gz"
 
 
