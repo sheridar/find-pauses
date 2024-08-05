@@ -1,0 +1,108 @@
+# ===== Sample config file ============================================
+
+
+# Project name
+# * This is used for naming various outputs
+PROJ:
+    "180629_200228_SRC"
+
+
+# Directory to save results
+RESULTS:
+    "results"
+
+
+# Directories containing FASTQ files
+# * Multiple directories can be provided
+# * The sample names must correspond to the begining of the fastq name
+RAW_DATA:
+    - "/beevol/home/erickson/fastqs/180629_A00405_0031_BH5LNMDSXX" # 3' 5'
+    - "/beevol/home/erickson/fastqs/200228_A00405_0213_BH2FGYDSXY" # U 5'
+
+
+# Genome to use for analysis
+# * The specified genome must have a config file present in src/configs
+GENOME:
+    "GRCh38"
+
+
+# Adapter sequences to trim from the 3' end of each read
+# * These are passed to the -a and -A arguments of cutadapt
+       
+# U = AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC / AGATCGGAAGAGCGTCGTGTAG / ACACTCTTTCCCTACACGACGCTCTTCCGATCT
+# 3' = TGGAATTCTCGGGTGCCAAGG 
+# 5' = GTTCAGAGTTCTACAGTCCGACGATC / GATCGTCGGACTGTAGAACTCTGAAC
+
+READ_1_ADAPTER: 
+    Control_mNetSeq_ER_SRC: "TGGAATTCTCGGGTGCCAAGG"
+    TAM_mNetSeq_ER_SrC: "TGGAATTCTCGGGTGCCAAGG"
+    NF_ERSrcMinusTamoxifen_mNETseq: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
+    NF_ERSrcPlusTamoxifen_mNETseq: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
+
+READ_2_ADAPTER:
+    "GATCGTCGGACTGTAGAACTCTGAAC"
+     
+
+ORENTATION:
+    "R2" # R1, R2
+
+UMI_PATTERN:
+    "none" # "NNNNNNNNNNNN", if no UMI set to "none" or ""
+
+# Specify base URL and destination to transfer bigwigs
+URL:
+    "http://amc-sandbox.ucdenver.edu/User7/180629_200228_SRC"
+
+SSH:
+    "amc-sandbox:~/public_html/180629_200228_SRC"
+
+
+# Sample groups for subsampling, use the following format:
+# * The top level name will be the section name for the knitted document.
+# * Samples included in each sampling group will be subsampled to the same read
+#   depth, so for each group select samples you want to directly compare.
+# * The sample must match the beginning of a fastq file in one of the
+#   RAW_DATA directories.
+# * All samples listed for a section will be plotted together.
+# * Each sample should be given a name to use for labeling plots
+# * Sampling groups can be included in multiple sections. This allows the samples
+#   to be plotted in different combinations.
+# 
+# SAMPLES:
+#     SECTION-1:
+#         SAMPLING-GROUP-1:
+#             sample-1: "fastq_1_prefix"
+#             sample-2: "fastq_2_prefix"
+#             sample-3: "fastq_3_prefix"
+#
+#         SAMPLING-GROUP-2:
+#             sample-1: "fastq_4_prefix"
+#             sample-2: "fastq_5_prefix"
+#             sample-3: "fastq_6_prefix"
+#
+#     SECTION-2:
+#         SAMPLING-GROUP-1:
+#             sample-1: "fastq_1_prefix"    # sampling groups can be included
+#             sample-2: "fastq_2_prefix"    # in multiple sections
+#
+#     SECTION-3:
+#         ...
+#
+SAMPLES:
+    SRC-TAM:
+        SRC-r1:
+            Control: "Control_mNetSeq_ER_SRC"
+            Tamoxifen: "TAM_mNetSeq_ER_SrC"
+
+        SRC-r2:
+            Control: "NF_ERSrcMinusTamoxifen_mNETseq"
+            Tamoxifen: "NF_ERSrcPlusTamoxifen_mNETseq"
+
+
+# Sample colors
+# * For each section, a color can be provided for each sample name
+# * Colors will be set automatically if they are not provided 
+COLORS:
+    SRC-TAM: ["black", "#4DB4C2"]
+
+
