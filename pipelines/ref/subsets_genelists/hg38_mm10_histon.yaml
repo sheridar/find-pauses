@@ -1,0 +1,37 @@
+#===== Config file for standared hg38 with mm10 spikeIN  ===================
+
+# Path to mixed bowtie2 index and chrom name txt file
+GENELIST:
+    "histon"
+INDEX_PATH:
+    "/beevol/home/bentleyd/ref/hg38_mm10"
+INDEX_MAP:
+    "hg38_mm10"
+INDEX_SAMPLE:
+    "hg38"
+INDEX_SPIKE:
+    "mm10"
+MASK:
+  "/beevol/home/bentleyd/ref/hg38/ref_bed/hg38_snoRNAs.bed"
+GTF:
+  "/beevol/home/bentleyd/ref/hg38/ref_bed/Homo_sapiens.GRCh38.111.gtf"
+SAF:
+  "/beevol/home/bentleyd/ref/hg38/ref_bed/enrich.saf"
+SAF_SPIKE:
+  "/beevol/home/bentleyd/ref/mm10/ref_bed/enrich.saf"
+FA_SAMPLE:
+  "/beevol/home/bentleyd/ref/hg38/genome/Homo_sapiens.GRCh38.dna.primary_assembly.fa"
+FA_SPIKE:
+  "/beevol/home/bentleyd/ref/mm10/mm10.fa"
+MY_REF:
+  "/beevol/home/bentleyd/ref/hg38/ref_bed/hg38_histon.bed"
+FW_REF:
+  "/beevol/home/bentleyd/ref/hg38/ref_bed/hg38_gene_fw.bed"
+REV_REF:
+  "/beevol/home/bentleyd/ref/hg38/ref_bed/hg38_gene_rev.bed"
+PI_REF:
+  "/beevol/home/bentleyd/ref/hg38/ref_bed/PI.bed"
+EI_FW_REF:
+  "/beevol/home/bentleyd/ref/hg38/ref_bed/EI_anti_fw.bed"
+EI_REV_REF:
+  "/beevol/home/bentleyd/ref/hg38/ref_bed/EI_anti_rev.bed"

@@ -1,0 +1,154 @@
+# ===== Rules to count reads overlapping genes =================================
+
+
+# Run featureCounts
+rule featureCounts_sample:
+    input:
+        bam   = PROJ + "/" + BAM_PATH + "/{sample}_" + INDEX_SAMPLE + "_" + SEQ_DATE + ".bam",
+        bai   = PROJ + "/" + BAM_PATH + "/{sample}_" + INDEX_SAMPLE + "_" + SEQ_DATE + ".bam.bai"
+    output:
+        PROJ + "/counts/{sample}_" + INDEX_SAMPLE + "_featureCounts.tsv"
+    params:
+        job_name = PROJ + "_featureCounts",
+        args     = _get_featCout(FC_TYPE,ORENTATION),
+        ftfile   = FC_FILE
+    resources:
+        memory   = lambda wildcards, input: memory_estimator(input, 0.5, 4)
+    log:
+        out = PROJ + "/logs/{sample}_featureCounts.out",
+        err = PROJ + "/logs/{sample}_featureCounts.err"
+    message:
+        "Counting {wildcards.sample} reads with featureCounts"
+    threads:
+        12
+    shell:
+        """
+        featureCounts \
+            {params.args} \
+            -a {params.ftfile} \
+            -o {output} \
+            -T {threads} \
+            {input.bam}
+        """
+
+# get read counts from bams spikein
+rule featureCounts_spikein:
+    input:
+        bam   = PROJ + "/" + BAM_PATH + "/{sample}_" + INDEX_SPIKE + "_" + SEQ_DATE + ".bam",
+        bai   = PROJ + "/" + BAM_PATH + "/{sample}_" + INDEX_SPIKE + "_" + SEQ_DATE + ".bam.bai"
+    output:
+        PROJ + "/counts/{sample}_" + INDEX_SPIKE + "_featureCounts.tsv"
+    params:
+        job_name = PROJ + "_featureCounts",
+        args     = _get_featCout(FC_TYPE,ORENTATION),
+        ftfile   = FC_SPIKE
+    resources:
+        memory   = lambda wildcards, input: memory_estimator(input, 0.5, 4)
+    log:
+        out = PROJ + "/logs/{sample}_featureCounts_spikin.out",
+        err = PROJ + "/logs/{sample}_featureCounts_spikins.err"
+    message:
+        "featureCounts for spikein {wildcards.sample}"
+    threads:
+        12
+    shell:
+        """
+        featureCounts \
+            {params.args} \
+            -a {params.ftfile} \
+            -o {output} \
+            -T {threads} \
+            {input.bam}
+        """
+        
+# making count file
+rule featurecount_summary:
+    input:
+        PROJ + "/counts/{sample}_" + INDEX_SAMPLE + "_featureCounts.tsv"
+    output:
+        PROJ  + "/counts/{sample}_count.txt"
+    params:
+        job_name = "{sample}_count_summary"
+    resources:
+        memory   = 4
+    log:
+        out = PROJ + "/logs/{sample}_count_summary.out",
+        err = PROJ + "/logs/{sample}_count_summary.err"
+    threads: 
+        1
+    script:
+        '../R_scripts/featurecount_summary.R'
+  
+
+# making count file with spikein
+rule featurecount_spikein_summary:
+    input:
+        PROJ + "/counts/{sample}_" + INDEX_SAMPLE + "_featureCounts.tsv",
+        PROJ + "/counts/{sample}_" + INDEX_SPIKE + "_featureCounts.tsv"
+    output:
+        PROJ  + "/counts/{sample}_spikin_count.txt"
+    params:
+        job_name = "{sample}_spikein_count_summary"
+    resources:
+        memory   = 4
+    log:
+        out = PROJ + "/logs/{sample}_spikein_count_summary.out",
+        err = PROJ + "/logs/{sample}_spikein_count_summary.err"
+    threads: 
+        1
+    script:
+        '../R_scripts/featurecount_summary.R'
+        
+# calculating OR
+rule calculating_OR:
+    input:
+        lambda wildcards: expand(
+            PROJ  + "/counts/{sample}_spikin_count.txt",
+            sample = GROUPS[wildcards.group]
+        )
+    output:
+        temp(PROJ + "/counts/{group}_OR_count.txt")
+    params:
+        job_name = "{group}_OR",
+        type     = NORM,
+        in_sam   = INDEX_SAMPLE,
+        in_spk   = INDEX_SPIKE
+    resources:
+        memory   = 4
+    log:
+        out = PROJ + "/logs/{group}_OR.out",
+        err = PROJ + "/logs/{group}_OR.err"
+    message:
+        "getting OR norm for {wildcards.group}"
+    threads: 
+        1
+    script:
+        '../R_scripts/count_OR.R'
+  
+# gathering results
+rule gathering_OR_results:
+    input:
+        expand(
+        PROJ      + "/counts/{group}_OR_count.txt",
+            group = GRPS_UNIQ
+        )
+    output:
+        PROJ + "/counts/" + PROJ + "_OR_summery.tsv"
+    params:
+        job_name = "ORresults"
+    resources:
+        memory   = 1
+    log:
+        out = PROJ + "/logs/ORresults.out",
+        err = PROJ + "/logs/ORresults.err"
+    message:
+        "getting final results"
+    threads: 
+        1
+    run:
+        with open(output[0], "w") as out:
+            for file in input:
+                for line in open(file, "r"):
+                    out.write(line)
+                    
+                    
