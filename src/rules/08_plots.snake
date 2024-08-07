@@ -33,7 +33,16 @@ rule plots:
         expand(
             RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}{stren_grp}pauses_meta_N.bed.gz",
             sam_grp = GENE_SUB_GRPS, win = WIN_SIZE, stren_grp = ALL_STREN_GRPS
-        )
+        ),
+
+        # Summary files for QC
+        RESULTS + "/stats/" + PROJ + "_fastqc.tsv",
+        RESULTS + "/stats/" + PROJ + "_cutadapt.tsv",
+        RESULTS + "/stats/" + PROJ + "_bowtie.tsv",
+        RESULTS + "/stats/" + PROJ + "_dedup.tsv",
+        RESULTS + "/"       + PROJ + "_featureCounts.tsv.summary",
+        RESULTS + "/stats/" + PROJ + "_filt.tsv",
+        RESULTS + "/stats/" + PROJ + "_subsample.tsv"
     output:
         RESULTS + "/" + PROJ + "_analysis.html"
     params:

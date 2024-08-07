@@ -110,17 +110,17 @@ PAUSE_META_BEDS:
 
 ## PLOTTING PARAMETERS ##
 
-ref_dir:           "/beevol/home/sheridanr/ref"                                         # Reference directory
-list_dir:          "gene_lists/GRCh38"                                                  # Gene list directory from ref_dir path
-genome:            "genome/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa.fai" # Chromosome sizes
-fasta:             "genome/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa"     # Fasta for pulling sequences
-genes_all:         "base_lists/GRCh38_HCT116_genes.bed.gz"
-genes_5:           "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for 5' metaplots
-genes_3:           "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for 3' metaplots
-genes_zone:        "base_lists/GRCh38_2ksep.bed.gz"                                     # Gene list for pausing zone plots
-genes_pause:       "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for pause metaplots and sequence logos
-exons:             "/splicing_lists/GRCh38_exons.bed.gz"                                # Bed file containing exon coordinates
-trxn_info:         "/base_lists/base_gene_files/GRCh38_transcripts.bed.gz"              # Bed file containing transcript info to use for filtering exons
+ref_dir:     "/beevol/home/sheridanr/ref"                                         # Reference directory
+list_dir:    "gene_lists/GRCh38"                                                  # Gene list directory from ref_dir path
+genome:      "genome/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa.fai" # Chromosome sizes
+fasta:       "genome/GRCh38/Homo_sapiens.GRCh38.dna.primary_assembly.UCSC.fa"     # Fasta for pulling sequences
+genes_all:   "base_lists/GRCh38_HCT116_genes.bed.gz"
+genes_5:     "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for 5' metaplots
+genes_3:     "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for 3' metaplots
+genes_zone:  "base_lists/GRCh38_2ksep.bed.gz"                                     # Gene list for pausing zone plots
+genes_pause: "base_lists/GRCh38_5ksep.bed.gz"                                     # Gene list for pause metaplots and sequence logos
+exons:       "/splicing_lists/GRCh38_exons.bed.gz"                                # Bed file containing exon coordinates
+trxn_info:   "/base_lists/base_gene_files/GRCh38_transcripts.bed.gz"              # Bed file containing transcript info to use for filtering exons
 
 pause_regions:
     TSS:  "/beevol/home/sheridanr/ref/gene_lists/GRCh38/gene_regions/GRCh38_5_TSS_+500bp.bed.gz"
