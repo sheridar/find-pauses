@@ -95,7 +95,8 @@ rule beds:
     params:
         job_name = "{sample}_create_beds",
         genes    = GENES,
-        mask     = MASK
+        mask     = MASK,
+        orientation = ORENTATION
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
@@ -132,8 +133,8 @@ rule beds:
        # * Collapse read coordinates to the RNA 3' end.
        zcat '{output.bed}' \
            | bedtools intersect -sorted -wa -a - -b {params.genes} \
-           | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
-               if (ORENTATION == "R2") {{
+           | awk -v OFS="\t" -v sam='{wildcards.sample}' -v ORIENTATION="{params.orientation}" '{{
+               if (ORIENTATION == "R2") {{
                   if ($6 == "+") {{
                       $3 = $2 + 1;
                       $6 = "-"
@@ -160,7 +161,7 @@ rule beds:
 
        zcat '{output.bed}' \
            | awk -v OFS="\t" '{{
-               if (ORENTATION == "R2") {{
+               if (ORIENTATION == "R2") {{
                   if ($6 == "+") {{
                       $3 = $2 + 1;
                       $6 = "-"

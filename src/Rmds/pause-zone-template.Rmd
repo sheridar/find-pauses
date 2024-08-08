@@ -129,7 +129,7 @@ create_qrt_go <- function(zone_df, go_path = NULL, plot_clr, background = NULL) 
     map_dfr(~ {
       res <- zone_df %>%
         dplyr::filter(zone_qrt == .x) %>%
-        mutate(symbol = str_extract(name, "(?<=\\|).+$")) %>%
+        dplyr::mutate(symbol = str_extract(name, "(?<=\\|).+$")) %>%
         pull(symbol) %>%
         gost(
           organism  = "hsapiens",
@@ -139,13 +139,13 @@ create_qrt_go <- function(zone_df, go_path = NULL, plot_clr, background = NULL) 
       
       if (!is_empty(res)) {
         res <- res$result %>%
-          mutate(zone_qrt = .x) %>%
+          dplyr::mutate(zone_qrt = .x) %>%
           arrange(p_value)
       }
       
       res
     }) %>%
-    filter(
+    dplyr::filter(
       p_value < 0.05,
       term_size < 500
     ) %>%
