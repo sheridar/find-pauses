@@ -549,7 +549,13 @@ plot_ex_int_pauses <- function(df_in, y = "p-reads_NET", y_ttl = "fraction pause
 
 ### TSS-body pausing
 
-The fraction of reads aligning to pauses is shown for windows downstream of the TSS. For TSS windows, libraries were downsampled so genes have the same number of aligned reads for each sample. For the gene body region (+500 - pAS), reads were downsampled so the body region for each gene has the same number of aligned reads for each sample. p-values were calculated using the Wilcoxon rank sum test.
+The fraction of reads aligning to pauses is shown for windows downstream of the
+TSS.
+For TSS windows, libraries were downsampled so genes have the same number of
+aligned reads for each sample.
+For the gene body region (+500 - pAS), reads were downsampled so the body
+region for each gene has the same number of aligned reads for each sample.
+p-values were calculated using the Wilcoxon rank sum test.
 
 * genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
   are shown (`r basename(plot_params$genes_pause)`)

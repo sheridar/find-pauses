@@ -65,6 +65,9 @@ stren <- plot_params$pause_strength
 
 ```{r "load exons"}
 
+# Load exon coordinate bed file
+# * If file has column names, use them
+# * Rename "transcript" column for mouse data
 ex_cols <- c(
   bed_cols,    "symbol",
   "gene_id",   "gene_name",
@@ -74,15 +77,37 @@ ex_cols <- c(
   "seq"
 )
 
+ex_file <- str_c(list_dir, plot_params$exons)
+
+has_cols <- ex_file %>%
+  read_tsv(n_max = 0, col_names = TRUE) %>%
+  colnames()
+
+has_cols <- any(bed_cols %in% has_cols)
+
+read_cols <- ex_cols
+
+if (has_cols) read_cols <- TRUE
+
 exons <- read_tsv(
   str_c(list_dir, plot_params$exons),
-  col_names = ex_cols
+  col_names = read_cols
 )
 
+if (has_cols) ex_cols <- colnames(exons)
+
+if ("transcript" %in% ex_cols) {
+  exons <- exons %>%
+    dplyr::rename(txn_id = transcript)
+  
+  ex_cols <- colnames(exons)
+}
+
 # Transcript info
-# This must be passed separately since the exon bed file is generated from the
-# gene pred file. There is no easy way to add the transcript_support_level to
-# the gene pred file.
+# * This must be passed separately since the exon bed file is generated from the
+#   gene pred file
+# * There is no easy way to add the transcript_support_level to
+#   the gene pred file.
 tx_cols <- c(
   bed_cols, "gene_id",
   "symbol", "biotype",
