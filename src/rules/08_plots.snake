@@ -64,7 +64,8 @@ rule plots:
             -i "$Rmd" \
             -p '{PROJ}' \
             -c 'src/configs/plots.yaml' \
-            -g '{GENOME_CONFIG}' \
+            -g '{GENOME}' \
+            -d '{GENOME_CONFIG}' \
             -o '{RESULTS}'
         """
 

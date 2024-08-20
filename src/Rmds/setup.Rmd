@@ -163,7 +163,7 @@ win_cols[5] <- "win_id"
 
 # Genome files
 genome <- read_tsv(
-  file.path(plot_params$ref_dir, plot_params$genome),
+  file.path(plot_params$ref_dir, plot_params$gen_config),
   col_names = c("chrom", "size")
 )
 

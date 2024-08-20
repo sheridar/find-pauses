@@ -12,12 +12,13 @@ output:
     theme:          "cosmo"
     highlight:      "tango"
 params:
-  title:   "<p style=font-size:45px;>NET-seq analysis</p>"
-  proj:    "MY-PROJECT"
-  res_dir: "results"
-  genome:  "src/configs/GRCh38.yaml"
-  samples: "SAMPLES.yaml"
-  config:  "src/configs/plots.yaml"
+  title:      "<p style=font-size:45px;>NET-seq analysis</p>"
+  proj:       "MY-PROJECT"
+  res_dir:    "results"
+  go_genome:  "GRCh38"
+  gen_config: "src/configs/GRCh38.yaml"
+  samples:    "SAMPLES.yaml"
+  config:     "src/configs/plots.yaml"
 ---
 
 ---
@@ -49,8 +50,10 @@ plot_grps <- yaml::read_yaml(here::here(params$samples))
 proj          <- params$proj
 res_dir       <- params$res_dir
 plot_params   <- yaml::read_yaml(here::here(params$config))
-genome_params <- yaml::read_yaml(here::here(params$genome))
+genome_params <- yaml::read_yaml(here::here(params$gen_config))
 plot_params   <- append(plot_params, genome_params)
+
+plot_params$go_genome <- plot_params$go_genomes[[params$go_genome]]
 
 plot_params$obj_dir <- file.path(res_dir, plot_params$obj_dir)
 plot_params$tab_dir <- file.path(res_dir, plot_params$tab_dir)

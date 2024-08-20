@@ -112,7 +112,7 @@ create_qrt_meta <- function(meta_df, zone_df, zone_path = NULL, plot_clrs,
   res
 }
 
-create_qrt_go <- function(zone_df, go_path = NULL, plot_clr, background = NULL) {
+create_qrt_go <- function(zone_df, organism = "hsapiens", go_path = NULL, plot_clr, background = NULL) {
 
   go_url <- "biit.cs.ut.ee"
 
@@ -132,7 +132,7 @@ create_qrt_go <- function(zone_df, go_path = NULL, plot_clr, background = NULL) 
         mutate(symbol = str_extract(name, "(?<=\\|).+$")) %>%
         pull(symbol) %>%
         gost(
-          organism  = "hsapiens",
+          organism  = organism,
           custom_bg = background,
           sources   = c("GO:MF", "GO:BP", "GO:CC")
         )
@@ -144,8 +144,12 @@ create_qrt_go <- function(zone_df, go_path = NULL, plot_clr, background = NULL) 
       }
       
       res
-    }) %>%
-    filter(
+    })
+  
+  if (nrow(go_terms) == 0) return(NULL)
+  
+  go_terms <- go_terms %>%
+    dplyr::filter(
       p_value < 0.05,
       term_size < 500
     ) %>%
@@ -219,7 +223,7 @@ create_cor_plots <- function(df_in, x, y, clr = "red", pt_size = 1, out_size = 1
   
   res <- df_in %>%
     mutate(
-      corr = cor(log10(!!sym(x)), log10(!!sym(y))),
+      corr = cor(log10(!!sym(x)), log10(!!sym(y)), method = "spearman"),
       corr = str_c(n, "\nr = ", round(corr, 2))
     ) %>%
     
@@ -281,7 +285,7 @@ create_len_plots <- function(df_in, sam, zone_col = "zone", len_col = "gene_len"
     mutate(
       n = n_distinct(name),
       n = str_c("n = ", comma(n)),
-      r = cor(log10(!!sym(zone_col)), log10(!!sym(len_col))),
+      r = cor(log10(!!sym(zone_col)), log10(!!sym(len_col)), method = "spearman"),
       r = round(r, 2),
       n = str_c(n, "\nr = ", r)
     ) %>%
@@ -900,8 +904,12 @@ zone_qrts %>%
       create_qrt_go(
         plot_clr   = last(clrs),
         go_path    = go_out,
+        organism   = plot_params$go_genome,
         background = go_background
       )
+    
+    # If no GO terms are identified, zone_go will be NULL
+    zone_go <- zone_go %||% plot_spacer()
     
     dsgn <- "
       AAAAAA
