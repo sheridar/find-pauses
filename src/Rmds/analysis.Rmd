@@ -15,10 +15,10 @@ params:
   title:      "<p style=font-size:45px;>NET-seq analysis</p>"
   proj:       "MY-PROJECT"
   res_dir:    "results"
+  config:     "src/configs/plots.yaml"
   go_genome:  "GRCh38"
   gen_config: "src/configs/GRCh38.yaml"
   samples:    "SAMPLES.yaml"
-  config:     "src/configs/plots.yaml"
 ---
 
 ---

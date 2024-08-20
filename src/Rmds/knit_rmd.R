@@ -9,12 +9,12 @@ library(here)
 
 doc <- "Usage: knit_Rmd.R [-h] [-i INPUT] [-p PROJ] [-c CONFIG] [-g GO_GENOME] [-d GEN_CONFIG] [-o OUT]
 
--i --input      INPUT      path to rmarkdown
--p --proj       PROJ       name of project, this is used to name output file
--c --config     CONFIG     path to config file
--g --go_genome  GO_GENOME  genome to use for GO analysis
+-i --input INPUT           path to rmarkdown
+-p --proj PROJ             name of project, this is used to name output file
+-c --config CONFIG         path to config file
+-g --go_genome GO_GENOME   genome to use for GO analysis
 -d --gen_config GEN_CONFIG path to genome specific config file
--o --output     OUTPUT     path to directory to write output file
+-o --output OUTPUT         path to directory to write output file
 -h --help                  display this help message"
 
 opts <- docopt(doc)
