@@ -596,7 +596,7 @@ meta_exons <- exons %>%
   
   # Re-format exon name to include 5' ss coordinates
   # this is required so names are compatible with metaplot beds
-  bed_flank(right = 1, genome = genome, strand = TRUE) %>%
+  bed_flank(right = 1, genome = chrom_sizes, strand = TRUE) %>%
   mutate(
     name = str_c(chrom, ":", start, "-", end),
     name = str_c(name, ";", gene_name, ";", seq)

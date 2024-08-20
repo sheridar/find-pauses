@@ -162,9 +162,8 @@ win_cols <- c(bed_cols, "counts")
 win_cols[5] <- "win_id"
 
 # Genome files
-genome <- read_tsv(
-  file.path(plot_params$ref_dir, plot_params$gen_config),
-  col_names = c("chrom", "size")
+chrom_sizes <- read_genome(
+  file.path(plot_params$ref_dir, plot_params$chrom_sizes)
 )
 
 fa <- here(plot_params$ref_dir, plot_params$fasta)

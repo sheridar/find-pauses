@@ -111,7 +111,7 @@ PAUSE_META_BEDS:
 
 ref_dir:     "/beevol/home/sheridanr/ref"                                         # Reference directory
 list_dir:    "gene_lists/GRCm38"                                                  # Gene list directory from ref_dir path
-genome:      "genome/GRCm38/Mus_musculus.GRCm38.dna.primary_assembly.UCSC.fa.fai" # Chromosome sizes
+chrom_sizes: "genome/GRCm38/Mus_musculus.GRCm38.dna.primary_assembly.UCSC.fa.fai" # Chromosome sizes
 fasta:       "genome/GRCm38/Mus_musculus.GRCm38.dna.primary_assembly.UCSC.fa"     # Fasta for pulling sequences
 genes_all:   "base_lists/GRCm38_HCT116_genes.bed.gz"
 genes_5:     "base_lists/GRCm38_5ksep.bed.gz"                                     # Gene list for 5' metaplots
