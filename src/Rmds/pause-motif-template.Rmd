@@ -1,8 +1,3 @@
----
-output: html_document
-editor_options: 
-  chunk_output_type: inline
----
 
 ```{r "{{grp}} pause motif setup"}
 
@@ -242,14 +237,14 @@ create_pause_meta <- function(df_in, x, y, color = NULL, plot_clrs = NULL, size 
 }
 
 # Create pause logo
-create_pause_logo <- function(df_in, left = 9, right = 10, vline = 10.5) {
+create_pause_logo <- function(df_in, left = 9, right = 10, genome, vline = 10.5) {
   
   cen <- vline - 0.5
   
   n_lab <- unique(df_in$n_lab)
   
   res <- df_in %>%
-    bed_slop(left = left, right = right, genome, strand = TRUE) %>%
+    bed_slop(left = left, right = right, genome = genome, strand = TRUE) %>%
     dplyr::rename(chr = chrom) %>%
     dplyr::select(chr, start, end, name, score, strand)
   
@@ -283,7 +278,7 @@ create_pause_logo <- function(df_in, left = 9, right = 10, vline = 10.5) {
 }
 
 # Create figure showing pause signal and pause logo
-create_pause_logo_fig <- function(met_df, pause_df, ttl, y_lab, y_lim = NULL) {
+create_pause_logo_fig <- function(met_df, pause_df, ttl, y_lab, y_lim = NULL, genome) {
   
   met <- met_df %>%
     create_pause_meta(
@@ -308,7 +303,7 @@ create_pause_logo_fig <- function(met_df, pause_df, ttl, y_lab, y_lim = NULL) {
     )
   
   lo <- pause_df %>%
-    create_pause_logo() +
+    create_pause_logo(genome = genome) +
     theme(plot.margin = margin(0, 7, 7, 7, "pt"))
   
   res <- plot_grid(
@@ -706,8 +701,9 @@ mean_figs <- sep_pause_df %>%
     fig = pmap(
       list(mean_counts, pauses, ttl),
       create_pause_logo_fig,
-      y_lab = y_lab,
-      y_lim = y_lim
+      y_lab  = y_lab,
+      y_lim  = y_lim,
+      genome = chrom_sizes
     ),
     sample = fct_relevel(sample, sam_nms),
     region = fct_relevel(region, logo_regs)
@@ -742,8 +738,9 @@ rel_figs <- sep_pause_df %>%
     fig = pmap(
       list(rel_counts, pauses, ttl),
       create_pause_logo_fig,
-      y_lab = y_lab,
-      y_lim = y_lim
+      y_lab  = y_lab,
+      y_lim  = y_lim,
+      genome = chrom_sizes
     ),
     sample = fct_relevel(sample, sam_nms),
     region = fct_relevel(region, logo_regs)

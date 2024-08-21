@@ -9,7 +9,8 @@ rule featureCounts:
             sample = SAMS_UNIQ
         )
     output:
-        RESULTS + "/" + PROJ + "_featureCounts.tsv"
+        RESULTS + "/" + PROJ + "_featureCounts.tsv",
+        RESULTS + "/" + PROJ + "_featureCounts.tsv.summary"
     params:
         job_name = PROJ + "_featureCounts",
         args     = CMD_PARAMS["featureCounts"],
@@ -28,7 +29,7 @@ rule featureCounts:
             {params.args} \
             -F GTF \
             -a '{params.gtf}' \
-            -o '{output}' \
+            -o '{output[0]}' \
             -T {threads} \
             {input}
         """
