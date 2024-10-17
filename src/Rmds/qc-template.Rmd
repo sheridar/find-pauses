@@ -70,8 +70,9 @@ qc_theme <- theme(
 ```{r "fq summary", fig.width = 24, fig.height = 10}
 
 # Some sample names are missing part of the fastq file name
-# need to match samples with fastq files
-fq_sfx <- "(_S[0-9]+_L[0-9]+|)_R[12]_[0-9]+.fastq.gz$"
+# * need to match samples with fastq files
+# * fastqs must end in _R[12]_[0-9]+.fastq.gz or _[0-9]+.fq.gz
+fq_sfx <- "(_S[0-9]+_L[0-9]+|)_(R[12]_|)[0-9]+.(fastq|fq).gz$"
 
 fq_sum <- fq_sum %>%
   vroom(col_names = c("value", "metric", "path")) %>%
@@ -83,7 +84,8 @@ fq_key <- names(sams_shrt_2) %>%
   set_names() %>%
   map_chr(~ {
     res <- fqs[grepl(.x, fqs)]
-    res <- unique(str_remove(res, fq_sfx))
+    
+    unique(str_remove(res, fq_sfx))
   })
 
 fq_key <- set_names(
@@ -116,7 +118,7 @@ ratio <- n_distinct(fq_sum$metric) / n_distinct(fq_sum$fq_name)
 
 fq_sum %>%
   ggplot(aes(path, metric, fill = value)) +
-  geom_tile(color = "white", size = 0.5) +
+  geom_tile(color = "white", linewidth = 0.5) +
   facet_wrap(~ grp, scales = "free_x", nrow = 2) +
   scale_fill_manual(values = theme_colors[c(3, 4, 2)]) +
   theme_info +
