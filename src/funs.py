@@ -173,3 +173,16 @@ def _get_fq_paths(wildcards):
     return fqs
 
 
+# set options for cutadapt 
+def _get_ca_options(orientation, umi_pattern):
+  # Check conditions to determine Cutadapt options
+  if re.search(r'N{6,}', umi_pattern):
+      if orientation == "R1":
+          ca_opts = "--pair-filter=first --discard-untrimmed "
+      else:
+          ca_opts = "--pair-filter=any --discard-untrimmed "
+  else:
+      ca_opts = ""
+
+  return ca_opts
+
