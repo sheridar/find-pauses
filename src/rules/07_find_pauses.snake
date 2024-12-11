@@ -6,10 +6,86 @@
 # 200 bp window
 PAUSE_SEP = 30
 
-rule find_pauses:
+rule find_pauses_pos:
     input:
         pos_bg = RESULTS + "/{sam_grp}/{sam_grp}_pos.bedgraph.gz",
         neg_bg = RESULTS + "/{sam_grp}/{sam_grp}_neg.bedgraph.gz"
+    output:
+        pauses = temp(RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_pauses_pos.bed")
+    params:
+        job_name = "{sam_grp}_{win}_find_pauses_pos",
+        genes    = PAUSE_GENES,
+        mask     = PAUSE_MASK,
+        chroms   = CHROMS
+    resources:
+        mem_mb = _get_mem(4, 1000),
+        mem_gb = _get_mem(4)
+    log:
+        out = RESULTS + "/logs/{sam_grp}_{win}_pauses_pos.out",
+        err = RESULTS + "/logs/{sam_grp}_{win}_pauses_pos.err"
+    benchmark:
+        RESULTS + "/benchmarks/{sam_grp}_{win}_pauses_pos.tsv"
+    threads:
+        6
+    shell:
+        """
+
+        '{SRC}/pause_finder' \
+            -i '{input.pos_bg}' \
+            -g '{params.genes}' \
+            -m '{params.mask}' \
+            -c '{params.chroms}' \
+            -s {wildcards.win} \
+            -l 5 \
+            -w 5 \
+            -v 3 \
+            -t {threads} \
+            -o '{output.pauses}'
+
+        """
+
+rule find_pauses_neg:
+    input:
+        pos_bg = RESULTS + "/{sam_grp}/{sam_grp}_pos.bedgraph.gz",
+        neg_bg = RESULTS + "/{sam_grp}/{sam_grp}_neg.bedgraph.gz"
+    output:
+        pauses = temp(RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_pauses_neg.bed")
+    params:
+        job_name = "{sam_grp}_{win}_find_pauses_neg",
+        genes    = PAUSE_GENES,
+        mask     = PAUSE_MASK,
+        chroms   = CHROMS
+    resources:
+        mem_mb = _get_mem(4, 1000),
+        mem_gb = _get_mem(4)
+    log:
+        out = RESULTS + "/logs/{sam_grp}_{win}_pauses_neg.out",
+        err = RESULTS + "/logs/{sam_grp}_{win}_pauses_neg.err"
+    benchmark:
+        RESULTS + "/benchmarks/{sam_grp}_{win}_pauses_neg.tsv"
+    threads:
+        6
+    shell:
+        """
+        
+        '{SRC}/pause_finder' -r \
+            -i '{input.neg_bg}' \
+            -g '{params.genes}' \
+            -m '{params.mask}' \
+            -c '{params.chroms}' \
+            -s {wildcards.win} \
+            -l 5 \
+            -w 5 \
+            -v 3 \
+            -t {threads} \
+            -o '{output.pauses}'
+
+        """
+
+rule find_pauses:
+    input:
+        pos_bg = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_pauses_pos.bed",
+        neg_bg = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_pauses_neg.bed"
     output:
         pauses = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_pauses.bed.gz",
         sep    = RESULTS + "/{sam_grp}/pauses/{sam_grp}_{win}_sep_pauses.bed.gz"
@@ -30,45 +106,12 @@ rule find_pauses:
         4
     shell:
         """
-        tmp_dir=$(dirname '{output.pauses}')
-
-        # Find pauses for positive strand signal
-        pos_out=$(mktemp -p "$tmp_dir" pos_out.XXXXX)
-
-        '{SRC}/pause_finder' \
-            -i '{input.pos_bg}' \
-            -g '{params.genes}' \
-            -m '{params.mask}' \
-            -c '{params.chroms}' \
-            -s {wildcards.win} \
-            -l 5 \
-            -w 5 \
-            -v 3 \
-            -t {threads} \
-            -o "$pos_out"
-
-        # Find pauses for negative strand signal
-        neg_out=$(mktemp -p "$tmp_dir" neg_out.XXXXX)
- 
-        '{SRC}/pause_finder' -r \
-            -i '{input.neg_bg}' \
-            -g '{params.genes}' \
-            -m '{params.mask}' \
-            -c '{params.chroms}' \
-            -s {wildcards.win} \
-            -l 5 \
-            -w 5 \
-            -v 3 \
-            -t {threads} \
-            -o "$neg_out"
-
+        
         # Combine positive and negative pauses
-        cat "$pos_out" "$neg_out" \
+        cat '{input.pos_bg}' '{input.neg_bg}' \
             | sort -k1,1 -k2,2n -k6,6 -u \
             | gzip \
             > '{output.pauses}'
-
-        rm "$pos_out" "$neg_out"
 
         # Identify separated pauses
         bedtools closest -k 2 -d -s \
@@ -79,7 +122,7 @@ rule find_pauses:
             | sort -S1G --parallel={threads} -k1,1 -k2,2n -k3,3n -u \
             | gzip \
             > '{output.sep}'
-        """
+        """        
 
 
 # Identify strong pauses
