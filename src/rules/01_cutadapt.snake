@@ -14,7 +14,8 @@ rule extract_umi:
         stats = RESULTS + "/{sample}/{sample}_umi_stats.txt"
     params:
         job_name = "{sample}_umi_extract",
-        umi_pat  = CMD_PARAMS["umi_pattern"]
+        umi_pat  = UMI_PATTERN,
+        umi_opt  = _get_ca_options(ORENTATION,UMI_PATTERN)
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
@@ -23,18 +24,33 @@ rule extract_umi:
         err = RESULTS + "/logs/{sample}_extract_umi.err"
     threads:
         1
-    shell:
-        """
-        umi_tools extract \
-            -I '{input[1]}' \
-            --extract-method=string \
-            --bc-pattern={params.umi_pat} \
-            --read2-in='{input[0]}' \
-            --read2-out='{output.R1}' \
-            -L '{output.stats}' \
-            | gzip \
-            > '{output.R2}'
-        """
+    run:
+        # If no params are passed step is skipped
+        if len(params.umi_opt) == 0:
+            shell(
+                """
+                cp {input[0]} {output[0]}
+                cp {input[1]} {output[1]}
+                echo "Input Reads:  0" >> {output[2]}
+                echo "Reads output:  0" >> {output[2]}
+                
+                """
+              )
+        else:
+            shell(
+                """
+                umi_tools extract \
+                    -I '{input[1]}' \
+                    --extract-method=string \
+                    --bc-pattern={params.umi_pat} \
+                    --read2-in='{input[0]}' \
+                    --read2-out='{output.R1}' \
+                    -L '{output.stats}' \
+                    | gzip \
+                    > '{output.R2}'
+                """
+            )
+        
 
 
 # Trim reads with cutadapt
@@ -49,6 +65,7 @@ rule cutadapt:
     params:
         job_name = "{sample}_cutadapt",
         args     = CMD_PARAMS["cutadapt"],
+        args2    = _get_ca_options(ORENTATION,UMI_PATTERN),
         seq1     = lambda wildcards: READ_1_ADAPTER[wildcards.sample],
         seq2     = lambda wildcards: READ_2_ADAPTER[wildcards.sample]
     resources:
@@ -63,6 +80,7 @@ rule cutadapt:
         """
         cutadapt \
             {params.args} \
+            {params.args2} \
             -a {params.seq1} \
             -A {params.seq2} \
             -j {threads} \
