@@ -12,7 +12,8 @@ rule dedup:
         stats = RESULTS + "/{sample}/{sample}_dedup_stats.txt"
     params:
         job_name = "{sample}_dedup",
-        args     = CMD_PARAMS["umi_tools"]
+        args     = CMD_PARAMS["umi_tools"],
+        umi_pat  = _get_ca_options(ORENTATION,UMI_PATTERN)
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
@@ -21,16 +22,33 @@ rule dedup:
         err = RESULTS + "/logs/{sample}_dedup.err"
     threads:
         1
-    shell:
-        """
-        umi_tools dedup \
-            {params.args} \
-            -I '{input.bam}' \
-            -S '{output.bam}' \
-            -L '{output.stats}'
+    run:
+        # If no params are passed step is skipped
+        if len(params.umi_pat) == 0:
+            shell(
+                """
+                cp {input[0]} {output[0]}
+                cp {input[1]} {output[1]}
+                echo "$(date +"%Y-%m-%d %H:%M:%S"),1 INFO Reads: Input Reads: $(samtools idxstats {input.bam} | awk '{{s+=$3}} END {{print s}}')" >> {output[2]}
+                echo "$(date +"%Y-%m-%d %H:%M:%S"),2 INFO Number of reads out: $(samtools idxstats {input.bam} | awk '{{s+=$3}} END {{print s}}')" >> {output[2]}
+                echo "$(date +"%Y-%m-%d %H:%M:%S"),3 INFO Total number of positions deduplicated: 0" >> {output[2]}
+                echo "$(date +"%Y-%m-%d %H:%M:%S"),4 INFO Mean number of unique UMIs per position: 0" >> {output[2]}
+                echo "$(date +"%Y-%m-%d %H:%M:%S"),5 INFO Max. number of unique UMIs per position: 0" >> {output[2]}
+                
+                """
+              )
+        else:
+            shell(
+                """
+                umi_tools dedup \
+                  {params.args} \
+                  -I '{input.bam}' \
+                  -S '{output.bam}' \
+                  -L '{output.stats}'
 
         samtools index '{output.bam}'
         """
+            )
 
 
 # Create duplication summary
@@ -78,7 +96,8 @@ rule beds:
     params:
         job_name = "{sample}_create_beds",
         genes    = GENES,
-        mask     = MASK
+        mask     = MASK,
+        orientation = ORENTATION
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
@@ -115,12 +134,22 @@ rule beds:
        # * Collapse read coordinates to the RNA 3' end.
        zcat '{output.bed}' \
            | bedtools intersect -sorted -wa -a - -b {params.genes} \
-           | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
-               if ($6 == "+") {{
-                   $2 = $3 - 1;
+           | awk -v OFS="\t" -v sam='{wildcards.sample}' -v ORIENTATION="{params.orientation}" '{{
+               if (ORIENTATION == "R2") {{
+                  if ($6 == "+") {{
+                      $3 = $2 + 1;
+                      $6 = "-"
+                  }} else {{
+                      $2 = $3 - 1;
+                      $6 = "+"
+                  }};
                }} else {{
-                   $3 = $2 + 1;
-               }};
+                  if ($6 == "+") {{
+                      $2 = $3 - 1;
+                   }} else {{
+                       $3 = $2 + 1;
+                   }};
+               }}
                count += 1;
                print
            }} END {{
@@ -132,12 +161,22 @@ rule beds:
            > '{output.shift}'
 
        zcat '{output.bed}' \
-           | awk -v OFS="\t" '{{
-               if ($6 == "+") {{
-                   $2 = $3 - 1;
+           | awk -v OFS="\t" -v ORIENTATION="{params.orientation}" '{{
+               if (ORIENTATION == "R2") {{
+                  if ($6 == "+") {{
+                      $3 = $2 + 1;
+                      $6 = "-"
+                  }} else {{
+                      $2 = $3 - 1;
+                      $6 = "+"
+                  }};
                }} else {{
-                   $3 = $2 + 1;
-               }};
+                  if ($6 == "+") {{
+                      $2 = $3 - 1;
+                   }} else {{
+                       $3 = $2 + 1;
+                   }};
+               }}
                print
            }}' \
            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
