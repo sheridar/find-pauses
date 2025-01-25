@@ -18,6 +18,9 @@ TSS_LIM     <- plot_params$tss_lim      # raw number of reads
 BODY_LIM    <- plot_params$body_lim     # reads / kb
 ONLY_SHARED <- plot_params$only_shared  # include only shared genes
 
+# File for saving plot data
+tss_body_wins_file <- file.path(plot_params$obj_dir, str_c(grp, pause_prfx, "tss-body-wins_data.tsv.gz"))
+tss_body_file      <- file.path(plot_params$obj_dir, str_c(grp, pause_prfx, "tss-body_data.tsv.gz"))
 ```
 
 ```{r "{{grp}} pause quant functions"}
@@ -555,7 +558,7 @@ For TSS windows, libraries were downsampled so genes have the same number of
 aligned reads for each sample.
 For the gene body region (+500 - pAS), reads were downsampled so the body
 region for each gene has the same number of aligned reads for each sample.
-p-values were calculated using the Wilcoxon rank sum test.
+p-values were calculated using a Wilcoxon rank sum test.
 
 * genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
   are shown (`r basename(plot_params$genes_pause)`)
@@ -563,6 +566,7 @@ p-values were calculated using the Wilcoxon rank sum test.
 * body region downsampled for gene body
 * TSS regions >=`r TSS_LIM` reads
 * body region >=`r BODY_LIM` read/kb
+* data used for this plot is saved in `r tss_body_wins_file`
 
 ```{r "{{grp}} pause stats"}
 
@@ -713,6 +717,10 @@ boxes_exclude_regs <- "tss"
 
 metric <- c("fraction pause reads" = "p-reads_NET")
 
+# Save data used for boxplots
+box_dat_0 %>%
+  write_tsv(here(tss_body_wins_file))
+
 # Only use reps that are present for all samples
 common_reps %>%
   map(~ {
@@ -732,7 +740,7 @@ common_reps %>%
 
 ```
 
-The fraction of reads aligning to pauses is shown for TSS and gene body regions. p-values were calculated using the Wilcoxon rank sum test.
+The fraction of reads aligning to pauses is shown for TSS and gene body regions. p-values were calculated using a Wilcoxon rank sum test.
 
 * genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb
   are shown (`r basename(plot_params$genes_pause)`)
@@ -741,6 +749,7 @@ The fraction of reads aligning to pauses is shown for TSS and gene body regions.
 * TSS regions >=`r TSS_LIM` reads
 * body region >=`r BODY_LIM` read/kb
 * TSS and body regions >= `r PAUSE_LIM[2]` pause
+* data used for this plot is saved in `r tss_body_file`
 
 ```{r "{{grp}} pause reads tss-body boxes", fig.width = max(1 + (2.5 * n_common_reps), 10), fig.height = 5}
 
@@ -755,6 +764,10 @@ box_dat <- pause_stats %>%
     body_lim    = BODY_LIM,
     only_shared = ONLY_SHARED
   )
+
+# Save data used for boxplots
+box_dat %>%
+  write_tsv(here(tss_body_file))
 
 # Only use reps that are present for all samples
 common_reps %>%
