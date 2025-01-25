@@ -19,8 +19,8 @@ BODY_LIM    <- plot_params$body_lim     # reads / kb
 ONLY_SHARED <- plot_params$only_shared  # include only shared genes
 
 # File for saving plot data
-tss_body_wins_file <- here(plot_params$obj_dir, str_c(grp, pause_prfx, "tss-body-wins_data.tsv.gz"))
-tss_body_file      <- here(plot_params$obj_dir, str_c(grp, pause_prfx, "tss-body_data.tsv.gz"))
+tss_body_wins_file <- file.path(plot_params$obj_dir, str_c(grp, pause_prfx, "tss-body-wins_data.tsv.gz"))
+tss_body_file      <- file.path(plot_params$obj_dir, str_c(grp, pause_prfx, "tss-body_data.tsv.gz"))
 ```
 
 ```{r "{{grp}} pause quant functions"}
@@ -719,7 +719,7 @@ metric <- c("fraction pause reads" = "p-reads_NET")
 
 # Save data used for boxplots
 box_dat_0 %>%
-  write_tsv(tss_body_wins_file)
+  write_tsv(here(tss_body_wins_file))
 
 # Only use reps that are present for all samples
 common_reps %>%
@@ -767,7 +767,7 @@ box_dat <- pause_stats %>%
 
 # Save data used for boxplots
 box_dat %>%
-  write_tsv(tss_body_file)
+  write_tsv(here(tss_body_file))
 
 # Only use reps that are present for all samples
 common_reps %>%
