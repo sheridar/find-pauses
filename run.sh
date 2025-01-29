@@ -123,15 +123,14 @@ run_snakemake() {
         fi
     fi
 
-    module load singularity
-
     drmaa_args='
         -J {params.job_name}
         -oo {log.out} 
         -eo {log.err} 
         -R "rusage[mem={resources.mem_gb}] span[hosts=1]"
         -M {resources.mem_gb}
-        -n {threads} '
+        -n {threads}
+        -app find-pauses '
 
     snakemake $snake_args \
         --snakefile 'src/pipelines/net.snake' \
