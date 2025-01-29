@@ -23,7 +23,6 @@ MEMORY:
 
 # Docker container to use for pipeline
 CONTAINER:
-    "docker://rmsheridan/find-pauses:v1.2.0"
 
 
 ## Additional parameters for various processing steps
