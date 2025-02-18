@@ -39,9 +39,9 @@ else:
     meta_temp_fn = temp
 
 
-# Docker container
-singularity:
-    config["CONTAINER"]
+# # Docker container
+# singularity:
+#     config["CONTAINER"]
 
 
 # Parameters from config.yaml
@@ -194,20 +194,20 @@ print("GENE_SUB_GRPS (%s): %s\n" % (len(GENE_SUB_GRPS), GENE_SUB_GRPS))
 
 
 # Wildcard constraints
-GRP_REGEX = "[a-zA-Z0-9\-]+"
+GRP_REGEX = "[a-zA-Z0-9-]+"
 
 wildcard_constraints:
-    region  = "[a-zA-Z0-9\-]+",
+    region  = "[a-zA-Z0-9-]+",
     reads   = "[a-zA-Z]+",
     length  = "[a-zA-Z]+",
     sample  = "[a-zA-Z0-9_]+",
     group   = GRP_REGEX,
-    sam_grp = "[a-zA-Z0-9_\-]+-[a-zA-Z0-9_\-]+",
+    sam_grp = "[a-zA-Z0-9_-]+-[a-zA-Z0-9_-]+",
 
     win          = "[0-9]+",
     stren        = "(_(?!sep).*_)",
     stren_grp    = "(_(?!sep).*_|_)",
-    pause_region = "[a-zA-Z0-9\-]+"
+    pause_region = "[a-zA-Z0-9-]+"
 
 
 # Create symlinks for fastqs

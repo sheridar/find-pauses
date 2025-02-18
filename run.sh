@@ -123,22 +123,24 @@ run_snakemake() {
         fi
     fi
 
-    drmaa_args='
-        -J {params.job_name}
-        -oo {log.out} 
-        -eo {log.err} 
-        -R "rusage[mem={resources.mem_gb}] span[hosts=1]"
-        -M {resources.mem_gb}
-        -n {threads}
-        -app find-pauses '
+    # lsf_args='
+    #     -J {params.job_name}
+    #     -oo {log.out} 
+    #     -eo {log.err} 
+    #     -R "rusage[mem={resources.mem_gb}] span[hosts=1]"
+    #     -M {resources.mem_gb}
+    #     -n {threads}
+    #     -app find-pauses '
 
     snakemake $snake_args \
         --snakefile 'src/pipelines/net.snake' \
-        --use-singularity \
-        --singularity-args "--bind $bind_dir" \
-        --drmaa "$drmaa_args" \
+        --executor lsf \
         --config SSH_KEY_DIR="$ssh_key_dir" \
         --configfiles 'SAMPLES.yaml' 'src/configs/net.yaml' 'src/configs/pauses.yaml'
+
+        #--profile 'src/configs/profile.yaml' \
+        #--use-singularity \
+        #--singularity-args "--bind $bind_dir" \
 }
 
 

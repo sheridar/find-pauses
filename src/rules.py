@@ -24,7 +24,7 @@ def _cutadapt_summary(input, output):
                 if match:
                     num = re.search("(?<=: |[ ]{2})[0-9,]+", line)
                     num = re.sub(",", "", num.group(0))
-                    met = re.search("[\w\(\) ]+:", line).group(0)
+                    met = re.search(r"[\w() ]+:", line).group(0)
                     met = re.sub(":", "", met)
                     met = met.strip()
     
@@ -39,7 +39,7 @@ def _bowtie_summary(input, output):
     
             for line in open(file, "r"):
                 line  = re.sub("; of these:", "", line.strip())
-                line  = re.sub(" \([0-9\.%]+\)", "", line)
+                line  = re.sub(r" \([0-9.%]+\)", "", line)
                 words = line.split(" ")
                 num   = words[0]
                 met   = words[1:]
@@ -51,11 +51,11 @@ def _bowtie_summary(input, output):
 def _dedup_summary(input, output):
     with open(output, "w") as out:
         metrics = [
-            "Input Reads: [0-9]+",
-            "Number of reads out: [0-9]+",
-            "Total number of positions deduplicated: [0-9]+",
-            "Mean number of unique UMIs per position: [0-9\.]+",
-            "Max. number of unique UMIs per position: [0-9]+"
+            r"Input Reads: [0-9]+",
+            r"Number of reads out: [0-9]+",
+            r"Total number of positions deduplicated: [0-9]+",
+            r"Mean number of unique UMIs per position: [0-9.]+",
+            r"Max. number of unique UMIs per position: [0-9]+"
         ]
     
         for file in input:
@@ -68,8 +68,8 @@ def _dedup_summary(input, output):
     
                     if met:
                         met = met.group(0)
-                        num = re.search("[0-9\.]+$", met).group(0)
-                        met = re.sub(": [0-9\.]+$", "", met)
+                        num = re.search(r"[0-9.]+$", met).group(0)
+                        met = re.sub(r": [0-9.]+$", "", met)
     
                         out.write("%s\t%s\t%s\n" % (name, met, num))
 

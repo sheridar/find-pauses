@@ -17,12 +17,15 @@ RESULTS:
 # * The sample names must correspond to the begining of the fastq name
 RAW_DATA:
     - "/beevol/home/erickson/fastqs/220218_A00405_0531_BH352HDRX2"
+    # - "/beevol/home/erickson/fastqs/230317_A00405_0671_AH2YMTDSX7"
+    # - "/beevol/home/erickson/fastqs/230515_A00405_0689_BH55LHDSX7"
 
 
 # Genome to use for analysis
 # * The specified genome must have a config file present in src/configs
 GENOME:
     "GRCh38"
+    # "GRCm38"
 
 
 # Adapter sequences to trim from the 3' end of each read
@@ -31,11 +34,7 @@ GENOME:
 #   or separate separate sequences for each sample (as shown for
 #   READ_1_ADAPTER)
 READ_1_ADAPTER:
-    293flpin_Xrn2_WT_R2: "AACTGTAGGCACCATCAAT"
-    293flpin_Xrn2_MT_R2: "AACTGTAGGCACCATCAAT"
-    293flpin_Xrn2_WT_R3: "AACTGTAGGCACCATCAAT"
-    293flpin_Xrn2_MT_R3: "AACTGTAGGCACCATCAAT"
-    293flpin_Xrn2_WT_R4: "AACTGTAGGCACCATCAAT"
+    "AACTGTAGGCACCATCAAT"
 
 READ_2_ADAPTER:
     "AGATCGGAAGAGCGTCGTGTAG"
@@ -94,6 +93,14 @@ SAMPLES:
     Xrn2-2:
         xrn2-r2:
             wild-type: "293flpin_Xrn2_WT_R4"
+#     Aging:
+#         aging-r1:
+#             young: "DB_mouseLiver1"
+#             old:   "DB_mouseLiver_OLD2"
+# 
+#         aging-r2:
+#             young: "DB_mouseLiver_young2"
+#             old:   "DB_mouseLiver_OLD1"
 
 
 # Sample colors
@@ -101,5 +108,6 @@ SAMPLES:
 # * Colors will be set automatically if they are not provided 
 COLORS:
     Xrn2-1: ["black", "#4DB4C2"]
+    # Aging:  ["black", "#4DB4C2"]
 
 

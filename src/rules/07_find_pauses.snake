@@ -268,7 +268,7 @@ rule pause_metaplots:
     threads:
         6
     shell:
-        """
+        r"""
         source '{SRC}/funs.sh'
 
         tmp_dir=$(dirname '{output.wins}')
