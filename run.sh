@@ -129,8 +129,7 @@ run_snakemake() {
         -eo {log.err} 
         -R "rusage[mem={resources.mem_gb}] span[hosts=1]"
         -M {resources.mem_gb}
-        -n {threads}
-        -app find-pauses '
+        -n {threads} '
 
     snakemake $snake_args \
         --snakefile 'src/pipelines/net.snake' \
