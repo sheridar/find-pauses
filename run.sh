@@ -170,7 +170,7 @@ run_snakemake \
     "$snake_args" \
     "$bind_dir" \
     'find-pauses' \
-    'env/base.yml' \
+    'env/docker.yml' \
     "$HOME/.ssh"
 EOF
 

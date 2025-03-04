@@ -20,3 +20,4 @@ dependencies:
   - deeptools
   - ucsc-bedgraphtobigwig
   - subread
+  - drmaa
