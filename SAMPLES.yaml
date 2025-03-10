@@ -4,7 +4,7 @@
 # Project name
 # * This is used for naming various outputs
 PROJ:
-    "MY-PROJECT"
+    "180629_200228_SRC"
 
 
 # Directory to save results
@@ -16,7 +16,8 @@ RESULTS:
 # * Multiple directories can be provided
 # * The sample names must correspond to the begining of the fastq name
 RAW_DATA:
-    - "/beevol/home/erickson/fastqs/220218_A00405_0531_BH352HDRX2"
+    - "/beevol/home/erickson/fastqs/180629_A00405_0031_BH5LNMDSXX" # 3' 5'
+    - "/beevol/home/erickson/fastqs/200228_A00405_0213_BH2FGYDSXY" # U 5'
 
 
 # Genome to use for analysis
@@ -27,27 +28,33 @@ GENOME:
 
 # Adapter sequences to trim from the 3' end of each read
 # * These are passed to the -a and -A arguments of cutadapt
-# * Provide either a single sequence (as shown for READ_2_ADAPTER)
-#   or separate separate sequences for each sample (as shown for
-#   READ_1_ADAPTER)
-READ_1_ADAPTER:
-    293flpin_Xrn2_WT_R2: "AACTGTAGGCACCATCAAT"
-    293flpin_Xrn2_MT_R2: "AACTGTAGGCACCATCAAT"
-    293flpin_Xrn2_WT_R3: "AACTGTAGGCACCATCAAT"
-    293flpin_Xrn2_MT_R3: "AACTGTAGGCACCATCAAT"
-    293flpin_Xrn2_WT_R4: "AACTGTAGGCACCATCAAT"
+       
+# U = AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC / AGATCGGAAGAGCGTCGTGTAG / ACACTCTTTCCCTACACGACGCTCTTCCGATCT
+# 3' = TGGAATTCTCGGGTGCCAAGG 
+# 5' = GTTCAGAGTTCTACAGTCCGACGATC / GATCGTCGGACTGTAGAACTCTGAAC
+
+READ_1_ADAPTER: 
+    Control_mNetSeq_ER_SRC: "TGGAATTCTCGGGTGCCAAGG"
+    TAM_mNetSeq_ER_SrC: "TGGAATTCTCGGGTGCCAAGG"
+    NF_ERSrcMinusTamoxifen_mNETseq: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
+    NF_ERSrcPlusTamoxifen_mNETseq: "AGATCGGAAGAGCACACGTCTGAACTCCAGTCAC"
 
 READ_2_ADAPTER:
-    "AGATCGGAAGAGCGTCGTGTAG"
+    "GATCGTCGGACTGTAGAACTCTGAAC"
+     
 
+ORENTATION:
+    "R2" # R1, R2
+
+UMI_PATTERN:
+    "none" # "NNNNNNNNNNNN", if no UMI set to "none" or ""
 
 # Specify base URL and destination to transfer bigwigs
-# * Directory path will be created if it does not exist
 URL:
-    "http://amc-sandbox.ucdenver.edu/User25/MY-PROJECT"
+    "http://amc-sandbox.ucdenver.edu/User7/180629_200228_SRC"
 
 SSH:
-    "amc-sandbox:~/public_html/MY-PROJECT"
+    "amc-sandbox:~/public_html/180629_200228_SRC"
 
 
 # Sample groups for subsampling, use the following format:
@@ -82,24 +89,20 @@ SSH:
 #         ...
 #
 SAMPLES:
-    Xrn2-1:
-        xrn2-r2:
-            Xrn2-WT: "293flpin_Xrn2_WT_R2"
-            Xrn2-MT: "293flpin_Xrn2_MT_R2"
+    SRC-TAM:
+        SRC-r1:
+            Control: "Control_mNetSeq_ER_SRC"
+            Tamoxifen: "TAM_mNetSeq_ER_SrC"
 
-        xrn2-r3:
-            Xrn2-WT: "293flpin_Xrn2_WT_R3"
-            Xrn2-MT: "293flpin_Xrn2_MT_R3"
-
-    Xrn2-2:
-        xrn2-r2:
-            wild-type: "293flpin_Xrn2_WT_R4"
+        SRC-r2:
+            Control: "NF_ERSrcMinusTamoxifen_mNETseq"
+            Tamoxifen: "NF_ERSrcPlusTamoxifen_mNETseq"
 
 
 # Sample colors
 # * For each section, a color can be provided for each sample name
 # * Colors will be set automatically if they are not provided 
 COLORS:
-    Xrn2-1: ["black", "#4DB4C2"]
+    SRC-TAM: ["black", "#4DB4C2"]
 
 
