@@ -1,6 +1,6 @@
 #! /usr/bin/env bash
 
-set -o nounset -o pipefail -o errexit
+set -o pipefail -o errexit
 
 mkdir -p logs
 
@@ -123,6 +123,8 @@ run_snakemake() {
         fi
     fi
 
+    # module load singularity
+
     drmaa_args='
         -J {params.job_name}
         -oo {log.out} 
@@ -169,8 +171,8 @@ run_snakemake \
     "$dry_run" \
     "$snake_args" \
     "$bind_dir" \
-    'find-pauses' \
-    'env/docker.yml' \
+    'snakemake' \
+    'env/snakemake.yml' \
     "$HOME/.ssh"
 EOF
 
