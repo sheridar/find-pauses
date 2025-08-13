@@ -21,6 +21,8 @@ rule bigwigs:
     resources:
         mem_mb = _get_mem(0.5, 1000),
         mem_gb = _get_mem(0.5)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sam_grp}_bigwig.out",
         err = RESULTS + "/logs/{sam_grp}_bigwig.err"
@@ -30,6 +32,8 @@ rule bigwigs:
         6
     shell:
         """
+        micromamba activate find-pauses
+ 
         source '{SRC}/funs.sh'
         
         # Create bigwigs for each strand
@@ -79,6 +83,8 @@ rule igv_browser:
     resources:
         mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/" + PROJ + "_igv.out",
         err = RESULTS + "/logs/" + PROJ + "_igv.err"
@@ -86,6 +92,8 @@ rule igv_browser:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         source '{SRC}/funs.sh'
 
         create_urls \

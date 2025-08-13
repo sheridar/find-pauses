@@ -50,6 +50,8 @@ rule plots:
     resources:
         mem_mb = _get_mem(4, 1000),
         mem_gb = _get_mem(4)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/" + PROJ + "_plots.out",
         err = RESULTS + "/logs/" + PROJ + "_plots.err"
@@ -57,6 +59,8 @@ rule plots:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         Rmd='{SRC}/Rmds/analysis.Rmd'
         script='{SRC}/Rmds/knit_rmd.R'
 

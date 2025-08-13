@@ -8,7 +8,7 @@ mkdir -p logs
 # Set default inputs
 install=0
 dry_run=0
-snake_args='--jobs 100 --keep-going --retries 1'
+snake_args='--jobs 100 --keep-going'
 bind_dir='/beevol/home'
 
 
@@ -133,11 +133,13 @@ run_snakemake() {
 
     snakemake $snake_args \
         --snakefile 'src/pipelines/net.snake' \
-        --use-singularity \
-        --singularity-args "--bind $bind_dir" \
         --drmaa "$drmaa_args" \
         --config SSH_KEY_DIR="$ssh_key_dir" \
         --configfiles 'SAMPLES.yaml' 'src/configs/net.yaml' 'src/configs/pauses.yaml'
+        #--use-conda \
+        #--conda-frontend 'mamba' \
+        #--use-singularity \
+        #--singularity-args "--bind $bind_dir" \
 }
 
 

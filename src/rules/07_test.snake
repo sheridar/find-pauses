@@ -21,6 +21,8 @@ rule gene_subsample_test:
     resources:
         mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{group}_{sub_region}_test.out",
         err = RESULTS + "/logs/{group}_{sub_region}_test.err"
@@ -30,6 +32,8 @@ rule gene_subsample_test:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         check_sampling() {{
             local bgs=($1)
             local genes="$2"
@@ -88,6 +92,8 @@ rule gene_subsample_test_summary:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/gene_subsample_test_summary.out",
         err = RESULTS + "/logs/gene_subsample_test_summary.err"
@@ -95,6 +101,8 @@ rule gene_subsample_test_summary:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         file_arr=({input})
 
         for file in ${{file_arr[@]}}
@@ -124,6 +132,8 @@ rule subsample_test:
     resources:
         mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{group}_test.out",
         err = RESULTS + "/logs/{group}_test.err"
@@ -133,6 +143,8 @@ rule subsample_test:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         count_reads() {{
             local bg_in="$1"
 
@@ -185,6 +197,8 @@ rule subsample_test_summary:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/subsample_test_summary.out",
         err = RESULTS + "/logs/subsample_test_summary.err"
@@ -192,6 +206,8 @@ rule subsample_test_summary:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         file_arr=({input})
 
         for file in ${{file_arr[@]}}

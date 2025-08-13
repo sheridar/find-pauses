@@ -17,6 +17,8 @@ rule bowtie:
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sample}_bowtie.out",
         err = RESULTS + "/logs/{sample}_bowtie.err"
@@ -24,6 +26,8 @@ rule bowtie:
         12
     shell:
         """
+        micromamba activate find-pauses
+
         # By default bowtie2 performs end-to-end alignment
         # By default bowtie2 searches for multiple alignments and reports the best one
         bowtie2 \
@@ -56,6 +60,8 @@ rule bowtie_summary:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/" + PROJ + "_bowtie_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_bowtie_summary.err"
@@ -63,6 +69,8 @@ rule bowtie_summary:
         1
     shell:
         """
+        micromamba activate find-pauses
+
         python - << 'EOF'
 import sys
 sys.path.insert(0, "{SRC}")

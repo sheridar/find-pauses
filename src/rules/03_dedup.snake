@@ -16,6 +16,8 @@ rule dedup:
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sample}_dedup.out",
         err = RESULTS + "/logs/{sample}_dedup.err"
@@ -23,6 +25,8 @@ rule dedup:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         umi_tools dedup \
             {params.args} \
             -I '{input.bam}' \
@@ -47,6 +51,8 @@ rule dedup_summary:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/" + PROJ + "_dedup_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_dedup_summary.err"
@@ -54,6 +60,8 @@ rule dedup_summary:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         python - << 'EOF'
 import sys
 sys.path.insert(0, "{SRC}")
@@ -63,7 +71,7 @@ import rules
 rules._dedup_summary("{input}".split(), "{output[0]}")
 EOF
         """
-
+ 
 
 # Create bed files for RNA 3' end
 rule beds:
@@ -82,6 +90,8 @@ rule beds:
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sample}_beds.out",
         err = RESULTS + "/logs/{sample}_beds.err"
@@ -90,60 +100,62 @@ rule beds:
     threads:
         12
     shell:
-       """
-       # Create bed file for aligned reads
-       bamToBed -i {input[0]} \
-           | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
-               if ($1 !~ "^chr") {{
-                   $1 = "chr"$1
-               }};
-               count += 1;
-               print $0, $3 - $2
-           }} END {{
-               print sam, "Aligned reads", count \
-                   > "{output.stats}"
-           }}' \
-           | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-           | bedtools intersect -sorted -v  -a - -b {params.mask} \
-           | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-           | pigz -p {threads} \
-           > '{output.bed}'
-
-       # Filter for reads that are within params.gene and not within
-       # params.mask
-       # * This filtering is not strand specific
-       # * Collapse read coordinates to the RNA 3' end.
-       zcat '{output.bed}' \
-           | bedtools intersect -sorted -wa -a - -b {params.genes} \
-           | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
-               if ($6 == "+") {{
-                   $2 = $3 - 1;
-               }} else {{
-                   $3 = $2 + 1;
-               }};
-               count += 1;
-               print
-           }} END {{
-               print sam, "Filtered reads", count \
-                   >> "{output.stats}";
-           }}' \
-           | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-           | pigz -p {threads} \
-           > '{output.shift}'
-
-       zcat '{output.bed}' \
-           | awk -v OFS="\t" '{{
-               if ($6 == "+") {{
-                   $2 = $3 - 1;
-               }} else {{
-                   $3 = $2 + 1;
-               }};
-               print
-           }}' \
-           | sort -S1G --parallel={threads} -k1,1 -k2,2n \
-           | pigz -p {threads} \
-           > '{output.nofilt}'
-       """
+        """
+        micromamba activate find-pauses
+ 
+        # Create bed file for aligned reads
+        bamToBed -i {input[0]} \
+            | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
+                if ($1 !~ "^chr") {{
+                    $1 = "chr"$1
+                }};
+                count += 1;
+                print $0, $3 - $2
+            }} END {{
+                print sam, "Aligned reads", count \
+                    > "{output.stats}"
+            }}' \
+            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+            | bedtools intersect -sorted -v  -a - -b {params.mask} \
+            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+            | pigz -p {threads} \
+            > '{output.bed}'
+ 
+        # Filter for reads that are within params.gene and not within
+        # params.mask
+        # * This filtering is not strand specific
+        # * Collapse read coordinates to the RNA 3' end.
+        zcat '{output.bed}' \
+            | bedtools intersect -sorted -wa -a - -b {params.genes} \
+            | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
+                if ($6 == "+") {{
+                    $2 = $3 - 1;
+                }} else {{
+                    $3 = $2 + 1;
+                }};
+                count += 1;
+                print
+            }} END {{
+                print sam, "Filtered reads", count \
+                    >> "{output.stats}";
+            }}' \
+            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+            | pigz -p {threads} \
+            > '{output.shift}'
+ 
+        zcat '{output.bed}' \
+            | awk -v OFS="\t" '{{
+                if ($6 == "+") {{
+                    $2 = $3 - 1;
+                }} else {{
+                    $3 = $2 + 1;
+                }};
+                print
+            }}' \
+            | sort -S1G --parallel={threads} -k1,1 -k2,2n \
+            | pigz -p {threads} \
+            > '{output.nofilt}'
+        """
 
 
 # Create filtering summary
@@ -160,6 +172,8 @@ rule filt_summary:
     resources: 
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/" + PROJ + "_filt_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_filt_summary.err"
@@ -167,6 +181,8 @@ rule filt_summary:
         1
     shell:
         """
+        micromamba activate find-pauses
+
         file_arr=({input})
 
         for file in ${{file_arr[@]}}

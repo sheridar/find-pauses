@@ -18,6 +18,8 @@ rule extract_umi:
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sample}_extract_umi.out",
         err = RESULTS + "/logs/{sample}_extract_umi.err"
@@ -25,6 +27,8 @@ rule extract_umi:
         1
     shell:
         """
+        micromamba activate find-pauses
+
         umi_tools extract \
             -I '{input[1]}' \
             --extract-method=string \
@@ -54,6 +58,8 @@ rule cutadapt:
     resources:
         mem_mb = _get_mem(2, 1000),
         mem_gb = _get_mem(2)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sample}_cutadapt.out",
         err = RESULTS + "/logs/{sample}_cutadapt.err"
@@ -61,6 +67,8 @@ rule cutadapt:
         6
     shell:
         """
+        micromamba activate find-pauses
+
         cutadapt \
             {params.args} \
             -a {params.seq1} \
@@ -88,6 +96,8 @@ rule cutadapt_summary:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/" + PROJ + "_cutadapt_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_cutadapt_summary.err"
@@ -95,6 +105,8 @@ rule cutadapt_summary:
         1
     shell:
         """
+        micromamba activate find-pauses
+
         python - << 'EOF'
 import sys
 sys.path.insert(0, "{SRC}")

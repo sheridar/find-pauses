@@ -13,6 +13,8 @@ rule split_matrix_genes:
     resources:
         mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/" + PROJ + "_matrix_genes.out",
         err = RESULTS + "/logs/" + PROJ + "_matrix_genes.err"
@@ -20,6 +22,8 @@ rule split_matrix_genes:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         zcat {input} \
             | awk '$6 == "+"' \
             > {output.p_genes}
@@ -48,6 +52,8 @@ rule metaplot_matrices:
     resources:
         mem_mb = _get_mem(0.5, 1000),
         mem_gb = _get_mem(0.5)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sample}_{ref}_{start}_{end}_{bin}_matrix.out",
         err = RESULTS + "/logs/{sample}_{ref}_{start}_{end}_{bin}_matrix.err"
@@ -55,6 +61,8 @@ rule metaplot_matrices:
         12
     shell:
         """
+        micromamba activate find-pauses
+ 
         create_matrices() {{
             local bw="$1"
             local genes="$2"
@@ -127,6 +135,8 @@ rule matrix_urls:
     resources:
         mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/" + PROJ + "_matrix_urls.out",
         err = RESULTS + "/logs/" + PROJ + "_matrix_urls.err"
@@ -134,6 +144,8 @@ rule matrix_urls:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         source '{SRC}/funs.sh'
 
         create_urls \

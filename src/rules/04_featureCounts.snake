@@ -18,6 +18,8 @@ rule featureCounts:
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/" + PROJ + "_featureCounts.out",
         err = RESULTS + "/logs/" + PROJ + "_featureCounts.err"
@@ -25,6 +27,8 @@ rule featureCounts:
         16
     shell:
         """
+        micromamba activate find-pauses
+ 
         featureCounts \
             {params.args} \
             -F GTF \

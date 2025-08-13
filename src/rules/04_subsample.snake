@@ -11,6 +11,8 @@ rule subsample_dict:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/subsample_dict.out",
         err = RESULTS + "/logs/subsample_dict.err"
@@ -18,6 +20,8 @@ rule subsample_dict:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         python - << 'EOF'
 import sys
 sys.path.insert(0, "{SRC}")
@@ -46,6 +50,8 @@ rule subsample_1:
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{group}_summary.out",
         err = RESULTS + "/logs/{group}_summary.err"
@@ -55,6 +61,8 @@ rule subsample_1:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         python - << 'EOF'
 import sys
 sys.path.insert(0, "{SRC}")
@@ -88,6 +96,8 @@ rule subsample_2:
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sample}_{group}.out",
         err = RESULTS + "/logs/{sample}_{group}.err"
@@ -97,6 +107,8 @@ rule subsample_2:
         16
     shell:
         """
+        micromamba activate find-pauses
+ 
         MIN_READS=$(python - << 'EOF'
 import sys
 sys.path.insert(0, "{SRC}")
@@ -141,6 +153,8 @@ rule sub_summary:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/" + PROJ + "_subsample_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_subsample_summary.err"
@@ -148,6 +162,8 @@ rule sub_summary:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         python - << 'EOF'
 import sys
 sys.path.insert(0, "{SRC}")

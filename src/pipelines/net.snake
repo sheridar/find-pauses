@@ -39,9 +39,9 @@ else:
     meta_temp_fn = temp
 
 
-# Docker container
-singularity:
-    config["CONTAINER"]
+# # Docker container
+# singularity:
+#     config["CONTAINER"]
 
 
 # Parameters from config.yaml

@@ -21,6 +21,8 @@ rule find_pauses:
     resources:
         mem_mb = _get_mem(4, 1000),
         mem_gb = _get_mem(4)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}_pauses.out",
         err = RESULTS + "/logs/{sam_grp}_{win}_pauses.err"
@@ -30,6 +32,8 @@ rule find_pauses:
         4
     shell:
         """
+        micromamba activate find-pauses
+ 
         tmp_dir=$(dirname '{output.pauses}')
 
         # Find pauses for positive strand signal
@@ -95,6 +99,8 @@ rule pauses_strong:
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}{stren}pauses.out",
         err = RESULTS + "/logs/{sam_grp}_{win}{stren}pauses.err"
@@ -104,6 +110,8 @@ rule pauses_strong:
         6
     shell:
         """
+        micromamba activate find-pauses
+ 
         # Identify strong pauses
         # Add 0 to convert numeric
         tmp=$(mktemp strong.XXXXX)
@@ -148,6 +156,8 @@ rule pause_reads:
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_reads.out",
         err = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_reads.err"
@@ -155,6 +165,8 @@ rule pause_reads:
         6
     shell:
         """
+        micromamba activate find-pauses
+ 
         bedtools intersect -sorted -s \
             -a '{input.reads}' \
             -b '{input.pauses}' \
@@ -178,6 +190,8 @@ rule pausing_summary:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/" + PROJ + "_{win}{stren_grp}pausing_summary.out",
         err = RESULTS + "/logs/" + PROJ + "_{win}{stren_grp}pausing_summary.err"
@@ -185,6 +199,8 @@ rule pausing_summary:
         1
     shell:
         """
+        micromamba activate find-pauses
+ 
         echo -e "Number of pauses\tPause reads\tSample" \
             > '{output}'
 
@@ -222,6 +238,8 @@ rule pause_density:
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}{pause_region}_density.out",
         err = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}{pause_region}_density.err"
@@ -229,6 +247,8 @@ rule pause_density:
         6
     shell:
         """
+        micromamba activate find-pauses
+ 
         # Intersect pauses with bed regions
         bedtools intersect -sorted -s -wa -c \
             -a '{params.bed}' \
@@ -262,6 +282,8 @@ rule pause_metaplots:
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
+    conda:
+        "../../env/docker.yml"
     log:
         out = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_metaplots.out",
         err = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_metaplots.err"
@@ -269,6 +291,8 @@ rule pause_metaplots:
         6
     shell:
         """
+        micromamba activate find-pauses
+ 
         source '{SRC}/funs.sh'
 
         tmp_dir=$(dirname '{output.wins}')
