@@ -19,10 +19,12 @@ KEEP_META_FILES:
 # * If left blank, requested memory will be calculated based on the size
 #   of the input files for each rule
 MEMORY:
+  16
 
 
 # Docker container to use for pipeline
 CONTAINER:
+  "docker://rmsheridan/find-pauses:v1.2.0"
 
 
 ## Additional parameters for various processing steps
