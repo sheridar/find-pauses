@@ -21,9 +21,6 @@ rule bigwigs:
     resources:
         mem_mb = _get_mem(0.5, 1000),
         mem_gb = _get_mem(0.5)
-    log:
-        out = RESULTS + "/logs/{sam_grp}_bigwig.out",
-        err = RESULTS + "/logs/{sam_grp}_bigwig.err"
     benchmark:
         RESULTS + "/benchmarks/{sam_grp}_bigwig.tsv"
     threads:
@@ -79,9 +76,6 @@ rule igv_browser:
     resources:
         mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
-    log:
-        out = RESULTS + "/logs/" + PROJ + "_igv.out",
-        err = RESULTS + "/logs/" + PROJ + "_igv.err"
     threads:
         1
     shell:

@@ -17,9 +17,6 @@ rule bowtie:
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
-    log:
-        out = RESULTS + "/logs/{sample}_bowtie.out",
-        err = RESULTS + "/logs/{sample}_bowtie.err"
     threads: 
         12
     shell:
@@ -56,9 +53,6 @@ rule bowtie_summary:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
-    log:
-        out = RESULTS + "/logs/" + PROJ + "_bowtie_summary.out",
-        err = RESULTS + "/logs/" + PROJ + "_bowtie_summary.err"
     threads:
         1
     shell:

@@ -18,9 +18,6 @@ rule featureCounts:
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
-    log:
-        out = RESULTS + "/logs/" + PROJ + "_featureCounts.out",
-        err = RESULTS + "/logs/" + PROJ + "_featureCounts.err"
     threads:
         16
     shell:

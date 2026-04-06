@@ -15,8 +15,5 @@ use rule metaplot_beds as metaplot_beds_nosub with:
     params:
         job_name = "{sample}_{region}_metaplot_beds",
         bed      = lambda wildcards: META_BEDS[wildcards.region]
-    log:
-        out = RESULTS + "/logs/{sample}_{region}_metaplot_beds.out",
-        err = RESULTS + "/logs/{sample}_{region}_metaplot_beds.err"
 
 
