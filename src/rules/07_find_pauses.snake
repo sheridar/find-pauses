@@ -21,9 +21,6 @@ rule find_pauses:
     resources:
         mem_mb = _get_mem(4, 1000),
         mem_gb = _get_mem(4)
-    log:
-        out = RESULTS + "/logs/{sam_grp}_{win}_pauses.out",
-        err = RESULTS + "/logs/{sam_grp}_{win}_pauses.err"
     benchmark:
         RESULTS + "/benchmarks/{sam_grp}_{win}_pauses.tsv"
     threads:
@@ -95,9 +92,6 @@ rule pauses_strong:
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
-    log:
-        out = RESULTS + "/logs/{sam_grp}_{win}{stren}pauses.out",
-        err = RESULTS + "/logs/{sam_grp}_{win}{stren}pauses.err"
     benchmark:
         RESULTS + "/benchmarks/{sam_grp}_{win}{stren}pauses.tsv"
     threads:
@@ -148,9 +142,6 @@ rule pause_reads:
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
-    log:
-        out = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_reads.out",
-        err = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_reads.err"
     threads:
         6
     shell:
@@ -178,9 +169,6 @@ rule pausing_summary:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
-    log:
-        out = RESULTS + "/logs/" + PROJ + "_{win}{stren_grp}pausing_summary.out",
-        err = RESULTS + "/logs/" + PROJ + "_{win}{stren_grp}pausing_summary.err"
     threads:
         1
     shell:
@@ -222,9 +210,6 @@ rule pause_density:
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
-    log:
-        out = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}{pause_region}_density.out",
-        err = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}{pause_region}_density.err"
     threads:
         6
     shell:
@@ -262,9 +247,6 @@ rule pause_metaplots:
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
-    log:
-        out = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_metaplots.out",
-        err = RESULTS + "/logs/{sam_grp}_{win}{stren_grp}pause_metaplots.err"
     threads:
         6
     shell:

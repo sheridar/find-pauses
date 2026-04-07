@@ -50,9 +50,6 @@ rule plots:
     resources:
         mem_mb = _get_mem(4, 1000),
         mem_gb = _get_mem(4)
-    log:
-        out = RESULTS + "/logs/" + PROJ + "_plots.out",
-        err = RESULTS + "/logs/" + PROJ + "_plots.err"
     threads:
         1
     shell:

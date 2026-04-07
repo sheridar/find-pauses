@@ -1,0 +1,12 @@
+# src/profiles/slurm/cluster.yaml
+__default__:
+  account: normal
+  partition: normal
+  qos: normal
+  time: "1-00:00:00"
+
+plots:
+  account: normal
+  partition: normal
+  qos: long
+  time: "3-00:00:00"

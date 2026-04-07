@@ -11,9 +11,6 @@ rule subsample_dict:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
-    log:
-        out = RESULTS + "/logs/subsample_dict.out",
-        err = RESULTS + "/logs/subsample_dict.err"
     threads:
         1
     shell:
@@ -46,9 +43,6 @@ rule subsample_1:
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
-    log:
-        out = RESULTS + "/logs/{group}_summary.out",
-        err = RESULTS + "/logs/{group}_summary.err"
     benchmark:
         RESULTS + "/benchmarks/{group}_summary.tsv"
     threads:
@@ -88,9 +82,6 @@ rule subsample_2:
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
-    log:
-        out = RESULTS + "/logs/{sample}_{group}.out",
-        err = RESULTS + "/logs/{sample}_{group}.err"
     benchmark:
         RESULTS + "/benchmarks/{sample}_{group}.tsv"
     threads:
@@ -141,9 +132,6 @@ rule sub_summary:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
-    log:
-        out = RESULTS + "/logs/" + PROJ + "_subsample_summary.out",
-        err = RESULTS + "/logs/" + PROJ + "_subsample_summary.err"
     threads:
         1
     shell:

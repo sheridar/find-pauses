@@ -21,9 +21,6 @@ rule gene_subsample_test:
     resources:
         mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
-    log:
-        out = RESULTS + "/logs/{group}_{sub_region}_test.out",
-        err = RESULTS + "/logs/{group}_{sub_region}_test.err"
     benchmark:
         RESULTS + "/benchmarks/{group}_{sub_region}_test.tsv"
     threads:
@@ -88,9 +85,6 @@ rule gene_subsample_test_summary:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
-    log:
-        out = RESULTS + "/logs/gene_subsample_test_summary.out",
-        err = RESULTS + "/logs/gene_subsample_test_summary.err"
     threads:
         1
     shell:
@@ -124,9 +118,6 @@ rule subsample_test:
     resources:
         mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
-    log:
-        out = RESULTS + "/logs/{group}_test.out",
-        err = RESULTS + "/logs/{group}_test.err"
     benchmark:
         RESULTS + "/benchmarks/{group}_test.tsv"
     threads:
@@ -185,9 +176,6 @@ rule subsample_test_summary:
     resources:
         mem_mb = _get_mem(0.125, 1000),
         mem_gb = _get_mem(0.125)
-    log:
-        out = RESULTS + "/logs/subsample_test_summary.out",
-        err = RESULTS + "/logs/subsample_test_summary.err"
     threads:
         1
     shell:

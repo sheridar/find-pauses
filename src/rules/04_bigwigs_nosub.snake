@@ -18,9 +18,6 @@ use rule bigwigs as bigwigs_nosub with:
     params:
         job_name = "{sample}_bigwig",
         chroms   = CHROMS
-    log:
-        out = RESULTS + "/logs/{sample}_bigwig.out",
-        err = RESULTS + "/logs/{sample}_bigwig.err"
     benchmark:
         RESULTS + "/benchmarks/{sample}_bigwig.tsv"
 
@@ -39,9 +36,6 @@ use rule igv_browser as igv_browser_nosub with:
         job_name = PROJ + "_nosub_igv",
         regex    = "",
         **SSH_PARAMS
-    log:
-        out = RESULTS + "/logs/" + PROJ + "_nosub_igv.out",
-        err = RESULTS + "/logs/" + PROJ + "_nosub_igv.err"
     benchmark:
         RESULTS + "/benchmarks/" + PROJ + "_nosub_igv.tsv"
 
@@ -62,9 +56,6 @@ use rule bigwigs as bigwigs_nofilt with:
     params:
         job_name = "{sample}_nofilt_bigwig",
         chroms   = CHROMS
-    log:
-        out = RESULTS + "/logs/{sample}_nofilt_bigwig.out",
-        err = RESULTS + "/logs/{sample}_nofilt_bigwig.err"
     benchmark:
         RESULTS + "/benchmarks/{sample}_nofilt_bigwig.tsv"
 
@@ -83,9 +74,6 @@ use rule igv_browser as igv_browser_nofilt with:
         job_name    = PROJ + "_nofilt_igv",
         regex       = "",
         **SSH_PARAMS
-    log:
-        out = RESULTS + "/logs/" + PROJ + "nofilt_igv.out",
-        err = RESULTS + "/logs/" + PROJ + "nofilt_igv.err"
     benchmark:
         RESULTS + "/benchmarks/" + PROJ + "nofilt_igv.tsv"
 

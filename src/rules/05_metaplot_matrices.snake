@@ -13,9 +13,6 @@ rule split_matrix_genes:
     resources:
         mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
-    log:
-        out = RESULTS + "/logs/" + PROJ + "_matrix_genes.out",
-        err = RESULTS + "/logs/" + PROJ + "_matrix_genes.err"
     threads:
         1
     shell:
@@ -48,9 +45,6 @@ rule metaplot_matrices:
     resources:
         mem_mb = _get_mem(0.5, 1000),
         mem_gb = _get_mem(0.5)
-    log:
-        out = RESULTS + "/logs/{sample}_{ref}_{start}_{end}_{bin}_matrix.out",
-        err = RESULTS + "/logs/{sample}_{ref}_{start}_{end}_{bin}_matrix.err"
     threads: 
         12
     shell:
@@ -127,9 +121,6 @@ rule matrix_urls:
     resources:
         mem_mb = _get_mem(0.25, 1000),
         mem_gb = _get_mem(0.25)
-    log:
-        out = RESULTS + "/logs/" + PROJ + "_matrix_urls.out",
-        err = RESULTS + "/logs/" + PROJ + "_matrix_urls.err"
     threads:
         1
     shell:
