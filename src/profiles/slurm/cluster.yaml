@@ -8,5 +8,5 @@ __default__:
 plots:
   account: normal
   partition: normal
-  qos: long
+  qos: normal
   time: "3-00:00:00"
