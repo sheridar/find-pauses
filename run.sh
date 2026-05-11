@@ -119,7 +119,7 @@ sbatch \
     --ntasks=1 \
     --partition=normal \
     --qos=normal \
-    --time='1-00:00:00' <<EOF
+    --time='3-00:00:00' <<EOF
 #! /usr/bin/env bash
 
 set -o nounset -o pipefail -o errexit -x
