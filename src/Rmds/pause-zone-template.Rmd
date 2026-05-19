@@ -701,15 +701,23 @@ h_dat <- zones %>%
   pivot_wider(names_from = "treat", values_from = "zone")
 
 # Calculate p-values
+# Compute one p-value per (group, rep) and BH-adjust across that family;
+# joining back broadcasts the adjusted p-value to every gene-level row.
 if (n_treats > 1 && n_reps == n_common_reps) {
-  h_dat <- h_dat %>%
+  p_dat <- h_dat %>%
     group_by(group, rep) %>%
+    summarize(
+      p = wilcox.test(!!!syms(fc_treats))$p.value,
+      .groups = "drop"
+    ) %>%
+    mutate(p = p.adjust(p, method = "BH"))
+
+  h_dat <- h_dat %>%
+    left_join(p_dat, by = c("group", "rep")) %>%
     mutate(
-      p     = wilcox.test(!!!syms(fc_treats))$p.value,
       p     = scientific(p, digits = 2),
       n_lab = str_c(n, "\n", p)
-    ) %>%
-    ungroup()
+    )
 }
   
 # Check for NAs
