@@ -364,7 +364,7 @@ create_stat_corr <- function(df_in, x, y, ttl = NULL,
     mutate(
       n     = n_distinct(name),
       n     = str_c("n = ", comma(n)),
-      corr  = list(broom::tidy(cor.test(log10(!!sym(x)), !!sym(y), method = "spearman"))),
+      corr  = list(broom::tidy(cor.test(!!sym(x), !!sym(y), method = "spearman"))),
       r     = map_dbl(corr, ~ .x$estimate),
       r     = round(r, 2),
       r     = str_c("r = ", r),
@@ -514,8 +514,7 @@ plot_ex_int_pauses <- function(df_in, y = "p-reads_NET", y_ttl = "fraction pause
       mutate(
         p = ifelse(p == 0, "0", scientific(p, 2)),
         p = str_c(n, "\np = ", p)
-      ) %>%
-      distinct()
+      )
 
     dat <- dat %>%
       left_join(lab_dat, by = c(p_grps, "n")) %>%
