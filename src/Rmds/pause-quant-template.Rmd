@@ -505,8 +505,13 @@ plot_ex_int_pauses <- function(df_in, y = "p-reads_NET", y_ttl = "fraction pause
         p = (wilcox.test(exons, introns))$p.value,
         .groups = "drop"
       ) %>%
+      # Stratify BH by the non-sample components of p_grps so distinct
+      # biological comparisons (e.g. first vs body exon class) are
+      # corrected as separate families rather than pooled.
+      group_by(!!!syms(setdiff(p_grps, "sample"))) %>%
+      mutate(p = p.adjust(p, method = "BH")) %>%
+      ungroup() %>%
       mutate(
-        p = p.adjust(p, method = "BH"),
         p = ifelse(p == 0, "0", scientific(p, 2)),
         p = str_c(n, "\np = ", p)
       ) %>%
