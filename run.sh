@@ -99,7 +99,7 @@ run_snakemake() {
         --profile 'src/profiles/slurm' \
         --snakefile 'src/pipelines/net.snake' \
         --configfiles 'SAMPLES.yaml' 'src/configs/net.yaml' 'src/configs/pauses.yaml' \
-        --singularity-prefix '/beevol/home/${USER}/.singularity_cache' \
+        --singularity-prefix "/beevol/home/${USER}/.singularity_cache" \
         --config SSH_KEY_DIR="$ssh_key_dir"
 }
 
