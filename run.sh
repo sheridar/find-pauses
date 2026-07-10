@@ -99,6 +99,7 @@ run_snakemake() {
         --profile 'src/profiles/slurm' \
         --snakefile 'src/pipelines/net.snake' \
         --configfiles 'SAMPLES.yaml' 'src/configs/net.yaml' 'src/configs/pauses.yaml' \
+        --singularity-prefix '/beevol/home/${USER}/.singularity_cache' \
         --config SSH_KEY_DIR="$ssh_key_dir"
 }
 
@@ -119,7 +120,7 @@ sbatch \
     --ntasks=1 \
     --partition=normal \
     --qos=normal \
-    --time='3-00:00:00' <<EOF
+    --time='1-00:00:00' <<EOF
 #! /usr/bin/env bash
 
 set -o nounset -o pipefail -o errexit -x
