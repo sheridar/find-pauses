@@ -1,0 +1,143 @@
+# ===== Config file for genome parameters: E. coli K-12 MG1655 =================
+#
+# Assembly: RefSeq ASM584v2 (GCF_000005845.2), contig NC_000913.3.
+#
+# Path layout:
+#   * Genome + bowtie2 index (shared, Ben Erickson's ASM584v2 build):
+#         /beevol/home/erickson/ref/misc/e_coli
+#   * Generated gene-list beds (this project):
+#         /beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli
+#     Produced by src/ref/build_ecoli_refs.sh — run it after cloning:
+#         bash src/ref/build_ecoli_refs.sh \
+#           /beevol/home/erickson/ref/misc/e_coli/GCF_000005845.2_ASM584v2_genomic.gtf \
+#           /beevol/home/erickson/ref/misc/e_coli/GCF_000005845.2_ASM584v2_genomic.fna.fai \
+#           /beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli
+#
+# Contig names are kept as "NC_000913.3" (no "chr"); ADD_CHR_PREFIX is False so
+# reads are not renamed and continue to match these beds.
+#
+# DRAFT — validate with `./run.sh -d` and a test render before a full run.
+
+
+## GENERAL PARAMETERS ##
+
+# Do not prepend "chr" to contig names (E. coli RefSeq names already match the
+# index / annotation / gene-list beds).
+ADD_CHR_PREFIX:
+    False
+
+# Path to bowtie2 index (shared genome dir)
+INDEX:
+    "/beevol/home/erickson/ref/misc/e_coli/ecoli"
+
+# Path to chrom.sizes / fai file (shared genome dir)
+CHROMS:
+    "/beevol/home/erickson/ref/misc/e_coli/GCF_000005845.2_ASM584v2_genomic.fna.fai"
+
+# Path to GTF file (must contain `gene` features; featureCounts uses -t gene)
+GTF:
+    "/beevol/home/erickson/ref/misc/e_coli/GCF_000005845.2_ASM584v2_genomic.gtf"
+
+# Reads not overlapping these regions are removed. Gene bodies +/-100 bp
+# (E. coli genome is ~88% genic, so no wide flank is needed).
+GENES:
+    "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/base_lists/Ecoli_genes_+-100bp.bed.gz"
+
+# Reads overlapping these regions are removed. rRNA + tRNA operons are extremely
+# highly transcribed and would otherwise dominate signal / pause calling.
+MASK:
+    "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/masks/Ecoli_rRNA_tRNA.bed.gz"
+
+# Regions used for per-gene subsampling
+GENE_SUBSAMPLE_BEDS:
+    tss:  "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/gene_regions/Ecoli_TSS_+100bp.bed.gz"
+    body: "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/gene_regions/Ecoli_+100bp_end.bed.gz"
+    gene: "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/gene_regions/Ecoli_TSS_end.bed.gz"
+
+# Bed files for counting mNET-seq reads (metaplots). Keys MUST stay "5-10bp" /
+# "3-50bp" / "4-200bp" — the report loads files by these labels. Splicing beds
+# (5ss-wins / exons / introns) are intentionally omitted for E. coli.
+META_BEDS:
+    5-10bp:   "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/gene_windows/Ecoli_5_-300_+300_10bp.bed.gz"
+    3-50bp:   "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/gene_windows/Ecoli_3_-500_+500_50bp.bed.gz"
+    4-200bp:  "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/gene_windows/Ecoli_TSS_end_200bp.bed.gz"
+
+# Bed for generating metaplot matrices
+META_MATRIX_BED:
+    "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/base_lists/Ecoli_TSS_end.bed.gz"
+
+# Non-overlapping genes for the per-gene subsampling test
+TEST_GENES:
+    "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/base_lists/Ecoli_0ksep.bed.gz"
+
+
+## PAUSING PARAMETERS ##
+
+# Regions to search for pauses: whole gene (E. coli genes << 5 kb)
+PAUSE_GENES:
+    "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/base_lists/Ecoli_TSS_end.bed.gz"
+
+# Pauses overlapping these are removed (must be a list). rRNA + tRNA only.
+PAUSE_MASK:
+    - "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/masks/Ecoli_rRNA_tRNA.bed.gz"
+
+# Bed files for counting pauses (metaplots)
+PAUSE_META_BEDS:
+    5-10bp:  "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/gene_windows/Ecoli_5_-300_+300_10bp.bed.gz"
+    3-50bp:  "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/gene_windows/Ecoli_3_-500_+500_50bp.bed.gz"
+    4-200bp: "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/gene_windows/Ecoli_TSS_end_200bp.bed.gz"
+
+
+## PLOTTING PARAMETERS ##
+
+# ref_dir is the project; gene lists live under it (list_dir). The genome
+# sequence lives in the shared genome dir, so chrom_sizes / fasta are given as
+# absolute paths (setup.Rmd uses absolute paths as-is).
+ref_dir:     "/beevol/home/sheridanr/Projects/ecoli-net"
+list_dir:    "ref/gene_lists/Ecoli"
+chrom_sizes: "/beevol/home/erickson/ref/misc/e_coli/GCF_000005845.2_ASM584v2_genomic.fna.fai"
+fasta:       "/beevol/home/erickson/ref/misc/e_coli/GCF_000005845.2_ASM584v2_genomic.fna"
+
+genes_all:   "base_lists/Ecoli_TSS_end.bed.gz"
+genes_5:     "base_lists/Ecoli_100bpsep.bed.gz"        # isolated genes for 5' metaplots
+genes_3:     "base_lists/Ecoli_100bpsep.bed.gz"        # isolated genes for 3' metaplots
+genes_zone:  "base_lists/Ecoli_100bpsep.bed.gz"        # (zone analysis disabled below)
+genes_pause: "base_lists/Ecoli_100bpsep.bed.gz"
+
+# Pause quantification regions: promoter-proximal TSS..+100 vs body +100..end
+pause_regions:
+    TSS:  "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/gene_regions/Ecoli_TSS_+100bp.bed.gz"
+    body: "/beevol/home/sheridanr/Projects/ecoli-net/ref/gene_lists/Ecoli/gene_regions/Ecoli_+100bp_end.bed.gz"
+
+
+## E. COLI-SPECIFIC REPORT FLAGS ##
+
+splicing:          false                # no introns/exons/5'ss in E. coli
+pausing_zones:     false                # gene bodies too short for zone analysis
+min_gene_len:      0.3                   # kb; median E. coli gene ~0.8 kb
+min_zone_gene_len: 0.3                   # kb
+qc_biotypes:       ["protein_coding", "unassigned", "rRNA", "tRNA", "ncRNA"]
+tss_desc:          "TSS - +100 bp"       # pause-region prose (promoter-proximal)
+body_desc:         "+100 bp - gene end"  # pause-region prose (gene body)
+
+# Metaplot window geometry (consumed by the parameterized report window params).
+# Keep in sync with build_ecoli_refs.sh geometry.
+#   tss: +/-300 bp @ 10 bp -> 60 win/strand (120 with anti); TSS  ~ win 31; dist +/-0.3 kb
+#   tes: +/-500 bp @ 50 bp -> 20 win/strand ( 40 with anti); 3' end ~ win 11; dist +/-0.5 kb
+# brk / zoom_brk are [from, to, by] for the x-axis breaks.
+meta_wins:
+    tss:
+        win_num:  120
+        ref_win:  31
+        win_min:  1
+        brk:      [-0.3, 0.3, 0.1]
+        lab:      "TSS"
+        zoom_lim: 0.3
+        zoom_brk: [-0.3, 0.3, 0.1]
+    tes:
+        win_num:  40
+        ref_win:  11
+        win_min:  1
+        win_max:  20
+        brk:      [-0.5, 0.5, 0.25]
+        lab:      "3' end"
