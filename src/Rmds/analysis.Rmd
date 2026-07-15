@@ -66,7 +66,7 @@ stren <- plot_params$pause_strength
 
 ```
 
-```{r "load exons"}
+```{r "load exons", eval = do_splicing}
 
 # Load exon coordinate bed file
 # * If file has column names, use them
@@ -123,7 +123,7 @@ tx_info <- here(list_dir, plot_params$trxn_info) %>%
 
 ```
 
-```{r "1st exon length"}
+```{r "1st exon length", eval = do_splicing}
 
 # Identify first exon coordinates
 # join with gene list to get gene coordinates

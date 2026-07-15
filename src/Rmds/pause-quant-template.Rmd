@@ -567,7 +567,7 @@ The fraction of reads aligning to pauses is shown for windows downstream of the
 TSS.
 For TSS windows, libraries were downsampled so genes have the same number of
 aligned reads for each sample.
-For the gene body region (+500 - pAS), reads were downsampled so the body
+For the gene body region (`r body_desc`), reads were downsampled so the body
 region for each gene has the same number of aligned reads for each sample.
 p-values were calculated using a Wilcoxon rank sum test.
 
@@ -869,22 +869,28 @@ treats %>%
 
 <br>
 
-### Exon intron pausing
+```{r "{{grp}} exon intron header", results = "asis", eval = do_splicing}
 
-The fraction pause reads is shown below for exons and introns.
-For each gene the total number of reads aligning to pause sites were summed for all exons or introns in the gene.
-The total pause reads were then divided by the total number of exonic or intronic reads for the gene.
+cat("\n\n### Exon intron pausing\n\n")
+cat("The fraction pause reads is shown below for exons and introns.\n")
+cat("For each gene the total number of reads aligning to pause sites were summed for all exons or introns in the gene.\n")
+cat("The total pause reads were then divided by the total number of exonic or intronic reads for the gene.\n\n")
+cat(
+  "* genes >", MIN_ZONE_GENE_LEN,
+  " kb long and separated by >", extract_sep_info(plot_params$genes_zone),
+  " kb are shown (", basename(plot_params$genes_zone), ")\n",
+  sep = ""
+)
+cat("* exon/intron annotations were used for the transcript with the start site matching the start site used for gene lists\n")
+cat("* single exon genes were excluded\n")
+cat("* for transcripts with multiple isoforms that have the same start site, the highest confidence isoform was used\n")
+cat("* if multiple isoforms have the same confidence level, the gene was excluded (this is generally a small number ~400)\n")
+cat("* entire gene region downsampled\n")
+cat("* there must be at least 1 total pause in both exonic and intronic regions\n\n")
 
-* genes >`r MIN_ZONE_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_zone)` kb
-  are shown (`r basename(plot_params$genes_zone)`)
-* exon/intron annotations were used for the transcript with the start site matching the start site used for gene lists
-* single exon genes were excluded
-* for transcripts with multiple isoforms that have the same start site, the highest confidence isoform was used
-* if multiple isoforms have the same confidence level, the gene was excluded (this is generally a small number ~400)
-* entire gene region downsampled
-* there must be at least 1 total pause in both exonic and intronic regions
+```
 
-```{r "{{grp}} LOAD EXON INTRON DATA"}
+```{r "{{grp}} LOAD EXON INTRON DATA", eval = do_splicing}
 
 # Load gene region pause bed files
 # intron columns correspond to the downstream intron
@@ -957,7 +963,7 @@ body_genes <- ex_int_beds %>%
 
 ```
 
-```{r "{{grp}} SUM EXON INTRON COUNTS"}
+```{r "{{grp}} SUM EXON INTRON COUNTS", eval = do_splicing}
 
 # Sum intron and exon counts
 sum_grps <- c(
@@ -1000,7 +1006,7 @@ first_dat <- bind_rows(first_dat, body_dat)
 
 ```
 
-```{r "{{grp}} EXON INTRON PLOTS 1", fig.width = 12, fig.height = 1 + (2.5 * n_reps)}
+```{r "{{grp}} EXON INTRON PLOTS 1", fig.width = 12, fig.height = 1 + (2.5 * n_reps), eval = do_splicing}
 
 all_bxs <- all_dat %>%
   plot_ex_int_pauses(p_lab = TRUE) +
@@ -1013,7 +1019,7 @@ all_bxs
 
 The fraction pause reads is shown below for first exons/introns and gene body exons/introns, as described above.
 
-```{r "{{grp}} EXON INTRON PLOTS 2", fig.width = 12, fig.height = 6.5}
+```{r "{{grp}} EXON INTRON PLOTS 2", fig.width = 12, fig.height = 6.5, eval = do_splicing}
 
 first_bxs <- first_dat %>%
   mutate(region_class = fct_relevel(region_class, c("first", "body"))) %>%
@@ -1034,7 +1040,7 @@ first_bxs
 
 ### Strength vs density
 
-The fold change in pause strength vs pause density is shown below for the TSS (TSS - +500 bp) and gene body (+500 bp - pAS) regions.
+The fold change in pause strength vs pause density is shown below for the TSS (`r tss_desc`) and gene body (`r body_desc`) regions.
 Reads were downsampled so each region has the same number of aligned reads for each sample.
 
 * genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_pause)` kb

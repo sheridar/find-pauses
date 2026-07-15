@@ -274,7 +274,11 @@ dup_sum %>%
 ```{r "featurecounts", fig.width = 16, fig.height = 10}
 
 # RNAs to summarize
-rnas <- c(
+# * Configurable per-genome via `qc_biotypes` (must include "unassigned");
+#   defaults preserve the original eukaryotic biotype set. Biotypes not listed
+#   are collapsed into "other". E. coli configs should list rRNA/tRNA/ncRNA
+#   instead of the eukaryote-specific miRNA/snoRNA/snRNA.
+rnas <- plot_params$qc_biotypes %||% c(
   "protein_coding", "miRNA",
   "unassigned",     "rRNA",
   "snoRNA",         "snRNA"

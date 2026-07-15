@@ -23,9 +23,60 @@ library(colorblindr)     # github, to modify color palette
 # Read functions
 source(here::here(plot_params$template_dir, "funs.R"))
 
-# Gene lengths for filtering
-MIN_GENE_LEN <- 2
-MIN_ZONE_GENE_LEN <- 4
+# Whether to run the splicing analysis (exon/intron/5'ss)
+# * Set `splicing: false` in the genome config for organisms without splicing
+#   (e.g. E. coli). Defaults to TRUE when the key is absent so existing
+#   eukaryotic configs are unaffected.
+do_splicing <- if (is.null(plot_params$splicing)) TRUE else isTRUE(plot_params$splicing)
+
+# Whether to run the pausing-zone analysis (measures pause-zone length over
+# several kb downstream of the TSS). Disable via `pausing_zones: false` for
+# organisms whose genes are too short (e.g. E. coli). Defaults to TRUE.
+do_zone <- if (is.null(plot_params$pausing_zones)) TRUE else isTRUE(plot_params$pausing_zones)
+
+# Human-readable descriptions of the TSS / gene-body pause regions, used in
+# report prose. Configurable per-genome (E. coli uses TSS..+100 / +100..end);
+# defaults describe the human/mouse TSS..+500 / +500..pAS regions.
+tss_desc  <- plot_params$tss_desc  %||% "TSS - +500 bp"
+body_desc <- plot_params$body_desc %||% "+500 bp - pAS"
+
+# Metaplot window geometry, per-genome. Defaults reproduce the human/mouse
+# values, so configs without a `meta_wins` block are unaffected. Each sub-list
+# drives the 5' (tss) and 3' (tes) window merge (win_num/ref_win/win_min/win_max)
+# and axis breaks (brk / zoom_brk as c(from, to, by)) and labels, letting
+# alternate geometries (e.g. E. coli small windows) work unchanged.
+.brk_seq <- function(x, default) {
+  if (is.null(x)) x <- default
+  if (is.list(x)) x <- unlist(x)
+  if (length(x) == 3) seq(x[1], x[2], x[3]) else x
+}
+.mw <- function(sub, f, d) plot_params$meta_wins[[sub]][[f]] %||% d
+
+meta_geo <- list(
+  tss = list(
+    win_num  = .mw("tss", "win_num", 800),
+    ref_win  = .mw("tss", "ref_win", 201),
+    win_min  = .mw("tss", "win_min", 101),
+    brk      = .brk_seq(plot_params$meta_wins$tss$brk,      c(-10, 10, 1)),
+    lab      = .mw("tss", "lab", "TSS"),
+    zoom_lim = .mw("tss", "zoom_lim", 0.5),
+    zoom_brk = .brk_seq(plot_params$meta_wins$tss$zoom_brk, c(-0.6, 0.6, 0.2))
+  ),
+  tes = list(
+    win_num = .mw("tes", "win_num", 400),
+    ref_win = .mw("tes", "ref_win", 100),
+    win_min = .mw("tes", "win_min", 61),
+    win_max = .mw("tes", "win_max", 170),
+    brk     = .brk_seq(plot_params$meta_wins$tes$brk, c(-3, 3, 1.5)),
+    lab     = .mw("tes", "lab", "pAS")
+  )
+)
+
+# Gene lengths for filtering (kb)
+# * Configurable per-genome via `min_gene_len` / `min_zone_gene_len`; defaults
+#   preserve the original eukaryotic thresholds.
+MIN_GENE_LEN      <- plot_params$min_gene_len      %||% 2
+MIN_ZONE_GENE_LEN <- plot_params$min_zone_gene_len %||% 4
 
 ```
 
@@ -162,11 +213,17 @@ win_cols <- c(bed_cols, "counts")
 win_cols[5] <- "win_id"
 
 # Genome files
-chrom_sizes <- read_genome(
-  file.path(plot_params$ref_dir, plot_params$chrom_sizes)
-)
+# * chrom_sizes / fasta may be given as absolute paths (used as-is) or relative
+#   to ref_dir. This lets the genome sequence live outside the gene-list
+#   ref_dir (e.g. E. coli refs point ref_dir at the project but the fasta at a
+#   shared genome directory).
+resolve_ref <- function(p) {
+  if (startsWith(p, "/")) p else here(plot_params$ref_dir, p)
+}
 
-fa <- here(plot_params$ref_dir, plot_params$fasta)
+chrom_sizes <- read_genome(resolve_ref(plot_params$chrom_sizes))
+
+fa <- resolve_ref(plot_params$fasta)
 
 # Gene lists and filter based on length
 load_genes <- function(drctry, file, len = 1, rm_cols = TRUE) {

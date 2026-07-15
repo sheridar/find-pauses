@@ -259,9 +259,9 @@ merge_5_nosub <- load_merge_wins(
   file_out  = out_file,               # Path to output file
   overwrite = plot_params$overwrite,  # Overwrite output file if it exists
   col_names = win_cols,               # Column names for bed files
-  win_num   = 800,                    # Total number of expected windows (including sense + anti)
-  ref_win   = 201,                    # Reference window for adjusting window ids
-  win_min   = 101                     # Min window for filtering
+  win_num   = meta_geo$tss$win_num,   # Total number of expected windows (including sense + anti)
+  ref_win   = meta_geo$tss$ref_win,   # Reference window for adjusting window ids
+  win_min   = meta_geo$tss$win_min    # Min window for filtering
 ) %>%
   check_group_size(
     clmns = c("name", "sample", "type", "win_id"),
@@ -299,10 +299,10 @@ merge_3_nosub <- load_merge_wins(
   file_out  = out_file,               # Path to output file
   overwrite = plot_params$overwrite,  # Overwrite output file if it exists
   col_names = win_cols,               # Column names for bed files
-  win_num   = 400,                    # Total number of expected windows (including sense + anti)
-  ref_win   = 100,                    # Reference window for adjusting window ids
-  win_min   = 61,                     # Min window for filtering
-  win_max   = 170                     # Max window for filtering
+  win_num   = meta_geo$tes$win_num,   # Total number of expected windows (including sense + anti)
+  ref_win   = meta_geo$tes$ref_win,   # Reference window for adjusting window ids
+  win_min   = meta_geo$tes$win_min,   # Min window for filtering
+  win_max   = meta_geo$tes$win_max    # Max window for filtering
 ) %>%
   check_group_size(
     clmns = c("name", "sample", "type", "win_id"),
@@ -339,7 +339,11 @@ mean_meta_fig <- create_meta_fig(
   sams      = treats,
   plot_clrs = clrs,
   se_clmn   = se,
-  plot_ttl  = "mean eNET-seq (RPKM)"
+  plot_ttl  = "mean eNET-seq (RPKM)",
+  brk_5     = meta_geo$tss$brk,
+  lab_5     = meta_geo$tss$lab,
+  brk_3     = meta_geo$tes$brk,
+  lab_3     = meta_geo$tes$lab
 )
 
 ```
@@ -373,7 +377,11 @@ rel_meta_fig <- create_meta_fig(
   sams      = treats,
   plot_clrs = clrs,
   se_clmn   = se,
-  plot_ttl  = "relative eNET-seq signal"
+  plot_ttl  = "relative eNET-seq signal",
+  brk_5     = meta_geo$tss$brk,
+  lab_5     = meta_geo$tss$lab,
+  brk_3     = meta_geo$tes$brk,
+  lab_3     = meta_geo$tes$lab
 )
 
 ```
@@ -414,7 +422,7 @@ z_dfs <- list(
 z5_plts <- z_dfs %>%
   imap(~ {
     res <- .x %>%
-      dplyr::filter(win_dist >= -0.5 & win_dist <= 0.5) %>%
+      dplyr::filter(win_dist >= -meta_geo$tss$zoom_lim & win_dist <= meta_geo$tss$zoom_lim) %>%
       create_meta(
         x         = "win_dist",
         y         = "counts",
@@ -426,7 +434,7 @@ z5_plts <- z_dfs %>%
         plot_lvls = treats
       ) +
       labs(y = .y) +
-      add_breaks(seq(-0.6, 0.6, 0.2), "TSS") +
+      add_breaks(meta_geo$tss$zoom_brk, meta_geo$tss$lab) +
       meta_theme
     
     res
@@ -452,7 +460,7 @@ z3_plts <- z_dfs %>%
         plot_lvls = treats
       ) +
       labs(y = .y) +
-      add_breaks(seq(-3, 3, 1.5), "pAS") +
+      add_breaks(meta_geo$tes$brk, meta_geo$tes$lab) +
       meta_theme
     
     res
@@ -477,14 +485,20 @@ cat("\n\n<br>\n\n")
 
 ```
 
-#### 
+```{r "{{.x}} ss header", results = "asis", eval = do_splicing}
 
-Mean NET-seq signal is shown below for the region around 5' splice sites.
+cat("\n\n#### \n\n")
+cat("Mean NET-seq signal is shown below for the region around 5' splice sites.\n\n")
+cat(
+  "* genes >", MIN_GENE_LEN,
+  " kb long and separated by >", extract_sep_info(plot_params$genes_5),
+  " kb are shown\n\n",
+  sep = ""
+)
 
-* genes >`r MIN_GENE_LEN` kb long and separated by >`r extract_sep_info(plot_params$genes_5)` kb
-  are shown
+```
 
-```{r "{{.x}} ss functions", eval = n_treats > 1}
+```{r "{{.x}} ss functions", eval = do_splicing && n_treats > 1}
 
 # Create metaplot bargraph
 create_ss_bars <- function(df_in, y, color, yttl = waiver(), wins = c(41, 60),
@@ -581,7 +595,7 @@ convert_to_bars <- function(df_in, xclmn = "win_id", yclmn = "counts") {
 
 ```
 
-```{r "{{.x}} meta exons NO SUBSMAPLING", eval = n_treats > 1}
+```{r "{{.x}} meta exons NO SUBSMAPLING", eval = do_splicing && n_treats > 1}
 
 # Get exons to use for metaplots
 # only include separated genes
@@ -618,7 +632,7 @@ meta_exons <- exons %>%
 
 ```
 
-```{r "{{.x}} ss data NO SUBSMAPLING", eval = n_treats > 1}
+```{r "{{.x}} ss data NO SUBSMAPLING", eval = do_splicing && n_treats > 1}
 
 # Load and merge bed files
 sfxs <- c("sense" = "_5ss-wins_S_N.bed.gz")
@@ -659,7 +673,7 @@ mean_5ss_nosub <- merge_5ss_nosub %>%
 
 ```
 
-```{r "{{.x}} ss metaplot NO SUBSMAPLING", fig.width = 10, fig.height = 1 + (2 * n_reps), eval = n_treats > 1}
+```{r "{{.x}} ss metaplot NO SUBSMAPLING", fig.width = 10, fig.height = 1 + (2 * n_reps), eval = do_splicing && n_treats > 1}
 
 # Create metaplots
 mean_5ss_nosub %>%
@@ -689,9 +703,7 @@ mean_5ss_nosub %>%
 
 <br>
 
-## Pausing zones
-
-`r knit_child(text = chunks$zone)`
+`r if (do_zone) knitr::knit_child(text = c("## Pausing zones", "", chunks$zone))`
 
 
 ---

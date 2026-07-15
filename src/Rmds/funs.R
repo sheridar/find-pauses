@@ -901,6 +901,8 @@ add_breaks <- function(breaks = seq(-10, 10), zero_lab = "0 kb") {
 create_meta_fig <- function(df_5, df_3, color, ylim_3, sams = NULL, grp = NULL,
                             plot_clrs, se_clmn = NULL, file = NULL, dev = "png",
                             dims = c(10, 6), plot_ttl = "mean signal (RPKM)",
+                            brk_5 = seq(-10, 10), lab_5 = "TSS",
+                            brk_3 = seq(-3, 3, 1.5), lab_3 = "pAS",
                             return_list = FALSE, ...) {
   
   # Filter samples
@@ -926,7 +928,7 @@ create_meta_fig <- function(df_5, df_3, color, ylim_3, sams = NULL, grp = NULL,
       ...
     ) +
     labs(y = plot_ttl) +
-    add_breaks(seq(-10, 10), "TSS") +
+    add_breaks(brk_5, lab_5) +
     theme(
       legend.position    = "top",
       aspect.ratio       = 0.9,
@@ -954,7 +956,7 @@ create_meta_fig <- function(df_5, df_3, color, ylim_3, sams = NULL, grp = NULL,
       ...
     ) +
     coord_cartesian(ylim = ylim_3) +
-    add_breaks(seq(-3, 3, 1.5), "pAS") +
+    add_breaks(brk_3, lab_3) +
     theme(
       aspect.ratio       = 0.9,
       strip.text         = element_text(color = "white"),

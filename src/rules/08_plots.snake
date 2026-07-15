@@ -8,9 +8,13 @@ rule plots:
             RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_{strand}_N.bed.gz",
             sample = SAMS_UNIQ, region = ["5-10bp", "3-50bp"], strand = ["S", "AS"]
         ),
+        # "5ss-wins" is only generated for genomes with splicing (its bed is
+        # defined in META_BEDS); skip it when the genome config omits it
+        # (e.g. E. coli).
         expand(
             RESULTS + "/{sample}/metaplot_beds/{sample}_{region}_S_N.bed.gz",
-            sample = SAMS_UNIQ, region = ["gene", "5ss-wins"]
+            sample = SAMS_UNIQ,
+            region = ["gene", "5ss-wins"] if "5ss-wins" in META_BEDS else ["gene"]
         ),
 
         # NET-seq counts for pause regions
