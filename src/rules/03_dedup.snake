@@ -72,7 +72,8 @@ rule beds:
     params:
         job_name = "{sample}_create_beds",
         genes    = GENES,
-        mask     = MASK
+        mask     = MASK,
+        add_chr  = 1 if ADD_CHR_PREFIX else 0
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
@@ -84,8 +85,8 @@ rule beds:
        """
        # Create bed file for aligned reads
        bamToBed -i {input[0]} \
-           | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
-               if ($1 !~ "^chr") {{
+           | awk -v OFS="\t" -v sam='{wildcards.sample}' -v add_chr={params.add_chr} '{{
+               if (add_chr == 1 && $1 !~ "^chr") {{
                    $1 = "chr"$1
                }};
                count += 1;
