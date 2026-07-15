@@ -11,6 +11,15 @@ KEEP_META_FILES:
     False
 
 
+# Library read geometry (controls UMI extraction and pause-position calling)
+# * "qiaseq" - QIA-seq mNET-seq: UMI on read 2, RNA 3' end = aligned read 3'
+#   end, read 1 sense. This is the default.
+# * "rnet"   - RNET-seq (e.g. GSE147611): UMI on read 1, RNA 3' end = aligned
+#   read 5' end, read 1 antisense (pause strand flipped).
+READ_GEOMETRY:
+  "qiaseq"
+
+
 # Base memory in GB to request for each rule
 # * The actual amount requested will be higher for rules that generally
 #   require more memory

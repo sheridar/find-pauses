@@ -73,7 +73,8 @@ rule beds:
         job_name = "{sample}_create_beds",
         genes    = GENES,
         mask     = MASK,
-        add_chr  = 1 if ADD_CHR_PREFIX else 0
+        add_chr  = 1 if ADD_CHR_PREFIX else 0,
+        geometry = READ_GEOMETRY
     resources:
         mem_mb = _get_mem(3, 1000),
         mem_gb = _get_mem(3)
@@ -105,13 +106,16 @@ rule beds:
        # params.mask
        # * This filtering is not strand specific
        # * Collapse read coordinates to the RNA 3' end.
+       # * qiaseq: the RNA 3' end is the aligned read's 3' end (strand kept).
+       # * rnet:   the RNA 3' end is the aligned read's 5' end, and the pause is
+       #           reported on the opposite (transcript) strand.
        zcat '{output.bed}' \
            | bedtools intersect -sorted -wa -a - -b {params.genes} \
-           | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
-               if ($6 == "+") {{
-                   $2 = $3 - 1;
+           | awk -v OFS="\t" -v sam='{wildcards.sample}' -v geom='{params.geometry}' '{{
+               if (geom == "rnet") {{
+                   if ($6 == "+") {{ $3 = $2 + 1; $6 = "-" }} else {{ $2 = $3 - 1; $6 = "+" }};
                }} else {{
-                   $3 = $2 + 1;
+                   if ($6 == "+") {{ $2 = $3 - 1 }} else {{ $3 = $2 + 1 }};
                }};
                count += 1;
                print
@@ -124,11 +128,11 @@ rule beds:
            > '{output.shift}'
 
        zcat '{output.bed}' \
-           | awk -v OFS="\t" '{{
-               if ($6 == "+") {{
-                   $2 = $3 - 1;
+           | awk -v OFS="\t" -v geom='{params.geometry}' '{{
+               if (geom == "rnet") {{
+                   if ($6 == "+") {{ $3 = $2 + 1; $6 = "-" }} else {{ $2 = $3 - 1; $6 = "+" }};
                }} else {{
-                   $3 = $2 + 1;
+                   if ($6 == "+") {{ $2 = $3 - 1 }} else {{ $3 = $2 + 1 }};
                }};
                print
            }}' \

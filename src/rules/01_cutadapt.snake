@@ -2,9 +2,11 @@
 
 
 # Extract UMI sequence
-# The UMI is the first 12 bases of read 2. By default umi_tools assumes
-# the given UMI pattern starts at the 5' end of the read. To account for
-# this read 2 is provided with -I and read 1 is provided with --read2-in.
+# umi_tools assumes the UMI pattern starts at the 5' end of the read given with
+# -I. The UMI-bearing read is passed with -I and the other read with --read2-in;
+# the read we later align (output.R1) must come out UMI-free.
+# * qiaseq: UMI is on read 2 (input[1]); read 1 (input[0]) is aligned.
+# * rnet:   UMI is on read 1 (input[0]); read 1 is still aligned (UMI stripped).
 rule extract_umi:
     input:
         _get_fq_paths
@@ -14,7 +16,8 @@ rule extract_umi:
         stats = RESULTS + "/{sample}/{sample}_umi_stats.txt"
     params:
         job_name = "{sample}_umi_extract",
-        umi_pat  = CMD_PARAMS["umi_pattern"]
+        umi_pat  = CMD_PARAMS["umi_pattern"],
+        geometry = READ_GEOMETRY
     resources:
         mem_mb = _get_mem(mult = 1000),
         mem_gb = _get_mem()
@@ -22,15 +25,29 @@ rule extract_umi:
         1
     shell:
         """
-        umi_tools extract \
-            -I '{input[1]}' \
-            --extract-method=string \
-            --bc-pattern={params.umi_pat} \
-            --read2-in='{input[0]}' \
-            --read2-out='{output.R1}' \
-            -L '{output.stats}' \
-            | gzip \
-            > '{output.R2}'
+        if [ '{params.geometry}' = 'rnet' ]; then
+            # UMI on read 1: strip it from R1 (-I), pass R2 through unchanged
+            umi_tools extract \
+                -I '{input[0]}' \
+                --extract-method=string \
+                --bc-pattern={params.umi_pat} \
+                --read2-in='{input[1]}' \
+                --read2-out='{output.R2}' \
+                -L '{output.stats}' \
+                | gzip \
+                > '{output.R1}'
+        else
+            # UMI on read 2: strip it from R2 (-I), pass R1 through unchanged
+            umi_tools extract \
+                -I '{input[1]}' \
+                --extract-method=string \
+                --bc-pattern={params.umi_pat} \
+                --read2-in='{input[0]}' \
+                --read2-out='{output.R1}' \
+                -L '{output.stats}' \
+                | gzip \
+                > '{output.R2}'
+        fi
         """
 
 
