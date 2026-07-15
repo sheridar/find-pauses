@@ -72,6 +72,18 @@ TEST_GENES     = config["TEST_GENES"]
 #   gene-list beds, chrom.sizes, or fasta.
 ADD_CHR_PREFIX = config.get("ADD_CHR_PREFIX", True)
 
+# Library read geometry, controls UMI extraction and how a read is collapsed to
+# the nascent RNA 3' end (the pause position).
+# * "qiaseq" (default): QIA-seq mNET-seq. UMI on read 2; the RNA 3' end is the
+#   aligned read's 3' end; read 1 is sense.
+# * "rnet": RNET-seq (e.g. GSE147611, Sun & Kashlev 2021). UMI on read 1; the
+#   RNA 3' end is the aligned read's 5' end; read 1 is antisense (so the pause
+#   strand is flipped relative to the read).
+READ_GEOMETRY = config.get("READ_GEOMETRY", "qiaseq")
+
+if READ_GEOMETRY not in ("qiaseq", "rnet"):
+    sys.exit("ERROR: READ_GEOMETRY must be 'qiaseq' or 'rnet'.")
+
 GENE_SUB_BEDS      = config["GENE_SUBSAMPLE_BEDS"]
 META_BEDS          = config["META_BEDS"]
 META_MATRIX_BED    = config["META_MATRIX_BED"]
