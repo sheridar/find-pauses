@@ -63,6 +63,15 @@ READ_1_ADAPTER = config["READ_1_ADAPTER"]
 READ_2_ADAPTER = config["READ_2_ADAPTER"]
 TEST_GENES     = config["TEST_GENES"]
 
+# Whether to prepend "chr" to contig names when creating bed files.
+# * Human/mouse Ensembl contigs (1, 2, ...) are converted to UCSC-style
+#   (chr1, chr2, ...) so names match the browser reference.
+# * Set ADD_CHR_PREFIX to False for genomes whose index/annotation already use
+#   the desired contig names (e.g. E. coli RefSeq "NC_000913.3"), otherwise
+#   reads would be renamed to "chrNC_000913.3" and no longer match the
+#   gene-list beds, chrom.sizes, or fasta.
+ADD_CHR_PREFIX = config.get("ADD_CHR_PREFIX", True)
+
 GENE_SUB_BEDS      = config["GENE_SUBSAMPLE_BEDS"]
 META_BEDS          = config["META_BEDS"]
 META_MATRIX_BED    = config["META_MATRIX_BED"]
