@@ -63,6 +63,7 @@ rule cutadapt:
     params:
         job_name = "{sample}_cutadapt",
         args     = CMD_PARAMS["cutadapt"],
+        filt     = TRIM_FILTER,
         seq1     = lambda wildcards: READ_1_ADAPTER[wildcards.sample],
         seq2     = lambda wildcards: READ_2_ADAPTER[wildcards.sample]
     resources:
@@ -74,6 +75,7 @@ rule cutadapt:
         """
         cutadapt \
             {params.args} \
+            {params.filt} \
             -a {params.seq1} \
             -A {params.seq2} \
             -j {threads} \

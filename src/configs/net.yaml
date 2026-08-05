@@ -20,6 +20,16 @@ READ_GEOMETRY:
   "qiaseq"
 
 
+# Cutadapt arguments controlling which read pairs survive adapter trimming
+# * If left blank, this is derived from READ_GEOMETRY:
+#   - "qiaseq" - " --pair-filter=first --discard-untrimmed ", the RNA 3' end is
+#     only known for reads that sequenced into the 3' adapter
+#   - "rnet"   - " ", the RNA 3' end is read 1's 5' end and does not depend on
+#     the adapter being reached
+# * Set explicitly to override, e.g. for libraries without an adapter to require
+TRIM_FILTER:
+
+
 # Base memory in GB to request for each rule
 # * The actual amount requested will be higher for rules that generally
 #   require more memory
@@ -38,8 +48,8 @@ CONTAINER:
 
 ## Additional parameters for various processing steps
 # Cutadapt
-# --pair-filter=first - read filtering decisions are made based solely on R1
-# --dicard-untrimmed  - remove reads that do not contain an adapter
+# * The --pair-filter / --discard-untrimmed arguments are set by TRIM_FILTER
+#   above, since they depend on READ_GEOMETRY
 # --minimum-length    - remove reads that are shorter than given value
 # -O                  - minimum overlap to trim adapter
 # -a                  - adapter sequence for R1
@@ -54,7 +64,7 @@ CONTAINER:
 # -t gene             - feature type for counting
 # -O                  - count if aligned to multiple features
 CMD_PARAMS:
-    cutadapt:      " --pair-filter=first --discard-untrimmed --minimum-length 15 --overlap 10 "
+    cutadapt:      " --minimum-length 15 --overlap 10 "
     umi_pattern:   "NNNNNNNNNNNN"
     umi_tools:     " --method unique --read-length "
     featureCounts: " --extraAttributes 'gene_name,gene_biotype' -s 0 -t gene -O "
