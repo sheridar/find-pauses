@@ -74,6 +74,18 @@ if (!dir.exists(here(plot_params$tab_dir))) {
   dir.create(here(plot_params$tab_dir), recursive = TRUE, mode = "0750")
 }
 
+if (!dir.exists(here(plot_params$fig_dir))) {
+  dir.create(here(plot_params$fig_dir), recursive = TRUE, mode = "0750")
+}
+
+# Also save a PDF copy of every plot to fig_dir
+# * the html report continues to embed the png version
+# * the pdf files are written using the same chunk label used for each png
+knitr::opts_chunk$set(
+  dev      = c("png", "pdf"),
+  fig.path = str_c(here(plot_params$fig_dir), "/")
+)
+
 # Set missing sample names
 # set default names if not provided
 plot_grps$SAMPLES <- plot_grps$SAMPLES %>%

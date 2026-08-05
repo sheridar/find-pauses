@@ -57,6 +57,7 @@ plot_params$go_genome <- plot_params$go_genomes[[params$go_genome]]
 
 plot_params$obj_dir <- file.path(res_dir, plot_params$obj_dir)
 plot_params$tab_dir <- file.path(res_dir, plot_params$tab_dir)
+plot_params$fig_dir <- file.path(res_dir, plot_params$fig_dir)
 
 knitr::knit(here::here(plot_params$template_dir, "setup.Rmd"), "")
 
