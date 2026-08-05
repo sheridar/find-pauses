@@ -146,7 +146,12 @@ rule pause_reads:
         6
     shell:
         """
-        bedtools intersect -sorted -s \
+        # -u reports each read once regardless of how many pauses it overlaps.
+        # Reads and pauses are both single-nucleotide, so at most one pause can
+        # match and this is currently a no-op, but it keeps the read count
+        # correct if either input ever stops being 1 bp or gains duplicate
+        # positions.
+        bedtools intersect -sorted -s -u \
             -a '{input.reads}' \
             -b '{input.pauses}' \
             | sort -S1G --parallel={threads} -k1,1 -k2,2n \
