@@ -8,6 +8,7 @@ shell.prefix("source ~/.bash_profile; set -o nounset -o pipefail -o errexit -x; 
 
 # Python packages
 import os
+import sys
 import shutil
 import glob
 import re
