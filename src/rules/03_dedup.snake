@@ -105,7 +105,7 @@ rule beds:
        # * This filtering is not strand specific
        # * Collapse read coordinates to the RNA 3' end.
        zcat '{output.bed}' \
-           | bedtools intersect -sorted -wa -a - -b {params.genes} \
+           | bedtools intersect -sorted -u -a - -b {params.genes} \
            | awk -v OFS="\t" -v sam='{wildcards.sample}' '{{
                if ($6 == "+") {{
                    $2 = $3 - 1;
