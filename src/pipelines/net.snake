@@ -85,29 +85,6 @@ READ_GEOMETRY = config.get("READ_GEOMETRY", "qiaseq")
 if READ_GEOMETRY not in ("qiaseq", "rnet"):
     sys.exit("ERROR: READ_GEOMETRY must be 'qiaseq' or 'rnet'.")
 
-# Cutadapt read-pair filter, controls which pairs survive adapter trimming.
-# Read 1 is always the read that gets aligned, so filtering decisions are always
-# made on read 1; only whether trimming is *required* depends on the geometry.
-# * "qiaseq": read 1's 3' end is the RNA 3' end only if the read sequenced into
-#   the 3' adapter. An untrimmed read ends wherever the read length ran out, so
-#   keeping it would place a spurious pause at a fixed offset. Require trimming.
-# * "rnet": the RNA 3' end is read 1's 5' end, which is defined by the UMI /
-#   adapter junction at the start of the read and is present whether or not the
-#   3' adapter was reached. Requiring trimming would discard usable reads.
-# Both defaults keep --pair-filter=first. That flag governs every cutadapt
-# filter, not just --discard-untrimmed, so dropping it would silently revert to
-# cutadapt's default (--pair-filter=any) and start discarding pairs because
-# read 2 fell below --minimum-length, even though read 2 is never aligned.
-# Omit TRIM_FILTER in the config to use the geometry-derived default, or set it
-# explicitly to override.
-TRIM_FILTER = config.get("TRIM_FILTER")
-
-if TRIM_FILTER is None:
-    TRIM_FILTER = {
-        "qiaseq": " --pair-filter=first --discard-untrimmed ",
-        "rnet":   " --pair-filter=first "
-    }[READ_GEOMETRY]
-
 GENE_SUB_BEDS      = config["GENE_SUBSAMPLE_BEDS"]
 META_BEDS          = config["META_BEDS"]
 META_MATRIX_BED    = config["META_MATRIX_BED"]
