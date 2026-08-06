@@ -61,6 +61,17 @@ plot_params$fig_dir <- file.path(res_dir, plot_params$fig_dir)
 
 knitr::knit(here::here(plot_params$template_dir, "setup.Rmd"), "")
 
+# Also save a PDF copy of every plot to fig_dir
+# * the html report continues to embed the png version
+# * the pdf files are written using the same chunk label used for each png
+# * this must be set here rather than in setup.Rmd, since setup.Rmd is loaded
+#   with knitr::knit() (rather than knit_child()), which restores chunk
+#   options to their previous state once it returns
+knitr::opts_chunk$set(
+  dev      = c("png", "pdf"),
+  fig.path = str_c(here::here(plot_params$fig_dir), "/")
+)
+
 # Pause parameters
 win   <- plot_params$pause_win
 stren <- plot_params$pause_strength
