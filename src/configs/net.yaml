@@ -16,24 +16,37 @@ KEEP_META_FILES:
 #   end, read 1 sense. This is the default.
 # * "rnet"   - RNET-seq (e.g. GSE147611): UMI on read 1, RNA 3' end = aligned
 #   read 5' end, read 1 antisense (pause strand flipped).
+# * Set this key here, in src/configs/net.yaml. A value set in SAMPLES.yaml or
+#   in a genome config is silently ignored (see the note on TRIM_FILTER below).
 READ_GEOMETRY:
   "qiaseq"
 
 
 # Cutadapt arguments controlling which read pairs survive adapter trimming
-# * If left blank, this is derived from READ_GEOMETRY:
+# * If the value is omitted entirely (a bare "TRIM_FILTER:" with nothing after
+#   it), this is derived from READ_GEOMETRY:
 #   - "qiaseq" - " --pair-filter=first --discard-untrimmed ", the RNA 3' end is
 #     only known for reads that sequenced into the 3' adapter
-#   - "rnet"   - " ", the RNA 3' end is read 1's 5' end and does not depend on
-#     the adapter being reached
-# * Set explicitly to override, e.g. for libraries without an adapter to require
+#   - "rnet"   - " --pair-filter=first ", the RNA 3' end is read 1's 5' end and
+#     does not depend on the adapter being reached
+# * Both defaults keep --pair-filter=first, which makes cutadapt apply every
+#   filter (including --minimum-length) to read 1 only. Read 1 is the only read
+#   that gets aligned, so a value that omits it will discard pairs based on
+#   read 2 and silently lose usable reads
+# * Setting TRIM_FILTER: "" is NOT the same as omitting the value. An empty
+#   string is an explicit override meaning no filtering at all, which under
+#   "qiaseq" admits untrimmed reads that place spurious pauses at a fixed offset
+# * Set this key here, in src/configs/net.yaml. run.sh loads the config files in
+#   the order SAMPLES.yaml, src/configs/net.yaml, src/configs/pauses.yaml, and
+#   later files win, so a value set in SAMPLES.yaml or in a genome config is
+#   silently ignored. The same applies to READ_GEOMETRY above
 TRIM_FILTER:
 
 
 # Base memory in GB to request for each rule
 # * The actual amount requested will be higher for rules that generally
 #   require more memory
-# * A value of 8 will result in rules requesting between 8GB - 32GB of
+# * A value of 8 will result in rules requesting between 1GB - 32GB of
 #   memory
 # * If left blank, requested memory will be calculated based on the size
 #   of the input files for each rule
