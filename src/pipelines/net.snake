@@ -8,6 +8,7 @@ shell.prefix("source ~/.bash_profile; set -o nounset -o pipefail -o errexit -x; 
 
 # Python packages
 import os
+import sys
 import shutil
 import glob
 import re
@@ -62,6 +63,27 @@ CMD_PARAMS     = config["CMD_PARAMS"]
 READ_1_ADAPTER = config["READ_1_ADAPTER"]
 READ_2_ADAPTER = config["READ_2_ADAPTER"]
 TEST_GENES     = config["TEST_GENES"]
+
+# Whether to prepend "chr" to contig names when creating bed files.
+# * Human/mouse Ensembl contigs (1, 2, ...) are converted to UCSC-style
+#   (chr1, chr2, ...) so names match the browser reference.
+# * Set ADD_CHR_PREFIX to False for genomes whose index/annotation already use
+#   the desired contig names (e.g. E. coli RefSeq "NC_000913.3"), otherwise
+#   reads would be renamed to "chrNC_000913.3" and no longer match the
+#   gene-list beds, chrom.sizes, or fasta.
+ADD_CHR_PREFIX = config.get("ADD_CHR_PREFIX", True)
+
+# Library read geometry, controls UMI extraction and how a read is collapsed to
+# the nascent RNA 3' end (the pause position).
+# * "qiaseq" (default): QIA-seq mNET-seq. UMI on read 2; the RNA 3' end is the
+#   aligned read's 3' end; read 1 is sense.
+# * "rnet": RNET-seq (e.g. GSE147611, Sun & Kashlev 2021). UMI on read 1; the
+#   RNA 3' end is the aligned read's 5' end; read 1 is antisense (so the pause
+#   strand is flipped relative to the read).
+READ_GEOMETRY = config.get("READ_GEOMETRY", "qiaseq")
+
+if READ_GEOMETRY not in ("qiaseq", "rnet"):
+    sys.exit("ERROR: READ_GEOMETRY must be 'qiaseq' or 'rnet'.")
 
 GENE_SUB_BEDS      = config["GENE_SUBSAMPLE_BEDS"]
 META_BEDS          = config["META_BEDS"]
