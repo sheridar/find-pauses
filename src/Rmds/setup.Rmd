@@ -74,6 +74,10 @@ if (!dir.exists(here(plot_params$tab_dir))) {
   dir.create(here(plot_params$tab_dir), recursive = TRUE, mode = "0750")
 }
 
+if (!dir.exists(here(plot_params$fig_dir))) {
+  dir.create(here(plot_params$fig_dir), recursive = TRUE, mode = "0750")
+}
+
 # Set missing sample names
 # set default names if not provided
 plot_grps$SAMPLES <- plot_grps$SAMPLES %>%

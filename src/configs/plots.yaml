@@ -6,6 +6,7 @@ overwrite:         true                     # Overwrite saved R objects
 template_dir:      "src/Rmds"               # Directory containing Rmd templates
 obj_dir:           "objects"                # Directory to save R objects
 tab_dir:           "tables"                 # Directory to save tables
+fig_dir:           "figures"                # Directory to save a PDF copy of every plot
 
 gene_min_pct:      0.1                      # Fraction of lowest expressing genes to exclude
 pause_strength:    "_strong_"               # Pause strength label to use for loading input files
